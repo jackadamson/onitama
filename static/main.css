@@ -1,0 +1,46 @@
+.grid {
+    display: flex;
+    flex-direction: column;
+    border: black solid 2px;
+    width: 160px;
+}
+.grid-outer {
+    display: flex;
+    flex-direction: row;
+}
+.row {
+    display: flex;
+    flex-direction: row;
+    height: 32px;
+}
+.cell {
+    height: 32px;
+    width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: black solid 2px;
+    cursor: pointer;
+}
+.red {
+    color: #fff;
+    background-color: #ff0000;
+}
+.blue {
+    color: #fff;
+    background-color: #0000ff;
+}
+.cards {
+    display: flex;
+    flex-direction: row;
+    width: 160px;
+    justify-content: center;
+}
+.card {
+    padding: 8px;
+    border: black solid 1px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    top: 8px;
+    margin-right: 8px;
+}

@@ -1,0 +1,15 @@
+[package]
+name = "onitama"
+version = "0.1.0"
+authors = ["Jack Adamson <jack@mrfluffybunny.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+yew = "0.18.0"
+enum-iterator = "0.6.0"
+getrandom = { version = "0.2", features = ["js"] }
+rand = { version = "0.8.3", features = ["default", "alloc"] }
+log = "0.4.6"
+wasm-logger = "0.2.0"
