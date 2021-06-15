@@ -5,12 +5,6 @@ use crate::models::{Board, Card, GameState, Move, Player, Point, GameSquare};
 
 impl Board {
     pub fn make_move(self: &Board, game_move: Move) -> Result<GameState, String> {
-        let (card, src, dst) = match game_move {
-            Move::Move { card, src, dst } => (card, src, dst),
-            Move::Null { .. } => {
-                return Result::Err("Null move not implemented".to_string());
-            }
-        };
         let (
             blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn
         ) = match self {
@@ -22,14 +16,10 @@ impl Board {
             Player::Red => red_hand,
             Player::Blue => blue_hand,
         };
-        if !player_hand.contains(&card) {
-            return Result::Err("Card not in hand".to_string());
-        }
         let (player_king, opponent_king) = match turn {
             Player::Red => (red_king, blue_king),
             Player::Blue => (blue_king, red_king),
         };
-        let moving_king = *player_king == src;
         let (player_pawns, opponent_pawns) = match turn {
             Player::Red => (red_pawns.iter(), blue_pawns.iter()),
             Player::Blue => (blue_pawns.iter(), red_pawns.iter()),
@@ -44,6 +34,54 @@ impl Board {
                 .chain(iter::once(blue_king))
                 .collect(),
         };
+        let (card, src, dst) = match game_move {
+            Move::Move { card, src, dst } => (card, src, dst),
+            Move::Null { card } => {
+                for src in player_pieces.iter() {
+                    for card in player_hand {
+                        for raw_delta in card.moves() {
+                            let delta = match turn {
+                                Player::Red => raw_delta,
+                                Player::Blue => -raw_delta,
+                            };
+                            let dst = delta + **src;
+                            if !dst.out_of_bounds() && !player_pieces.contains(&&dst) {
+                                log::error!("Valid card found: {:?} for piece at {:?}", card, src);
+                                return Result::Err(format!("Valid card found: {:?} for piece at {:?}", card, src));
+                            }
+                        }
+                    }
+                }
+                let next_turn = match turn {
+                    Player::Red => Player::Blue,
+                    Player::Blue => Player::Red,
+                };
+                let player_hand: Vec<Card> = player_hand
+                    .iter()
+                    .map(|c| *c)
+                    .filter(|c| *c == card)
+                    .collect();
+                let (red_hand, blue_hand) = match turn {
+                    Player::Red => (player_hand, blue_hand.clone()),
+                    Player::Blue => (red_hand.clone(), player_hand),
+                };
+                return Ok(GameState::Playing {
+                    board: Board {
+                        blue_king: *blue_king,
+                        blue_pawns: blue_pawns.clone(),
+                        blue_hand,
+                        red_king: *red_king,
+                        red_pawns: red_pawns.clone(),
+                        red_hand,
+                        spare_card: card,
+                        turn: next_turn,
+                    }
+                });
+            }
+        };
+        if !player_hand.contains(&card) {
+            return Result::Err("Card not in hand".to_string());
+        }
         if !player_pieces.contains(&&src) {
             return Result::Err("No piece at src".to_string());
         }
@@ -71,6 +109,7 @@ impl Board {
             Player::Red => Point { x: 2, y: 0 },
             Player::Blue => Point { x: 2, y: 4 },
         };
+        let moving_king = *player_king == src;
         if moving_king && dst == goal_square {
             return Result::Ok(GameState::Finished { winner: *turn });
         }
