@@ -7,8 +7,8 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "build-native-dev": "wasm-pack build ./src/onitamalib --target bundler --out-dir ./src/onitamalib/build --dev",
-    "build-native-release": "wasm-pack build ./src/onitamalib --target bundler --out-dir ./src/onitamalib/build --release"
+    "build-native-dev": "wasm-pack build onitamalib --target bundler --out-dir ./src/onitamalib/build --dev",
+    "build-native-release": "wasm-pack build onitamalib --target bundler --out-dir ./src/onitamalib/build --release"
   },
   "eslintConfig": {
     "extends": [
@@ -35,15 +35,17 @@
   "devDependencies": {
     "@material-ui/types": "latest",
     "@wasm-tool/wasm-pack-plugin": "^1.3.1",
+    "babel-eslint": "^10.1.0",
     "customize-cra": "^1.0.0",
     "customize-cra-eslint-ignore": "^0.1.2",
-    "eslint-config-airbnb": "18.1.0",
-    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-airbnb": "18.2.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-import-resolver-webpack": "^0.13.1",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-plugin-react": "^7.19.0",
-    "eslint-plugin-react-hooks": "2.5.0",
+    "eslint-plugin-react-hooks": "4.2.0",
     "husky": "^4.2.5",
     "lint-staged": "^10.2.6",
     "prettier": "^2.0.5",

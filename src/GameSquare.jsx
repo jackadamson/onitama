@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { Box, makeStyles, Paper } from '@material-ui/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChessPawn, faChessKing } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChessPawn, faChessKing } from '@fortawesome/free-solid-svg-icons';
 import Color from 'color';
 
 const icons = {
@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
     borderColor: theme.palette.primary.light,
   },
   valid: {
-    borderColor: theme.palette.secondary.dark
+    borderColor: theme.palette.secondary.dark,
   },
   selectable: {
     '&:hover': {
@@ -27,10 +27,10 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
   },
   redBase: {
-    backgroundColor: Color(theme.palette.background.paper).mix(Color("#f44336"), 0.1).hex(),
+    backgroundColor: Color(theme.palette.background.paper).mix(Color('#f44336'), 0.1).hex(),
   },
   blueBase: {
-    backgroundColor: Color(theme.palette.background.paper).mix(Color("#2196f3"), 0.1).hex(),
+    backgroundColor: Color(theme.palette.background.paper).mix(Color('#2196f3'), 0.1).hex(),
   },
 }));
 const tilePlayer = {
@@ -77,7 +77,7 @@ GameSquare.defaultProps = {
   src: null,
 };
 GameSquare.propTypes = {
-  tile: PropTypes.oneOf(["Empty", "BluePawn", "BlueKing", "RedPawn", "RedKing"]).isRequired,
+  tile: PropTypes.oneOf(['Empty', 'BluePawn', 'BlueKing', 'RedPawn', 'RedKing']).isRequired,
   x: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
   src: PropTypes.shape({

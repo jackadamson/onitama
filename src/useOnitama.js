@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const onitamaLib = import('./onitamalib/build');
+const onitamaLib = import('./onitamalib');
 
 const useOnitama = () => {
   const [{ playMove }, setPlayMove] = useState({

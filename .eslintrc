@@ -3,11 +3,10 @@
   "plugins": ["prettier", "import"],
   "parser": "babel-eslint",
   "rules": {
-    "prettier/prettier": ["off"],
-    "no-undef": "off"
+    "prettier/prettier": ["warn"],
+    "no-undef": "warn"
   },
   "env": {
     "browser": true
-  },
-  "ignorePatterns": ["./src/guac/build/*.js"]
+  }
 }

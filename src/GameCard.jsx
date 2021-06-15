@@ -44,20 +44,20 @@ const Moves = ({ moves }) => {
   const indexes = [-2, -1, 0, 1, 2];
   return (
     <Box display="flex" flexDirection="column">
-      { indexes.map((y) => (
+      {indexes.map((y) => (
         <Box display="flex" flexDirection="row" key={y}>
-          { indexes.map((x) => {
+          {indexes.map((x) => {
             const keyed = `${x},${y}`;
             return (
               <Box
                 key={keyed}
                 className={clsx({
-                [classes.moveCell]: true,
-                [classes.origin]: x === 0 && y === 0,
-                [classes.accessible]: moveSet.has(keyed),
-              })}
+                  [classes.moveCell]: true,
+                  [classes.origin]: x === 0 && y === 0,
+                  [classes.accessible]: moveSet.has(keyed),
+                })}
               />
-            )
+            );
           })}
         </Box>
       ))}
@@ -65,15 +65,17 @@ const Moves = ({ moves }) => {
   );
 };
 Moves.propTypes = {
-  moves: PropTypes.arrayOf(PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-  })).isRequired,
+  moves: PropTypes.arrayOf(
+    PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    }),
+  ).isRequired,
 };
 const GameCard = ({ name, setCard, selected, enabled, moves, spare }) => {
   const classes = useStyles({ selected, enabled, spare });
   const handler = () => {
-    console.log({enabled, name, moves });
+    console.log({ enabled, name, moves });
     if (enabled) {
       setCard({ card: name, moves });
     }
@@ -93,10 +95,12 @@ GameCard.propTypes = {
   enabled: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
   setCard: PropTypes.func.isRequired,
-  moves: PropTypes.arrayOf(PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-  })).isRequired,
+  moves: PropTypes.arrayOf(
+    PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    }),
+  ).isRequired,
   spare: PropTypes.bool,
 };
 

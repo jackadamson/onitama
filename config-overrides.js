@@ -24,8 +24,8 @@ module.exports = override(
   (config) => {
     config.plugins = (config.plugins || []).concat([
       new WasmPackPlugin({
-        crateDirectory: path.resolve(__dirname, './src/onitamalib'),
-        outDir: path.resolve(__dirname, './src/onitamalib/build'),
+        crateDirectory: path.resolve(__dirname, './onitamalib'),
+        outDir: path.resolve(__dirname, './src/onitamalib'),
       }),
     ]);
 
