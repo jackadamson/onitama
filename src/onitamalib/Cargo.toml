@@ -1,0 +1,36 @@
+[package]
+name = "onitamalib"
+version = "0.1.0"
+authors = ["Jack Adamson <jack@mrfluffybunny.com>"]
+edition = "2018"
+description = "A library for managing the game logic of Onitama"
+license = "BSD"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+enum-iterator = "0.6.0"
+getrandom = { version = "0.2", features = ["js"] }
+rand = { version = "0.8.3", features = ["default", "alloc"] }
+log = "0.4.6"
+wasm-logger = "0.2.0"
+wasm-bindgen = { version="0.2.63", features = ["serde-serialize"] }
+
+console_error_panic_hook = "0.1.6"
+js-sys = "0.3.45"
+serde = { version = "1.0", features = ["derive"] }
+gloo = "0.2.1"
+wee_alloc = { version = "0.4.5", optional = true }
+
+[dependencies.web-sys]
+version = "0.3.4"
+
+[dependencies.wasm-bindgen-futures]
+features = ["futures_0_3"]
+version = "^0.3"
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"

@@ -1,0 +1,13 @@
+{
+  "extends": ["airbnb", "prettier"],
+  "plugins": ["prettier", "import"],
+  "parser": "babel-eslint",
+  "rules": {
+    "prettier/prettier": ["off"],
+    "no-undef": "off"
+  },
+  "env": {
+    "browser": true
+  },
+  "ignorePatterns": ["./src/guac/build/*.js"]
+}

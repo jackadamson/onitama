@@ -95,18 +95,24 @@ impl Board {
             Player::Red => red_hand.iter(),
             Player::Blue => blue_hand.iter(),
         };
+        log::info!("Player hand before: {:?}", &player_hand);
         let player_hand: Vec<Card> = player_hand
             .map(|c| *c)
             .filter(|c| *c != card)
             .chain(iter::once(*spare_card))
             .collect();
+        log::info!("Player hand after: {:?}", &player_hand);
+        let player_king = match moving_king {
+            true => dst,
+            false => *player_king,
+        };
         return match self.turn {
             Player::Red => Ok(GameState::Playing {
                 board: Board {
                     blue_king: *blue_king,
                     blue_pawns: opponent_pawns,
                     blue_hand: blue_hand.clone(),
-                    red_king: *player_king,
+                    red_king: player_king,
                     red_pawns: player_pawns,
                     red_hand: player_hand,
                     spare_card: card,
@@ -115,7 +121,7 @@ impl Board {
             }),
             Player::Blue => Ok(GameState::Playing {
                 board: Board {
-                    blue_king: *player_king,
+                    blue_king: player_king,
                     blue_pawns: player_pawns,
                     blue_hand: player_hand,
                     red_king: *red_king,
