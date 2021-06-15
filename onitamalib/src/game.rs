@@ -36,30 +36,15 @@ impl Board {
         };
         let (card, src, dst) = match game_move {
             Move::Move { card, src, dst } => (card, src, dst),
-            Move::Null { card } => {
-                for src in player_pieces.iter() {
-                    for card in player_hand {
-                        for raw_delta in card.moves() {
-                            let delta = match turn {
-                                Player::Red => raw_delta,
-                                Player::Blue => -raw_delta,
-                            };
-                            let dst = delta + **src;
-                            if !dst.out_of_bounds() && !player_pieces.contains(&&dst) {
-                                log::error!("Valid card found: {:?} for piece at {:?}", card, src);
-                                return Result::Err(format!("Valid card found: {:?} for piece at {:?}", card, src));
-                            }
-                        }
-                    }
+            Move::Discard { card } => {
+                if self.can_move() {
+                    return Result::Err(format!("Valid moves exist"));
                 }
-                let next_turn = match turn {
-                    Player::Red => Player::Blue,
-                    Player::Blue => Player::Red,
-                };
                 let player_hand: Vec<Card> = player_hand
                     .iter()
                     .map(|c| *c)
-                    .filter(|c| *c == card)
+                    .filter(|c| *c != card)
+                    .chain(iter::once(*spare_card))
                     .collect();
                 let (red_hand, blue_hand) = match turn {
                     Player::Red => (player_hand, blue_hand.clone()),
@@ -74,7 +59,7 @@ impl Board {
                         red_pawns: red_pawns.clone(),
                         red_hand,
                         spare_card: card,
-                        turn: next_turn,
+                        turn: turn.invert(),
                     }
                 });
             }
@@ -208,6 +193,38 @@ impl Board {
         let Point { x, y } = self.blue_king;
         grid[y as usize][x as usize] = GameSquare::BlueKing;
         return grid;
+    }
+    pub fn can_move(&self) -> bool {
+        let player_hand = match self.turn {
+            Player::Red => &self.red_hand,
+            Player::Blue => &self.blue_hand,
+        };
+        let player_pieces: Vec<&Point> = match self.turn {
+            Player::Red => self.red_pawns
+                .iter()
+                .chain(iter::once(&self.red_king))
+                .collect(),
+            Player::Blue => self.blue_pawns
+                .iter()
+                .chain(iter::once(&self.blue_king))
+                .collect(),
+        };
+        for src in player_pieces.iter() {
+            for card in player_hand {
+                for raw_delta in card.moves() {
+                    let delta = match self.turn {
+                        Player::Red => raw_delta,
+                        Player::Blue => -raw_delta,
+                    };
+                    let dst = delta + **src;
+                    if !dst.out_of_bounds() && !player_pieces.contains(&&dst) {
+                        log::info!("Valid card found: {:?} for piece at {:?}", card, src);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
 

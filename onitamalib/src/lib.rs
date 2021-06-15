@@ -25,6 +25,12 @@ impl Game {
         let state: GameView = GameView::from(&self.state);
         JsValue::from_serde(&state).unwrap()
     }
+    #[wasm_bindgen(js_name = getInvertedState)]
+    pub fn get_inverted_state(&self) -> JsValue {
+        let state: GameView = GameView::from(&self.state);
+        let state = state.invert();
+        JsValue::from_serde(&state).unwrap()
+    }
     fn play_move_inner(&mut self, game_move: &JsValue) -> Result<GameView, GameError> {
         let game_move: Move = match game_move.into_serde() {
             Ok(game_move) => game_move,

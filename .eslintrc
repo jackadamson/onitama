@@ -4,7 +4,8 @@
   "parser": "babel-eslint",
   "rules": {
     "prettier/prettier": ["warn"],
-    "no-undef": "warn"
+    "no-undef": "warn",
+    "no-unused-vars": "warn"
   },
   "env": {
     "browser": true

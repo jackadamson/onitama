@@ -1,7 +1,7 @@
 /* eslint-disable */
 const path = require('path');
 const { override } = require('customize-cra');
-const enableEslintIgnore = require('customize-cra-eslint-ignore');
+// const enableEslintIgnore = require('customize-cra-eslint-ignore');
 
 const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin');
 
@@ -31,5 +31,5 @@ module.exports = override(
 
     return config;
   },
-  enableEslintIgnore(),
+  // enableEslintIgnore(),
 );

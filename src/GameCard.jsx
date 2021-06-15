@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, makeStyles, Paper, Typography } from '@material-ui/core';
 import clsx from 'clsx';
+import * as R from 'ramda';
 
 const useStyles = makeStyles((theme) => ({
-  card: ({ selected, enabled, spare }) => ({
+  card: ({ enabled, spare }) => ({
     display: 'flex',
     flexDirection: 'column',
     flexBasis: spare ? null : '50%',
@@ -16,8 +17,10 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: enabled ? theme.palette.background.paper : '#1a1d21',
     borderStyle: 'solid',
     borderWidth: '1px',
-    borderColor: enabled && selected ? theme.palette.primary.main : 'rgba(0, 0, 0, 0)',
   }),
+  selected: {
+    borderColor: theme.palette.primary.main,
+  },
   spare: {
     flexBasis: null,
     width: '156px',
@@ -30,15 +33,25 @@ const useStyles = makeStyles((theme) => ({
     borderWidth: '1px',
     borderColor: theme.palette.grey['600'],
   },
+  noMoves: {
+    borderColor: theme.palette.error.main,
+  },
+  hasMoves: {
+    borderColor: theme.palette.grey['600'],
+  },
   origin: {
     backgroundColor: theme.palette.primary.light,
   },
   accessible: {
     backgroundColor: theme.palette.secondary.light,
   },
+  error: {
+    color: theme.palette.error.main,
+  },
 }));
 
-const Moves = ({ moves }) => {
+const WrappedMoves = ({ moves }) => {
+  console.log({ moves });
   const classes = useStyles({});
   const moveSet = new Set(moves.map(({ x, y }) => `${x},${y}`));
   const indexes = [-2, -1, 0, 1, 2];
@@ -64,7 +77,7 @@ const Moves = ({ moves }) => {
     </Box>
   );
 };
-Moves.propTypes = {
+WrappedMoves.propTypes = {
   moves: PropTypes.arrayOf(
     PropTypes.shape({
       x: PropTypes.number.isRequired,
@@ -72,23 +85,42 @@ Moves.propTypes = {
     }),
   ).isRequired,
 };
-const GameCard = ({ name, setCard, selected, enabled, moves, spare }) => {
-  const classes = useStyles({ selected, enabled, spare });
+const Moves = React.memo(WrappedMoves, R.equals);
+
+const GameCard = ({ name, setCard, selected, enabled, moves, spare, canMove, discard }) => {
+  const classes = useStyles({ enabled, spare });
   const handler = () => {
-    console.log({ enabled, name, moves });
-    if (enabled) {
+    if (enabled && !canMove) {
+      discard(name);
+    } else if (enabled) {
       setCard({ card: name, moves });
     }
   };
   return (
-    <Paper className={clsx(classes.card, spare && classes.spare)} onClick={handler}>
+    <Paper
+      className={clsx({
+        [classes.card]: true,
+        [classes.spare]: spare,
+        [classes.noMoves]: enabled && !canMove,
+        [classes.hasMoves]: enabled && canMove && !selected,
+        [classes.selected]: selected,
+      })}
+      onClick={handler}
+    >
       <Typography variant="subtitle1">{name}</Typography>
       <Moves moves={moves} />
+      {!canMove && enabled && (
+        <Typography className={classes.error} variant="caption">
+          Discard
+        </Typography>
+      )}
     </Paper>
   );
 };
 GameCard.defaultProps = {
   spare: false,
+  canMove: true,
+  discard: () => {},
 };
 GameCard.propTypes = {
   selected: PropTypes.bool.isRequired,
@@ -102,6 +134,8 @@ GameCard.propTypes = {
     }),
   ).isRequired,
   spare: PropTypes.bool,
+  canMove: PropTypes.bool,
+  discard: PropTypes.func,
 };
 
 export default GameCard;

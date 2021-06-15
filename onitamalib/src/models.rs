@@ -1,4 +1,4 @@
-use std::ops::{Add,Sub,Neg};
+use std::ops::{Add, Sub, Neg};
 use std::fmt;
 use enum_iterator::IntoEnumIterator;
 use serde::{Serialize, Deserialize};
@@ -8,9 +8,19 @@ pub enum Player {
     Red,
     Blue,
 }
+
 impl fmt::Display for Player {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl Player {
+    pub(crate) fn invert(&self) -> Player {
+        match self {
+            Player::Red => Player::Blue,
+            Player::Blue => Player::Red,
+        }
     }
 }
 
@@ -53,8 +63,14 @@ impl Neg for Point {
 }
 
 impl Point {
-    pub(crate) fn out_of_bounds(&self) -> bool {
+    pub fn out_of_bounds(&self) -> bool {
         self.x < 0 || self.x > 4 || self.y < 0 || self.y > 4
+    }
+    pub fn invert(&self) -> Point {
+        Point {
+            x: 4 - self.x,
+            y: 4 - self.y,
+        }
     }
 }
 
@@ -77,11 +93,13 @@ pub enum Card {
     Eel,
     Cobra,
 }
+
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Board {
     pub blue_king: Point,
@@ -102,8 +120,16 @@ pub enum Move {
         src: Point,
         dst: Point,
     },
-    Null {
+    Discard {
         card: Card,
+    },
+}
+impl Move {
+    pub fn invert(&self) -> Move {
+        match self {
+            Move::Move { card, src, dst } => Move::Move { card: *card, src: src.invert(), dst: dst.invert() },
+            Move::Discard { card } => Move::Discard { card: *card },
+        }
     }
 }
 
@@ -127,6 +153,19 @@ pub enum GameSquare {
     Empty,
 }
 
+impl GameSquare {
+    // Invert colors
+    pub fn invert(&self) -> GameSquare {
+        match self {
+            GameSquare::RedKing => GameSquare::BlueKing,
+            GameSquare::RedPawn => GameSquare::BluePawn,
+            GameSquare::BlueKing => GameSquare::RedKing,
+            GameSquare::BluePawn => GameSquare::RedPawn,
+            GameSquare::Empty => GameSquare::Empty,
+        }
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "status")]
 pub enum GameView {
@@ -138,6 +177,8 @@ pub enum GameView {
         blue_cards: Vec<CardDescription>,
         spare: CardDescription,
         turn: Player,
+        #[serde(rename = "canMove")]
+        can_move: bool,
     },
     Finished {
         winner: Player,
@@ -175,8 +216,33 @@ impl From<&GameState> for GameView {
                 blue_cards: board.blue_hand.iter().map(to_card).collect(),
                 spare: to_card(&board.spare_card),
                 turn: board.turn,
+                can_move: board.can_move(),
             },
             GameState::Finished { winner } => Self::Finished { winner: *winner },
+        }
+    }
+}
+
+impl GameView {
+    pub fn invert(&self) -> GameView {
+        match self {
+            GameView::Playing { grid, red_cards, blue_cards, spare, turn, can_move } => {
+                let mut new_grid = [[GameSquare::Empty; 5]; 5];
+                for y in 0..5 {
+                    for x in 0..5 {
+                        new_grid[y][x] = grid[4-y][4-x].invert();
+                    }
+                }
+                GameView::Playing {
+                    grid: new_grid,
+                    red_cards: blue_cards.clone(),
+                    blue_cards: red_cards.clone(),
+                    spare: spare.clone(),
+                    turn: turn.invert(),
+                    can_move: *can_move,
+                }
+            }
+            GameView::Finished { winner } => GameView::Finished { winner: winner.invert() }
         }
     }
 }
