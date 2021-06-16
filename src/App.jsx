@@ -41,9 +41,15 @@ const App = () => {
   const discard = useCallback(
     (discardCard) => {
       const action = { card: discardCard, type: 'Discard' };
-      playMove(action);
+      const error = playMove(action);
+      if (error) {
+        enqueueSnackbar(error, { variant: 'error' });
+      } else {
+        setCard(null);
+        setSrc(null);
+      }
     },
-    [playMove],
+    [playMove, enqueueSnackbar],
   );
   if (!state) {
     return <Loading />;
