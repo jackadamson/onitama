@@ -23,9 +23,11 @@ const GameBoard = ({
   reset,
 }) => (
   <Box height="100vh" display="flex">
-    <Box position="fixed" x={0} y={0}>
-      <Button onClick={reset}>Reset</Button>
-    </Box>
+    {reset && (
+      <Box position="fixed" x={0} y={0}>
+        <Button onClick={reset}>Reset</Button>
+      </Box>
+    )}
     <GameOver reset={reset} winner={winner} />
     <Box
       display="flex"
@@ -119,13 +121,14 @@ GameBoard.defaultProps = {
   card: null,
   src: null,
   winner: null,
+  reset: null,
 };
 GameBoard.propTypes = {
   src: PointPropType,
   setSrc: PropTypes.func.isRequired,
   grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
   winner: PropTypes.oneOf(['Red', 'Blue', null]),
-  reset: PropTypes.func.isRequired,
+  reset: PropTypes.func,
   turn: PropTypes.oneOf(['Red', 'Blue']).isRequired,
   spare: CardPropType.isRequired,
   blueCards: PropTypes.arrayOf(CardPropType).isRequired,
