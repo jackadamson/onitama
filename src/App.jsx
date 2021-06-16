@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useSnackbar } from 'notistack';
 import useOnitama from './useOnitama';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
@@ -17,6 +18,7 @@ const getMoves = (src, card, turn) => {
 };
 
 const App = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const { state, playMove, reset } = useOnitama();
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
@@ -26,11 +28,15 @@ const App = () => {
         return;
       }
       const action = { card: card.card, src, dst, type: 'Move' };
-      playMove(action);
-      setCard(null);
-      setSrc(null);
+      const error = playMove(action);
+      if (error) {
+        enqueueSnackbar(error, { variant: 'error' });
+      } else {
+        setCard(null);
+        setSrc(null);
+      }
     },
-    [playMove, src, card],
+    [playMove, src, card, enqueueSnackbar],
   );
   const discard = useCallback(
     (discardCard) => {

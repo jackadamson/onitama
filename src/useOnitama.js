@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useSnackbar } from 'notistack';
 import { Game } from './onitamalib';
 
 const useOnitama = () => {
   const [{ playMove }, setPlayMove] = useState({
     playMove: () => {},
   });
-  const { enqueueSnackbar } = useSnackbar();
   const [iteration, setIteration] = useState(0);
   const [state, setState] = useState(null);
   useEffect(() => {
@@ -19,8 +17,7 @@ const useOnitama = () => {
           setState(result);
           break;
         case 'Error':
-          enqueueSnackbar(result.message, { variant: 'error' });
-          break;
+          return result.message;
         case 'Finished':
           setState((current) => ({ ...current, finished: true, winner: result.winner }));
           break;
@@ -28,9 +25,10 @@ const useOnitama = () => {
           console.log(`Unhandled Status: ${result.status}`);
           break;
       }
+      return null;
     };
     setPlayMove({ playMove: newPlayMove });
-  }, [enqueueSnackbar, iteration]);
+  }, [iteration]);
   const reset = () => setIteration((idx) => idx + 1);
   return { state, playMove, reset };
 };
