@@ -30,7 +30,7 @@ const GameOver = ({ winner, reset }) => {
       >{`${winner} wins!`}</DialogTitle>
       <DialogActions>
         <Button variant="contained" onClick={reset} color="primary">
-          Reset
+          Play Again
         </Button>
       </DialogActions>
     </Dialog>

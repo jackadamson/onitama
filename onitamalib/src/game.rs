@@ -83,9 +83,7 @@ impl Board {
         };
         let moves = card.moves();
         if !moves.contains(&delta) {
-            let (x, y) = match delta { Point { x, y } => (x, y) };
-            let msg = format!("Move not valid for card: {},{}", x, y);
-            return Result::Err(msg);
+            return Result::Err("Move not valid for card".to_string());
         }
         if dst == *opponent_king {
             return Result::Ok(GameState::Finished { winner: *turn });
@@ -98,6 +96,7 @@ impl Board {
         if moving_king && dst == goal_square {
             return Result::Ok(GameState::Finished { winner: *turn });
         }
+
         let player_pawns = player_pawns.filter_map(
             |pawn| match *pawn == src {
                 true => None,

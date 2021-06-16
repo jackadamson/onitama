@@ -1,17 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, makeStyles, Paper, Typography } from '@material-ui/core';
+import { makeStyles, Paper, Typography } from '@material-ui/core';
 import clsx from 'clsx';
-import * as R from 'ramda';
+import GameMove from './GameMoves';
 
 const useStyles = makeStyles((theme) => ({
-  card: ({ enabled, spare }) => ({
+  card: ({ enabled, spare, inverted }) => ({
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: inverted ? 'column-reverse' : 'column',
     flexBasis: spare ? null : '50%',
     maxWidth: spare ? '100%' : '50%',
+    height: '142px',
     alignItems: 'center',
-    padding: theme.spacing(1, 0, 3, 0),
+    padding: theme.spacing(1, 0),
     cursor: enabled ? 'pointer' : 'default',
     color: enabled ? theme.palette.common.white : theme.palette.action.disabled,
     backgroundColor: enabled ? theme.palette.background.paper : '#1a1d21',
@@ -26,69 +27,29 @@ const useStyles = makeStyles((theme) => ({
     width: '156px',
     height: '142px',
   },
-  moveCell: {
-    width: '16px',
-    height: '16px',
-    borderStyle: 'solid',
-    borderWidth: '1px',
-    borderColor: theme.palette.grey['600'],
-  },
   noMoves: {
     borderColor: theme.palette.error.main,
   },
   hasMoves: {
     borderColor: theme.palette.grey['600'],
   },
-  origin: {
-    backgroundColor: theme.palette.primary.light,
-  },
-  accessible: {
-    backgroundColor: theme.palette.secondary.light,
-  },
   error: {
     color: theme.palette.error.main,
   },
 }));
 
-const WrappedMoves = ({ moves }) => {
-  console.log({ moves });
-  const classes = useStyles({});
-  const moveSet = new Set(moves.map(({ x, y }) => `${x},${y}`));
-  const indexes = [-2, -1, 0, 1, 2];
-  return (
-    <Box display="flex" flexDirection="column">
-      {indexes.map((y) => (
-        <Box display="flex" flexDirection="row" key={y}>
-          {indexes.map((x) => {
-            const keyed = `${x},${y}`;
-            return (
-              <Box
-                key={keyed}
-                className={clsx({
-                  [classes.moveCell]: true,
-                  [classes.origin]: x === 0 && y === 0,
-                  [classes.accessible]: moveSet.has(keyed),
-                })}
-              />
-            );
-          })}
-        </Box>
-      ))}
-    </Box>
-  );
-};
-WrappedMoves.propTypes = {
-  moves: PropTypes.arrayOf(
-    PropTypes.shape({
-      x: PropTypes.number.isRequired,
-      y: PropTypes.number.isRequired,
-    }),
-  ).isRequired,
-};
-const Moves = React.memo(WrappedMoves, R.equals);
-
-const GameCard = ({ name, setCard, selected, enabled, moves, spare, canMove, discard }) => {
-  const classes = useStyles({ enabled, spare });
+const GameCard = ({
+  name,
+  setCard,
+  selected,
+  enabled,
+  moves,
+  spare,
+  canMove,
+  discard,
+  inverted,
+}) => {
+  const classes = useStyles({ enabled, spare, inverted });
   const handler = () => {
     if (enabled && !canMove) {
       discard(name);
@@ -108,7 +69,7 @@ const GameCard = ({ name, setCard, selected, enabled, moves, spare, canMove, dis
       onClick={handler}
     >
       <Typography variant="subtitle1">{name}</Typography>
-      <Moves moves={moves} />
+      <GameMove moves={moves} inverted={inverted} />
       {!canMove && enabled && (
         <Typography className={classes.error} variant="caption">
           Discard
@@ -119,6 +80,7 @@ const GameCard = ({ name, setCard, selected, enabled, moves, spare, canMove, dis
 };
 GameCard.defaultProps = {
   spare: false,
+  inverted: false,
   canMove: true,
   discard: () => {},
 };
@@ -136,6 +98,7 @@ GameCard.propTypes = {
   spare: PropTypes.bool,
   canMove: PropTypes.bool,
   discard: PropTypes.func,
+  inverted: PropTypes.bool,
 };
 
 export default GameCard;

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Box, Paper } from '@material-ui/core';
 import GameSquare from './GameSquare';
 
-const GameGrid = ({ grid, isMove, src, setSrc, turn, move }) => (
+const GameGrid = ({ grid, isMoveValid, src, setSrc, turn, move }) => (
   <Paper component={Box} display="flex" flexDirection="column" my={2}>
     {grid.map((row, y) => (
       <Box display="flex" flexDirection="row" key={y}>
@@ -17,7 +17,7 @@ const GameGrid = ({ grid, isMove, src, setSrc, turn, move }) => (
             setSrc={setSrc}
             turn={turn}
             move={move}
-            isValid={isMove(x, y)}
+            isValid={isMoveValid(x, y)}
             key={`${x}-${y}`}
           />
         ))}
@@ -30,13 +30,13 @@ GameGrid.defaultProps = {
 };
 GameGrid.propTypes = {
   grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
-  isMove: PropTypes.func.isRequired,
+  isMoveValid: PropTypes.func.isRequired,
   src: PropTypes.shape({
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
   }),
   setSrc: PropTypes.func.isRequired,
-  turn: PropTypes.string.isRequired,
+  turn: PropTypes.oneOf(['Red', 'Blue']).isRequired,
   move: PropTypes.func.isRequired,
 };
 
