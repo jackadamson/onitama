@@ -1,18 +1,15 @@
-// use actix::{Actor, Addr, Context, StreamHandler};
-use actix::prelude::*;
-use actix_web::{error, App, HttpServer, web, HttpRequest, HttpResponse, Error, ResponseError};
-use actix_web_actors::ws;
-use uuid::Uuid;
-use crate::actors::{OnitamaServer,OnitamaWs};
 use std::str::FromStr;
 
-mod queues;
+use actix::prelude::*;
+use actix_web::{App, error, Error, HttpRequest, HttpResponse, HttpServer, web};
+use actix_web_actors::ws;
+use uuid::Uuid;
+
+use crate::actors::{OnitamaServer, OnitamaWs};
+
 mod actors;
 mod messages;
 
-// async fn join_room() -> impl Responder {
-//     "Hello world!"
-// }
 async fn join_room(
     req: HttpRequest,
     web::Path(key): web::Path<String>,

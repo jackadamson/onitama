@@ -1,9 +1,10 @@
+use std::collections::HashMap;
+
 use actix::prelude::*;
-use actix_web::{web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
 use uuid::Uuid;
-use std::collections::HashMap;
-use crate::messages::{CreateRoom, JoinRoom, JoinedRoom};
+
+use crate::messages::{CreateRoom, AddressedGameData, JoinedRoom, JoinRoom, GameData};
 
 /// Socket
 /// 
@@ -47,12 +48,29 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for OnitamaWs {
         msg: Result<ws::Message, ws::ProtocolError>,
         ctx: &mut Self::Context,
     ) {
-        match msg {
-            Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
-            Ok(ws::Message::Text(text)) => ctx.text(text),
-            Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
-            _ => (),
-        }
+        let data = match msg {
+            Ok(ws::Message::Ping(msg)) => {
+                ctx.pong(&msg);
+                return;
+            },
+            Ok(ws::Message::Binary(data)) => GameData::Binary(data),
+            Ok(ws::Message::Text(data)) => GameData::Text(data),
+            _ => {
+                dbg!("Received unexpected data-type");
+                return;
+            },
+        };
+        dbg!(&data);
+        let room = match &self.room {
+            Some(room) => room,
+            None => {
+                dbg!("Message sent too early");
+                ctx.text("Error: Message too early");
+                return;
+            },
+        };
+        let msg = AddressedGameData { sender: ctx.address(), data };
+        room.do_send(msg);
     }
 }
 
@@ -63,6 +81,17 @@ impl Handler<JoinedRoom> for OnitamaWs {
         self.room = Some(addr);
         self.room_key = Some(msg.room_key);
         ctx.text(msg.room_key.to_string());
+    }
+}
+
+impl Handler<AddressedGameData> for OnitamaWs {
+    type Result = ();
+    fn handle(&mut self, msg: AddressedGameData, ctx: &mut Self::Context) {
+        let AddressedGameData { data, .. } = msg;
+        match data {
+            GameData::Binary(data) => ctx.binary(data),
+            GameData::Text(data) => ctx.binary(data),
+        }
     }
 }
 
@@ -98,6 +127,18 @@ impl Handler<JoinRoom> for OnitamaRoom {
             room_key,
         };
         socket.do_send(msg);
+    }
+}
+
+impl Handler<AddressedGameData> for OnitamaRoom {
+    type Result = ();
+    fn handle(&mut self, msg: AddressedGameData, _ctx: &mut Self::Context) {
+        for addr in self.sockets.iter() {
+            if *addr != msg.sender {
+                addr.do_send(msg);
+                return;
+            }
+        }
     }
 }
 
@@ -149,9 +190,3 @@ impl Handler<CreateRoom> for OnitamaServer {
         room.do_send(msg);
     }
 }
-
-// pub async fn index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
-//     let resp = ws::start(OnitamaWs {}, &req, stream);
-//     println!("{:?}", resp);
-//     resp
-// }
