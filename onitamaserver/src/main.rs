@@ -1,49 +1,13 @@
-use std::str::FromStr;
-
 use actix::prelude::*;
-use actix_web::{App, error, Error, HttpRequest, HttpResponse, HttpServer, web};
-use actix_web_actors::ws;
-use uuid::Uuid;
+use actix_web::{App, HttpServer, web};
 
-use crate::actors::{OnitamaServer, OnitamaWs};
+use crate::actors::OnitamaServer;
+use crate::routes::{ServerData,join_room,create_room};
 
 mod actors;
 mod messages;
+mod routes;
 
-async fn join_room(
-    req: HttpRequest,
-    web::Path(key): web::Path<String>,
-    stream: web::Payload,
-    data: web::Data<ServerData>,
-) -> Result<HttpResponse, Error> {
-    let server: Addr<OnitamaServer> = data.server_addr.clone();
-    let key = match Uuid::from_str(&key) {
-        Ok(key) => key,
-        Err(_) => {
-            return Err(error::ErrorBadRequest("Invalid UUID"));
-        }
-    };
-    let actor = OnitamaWs::new(server, Some(key));
-    let resp = ws::start(actor, &req, stream);
-    println!("{:?}", resp);
-    resp
-}
-
-async fn create_room(
-    req: HttpRequest,
-    stream: web::Payload,
-    data: web::Data<ServerData>,
-) -> Result<HttpResponse, Error> {
-    let server: Addr<OnitamaServer> = data.server_addr.clone();
-    let actor = OnitamaWs::new(server, None);
-    let resp = ws::start(actor, &req, stream);
-    println!("{:?}", resp);
-    resp
-}
-
-struct ServerData {
-    pub server_addr: Addr<OnitamaServer>,
-}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
