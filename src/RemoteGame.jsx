@@ -1,8 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
+import { useParams } from 'react-router';
 import useOnitama from './useOnitama';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
+import useSocket from './useSocket';
 
 const getMoves = (src, card, turn) => {
   if (!src || !card) {
@@ -17,9 +19,12 @@ const getMoves = (src, card, turn) => {
   return (x, y) => dstSet.has(`${x},${y}`);
 };
 
-const App = () => {
+const RemoteGame = () => {
+  const { roomId = null } = useParams();
+  console.log({ roomId });
   const { enqueueSnackbar } = useSnackbar();
-  const { state, playMove, reset } = useOnitama();
+  const { state, playMove, reset, importState, exportState } = useOnitama();
+  const { playLocalMove, room } = useSocket(roomId, playMove, importState, exportState);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
   const move = useCallback(
@@ -27,8 +32,12 @@ const App = () => {
       if (!card || !src) {
         return;
       }
+      if (!playLocalMove) {
+        enqueueSnackbar('Game loading, try again', { variant: 'warning' });
+        return;
+      }
       const action = { card: card.card, src, dst, type: 'Move' };
-      const error = playMove(action);
+      const error = playLocalMove(action);
       if (error) {
         enqueueSnackbar(error, { variant: 'error' });
       } else {
@@ -36,12 +45,16 @@ const App = () => {
         setSrc(null);
       }
     },
-    [playMove, src, card, enqueueSnackbar],
+    [playLocalMove, src, card, enqueueSnackbar],
   );
   const discard = useCallback(
     (discardCard) => {
+      if (!playLocalMove) {
+        enqueueSnackbar('Game loading, try again', { variant: 'warning' });
+        return;
+      }
       const action = { card: discardCard, type: 'Discard' };
-      const error = playMove(action);
+      const error = playLocalMove(action);
       if (error) {
         enqueueSnackbar(error, { variant: 'error' });
       } else {
@@ -49,7 +62,7 @@ const App = () => {
         setSrc(null);
       }
     },
-    [playMove, enqueueSnackbar],
+    [playLocalMove, enqueueSnackbar],
   );
   if (!state) {
     return <Loading />;
@@ -77,4 +90,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default RemoteGame;

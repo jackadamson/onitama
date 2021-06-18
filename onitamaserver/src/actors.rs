@@ -90,7 +90,7 @@ impl Handler<AddressedGameData> for OnitamaWs {
         let AddressedGameData { data, .. } = msg;
         match data {
             GameData::Binary(data) => ctx.binary(data),
-            GameData::Text(data) => ctx.binary(data),
+            GameData::Text(data) => ctx.text(data),
         }
     }
 }

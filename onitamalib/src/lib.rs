@@ -72,6 +72,35 @@ impl Game {
             },
         }
     }
+    fn import_inner(&mut self, state: &JsValue) -> Result<GameView, GameError> {
+        let state: GameState = match state.into_serde() {
+            Ok(state) => state,
+            Err(err) => {
+                let err = GameError::Error { message: err.to_string() };
+                return Err(err);
+            },
+        };
+        self.state = state;
+        let view = GameView::from(&self.state);
+        Ok(view)
+    }
+    #[wasm_bindgen(js_name = importState)]
+    pub fn import(&mut self, state: &JsValue) -> JsValue {
+        match self.import_inner(state) {
+            Ok(game_view) => {
+                log::info!("Imported state: {:?}", &game_view);
+                JsValue::from_serde(&game_view).unwrap()
+            },
+            Err(err) => {
+                log::error!("Error in import: {:?}", &err);
+                JsValue::from_serde(&err).unwrap()
+            },
+        }
+    }
+    #[wasm_bindgen(js_name = exportState)]
+    pub fn export(&self, state: &JsValue) -> JsValue {
+        JsValue::from_serde(&self.state).unwrap()
+    }
 }
 
 #[wasm_bindgen(start)]

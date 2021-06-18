@@ -2,15 +2,13 @@ import { useEffect, useState } from 'react';
 import { Game } from './onitamalib';
 
 const useOnitama = () => {
-  const [{ playMove }, setPlayMove] = useState({
-    playMove: () => {},
-  });
+  const [handlers, setHandlers] = useState({});
   const [iteration, setIteration] = useState(0);
   const [state, setState] = useState(null);
   useEffect(() => {
     const game = new Game();
     setState(game.getState());
-    const newPlayMove = (move) => {
+    const playMove = (move) => {
       const result = game.move(move);
       switch (result.status) {
         case 'Playing':
@@ -27,10 +25,12 @@ const useOnitama = () => {
       }
       return null;
     };
-    setPlayMove({ playMove: newPlayMove });
+    const importState = (newState) => setState(game.importState(newState));
+    const exportState = () => game.exportState();
+    setHandlers({ playMove, importState, exportState });
   }, [iteration]);
   const reset = () => setIteration((idx) => idx + 1);
-  return { state, playMove, reset };
+  return { state, reset, ...handlers };
 };
 
 export default useOnitama;
