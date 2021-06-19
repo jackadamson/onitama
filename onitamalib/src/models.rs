@@ -124,14 +124,6 @@ pub enum Move {
         card: Card,
     },
 }
-impl Move {
-    pub fn invert(&self) -> Move {
-        match self {
-            Move::Move { card, src, dst } => Move::Move { card: *card, src: src.invert(), dst: dst.invert() },
-            Move::Discard { card } => Move::Discard { card: *card },
-        }
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "status")]
@@ -151,19 +143,6 @@ pub enum GameSquare {
     BlueKing,
     BluePawn,
     Empty,
-}
-
-impl GameSquare {
-    // Invert colors
-    pub fn invert(&self) -> GameSquare {
-        match self {
-            GameSquare::RedKing => GameSquare::BlueKing,
-            GameSquare::RedPawn => GameSquare::BluePawn,
-            GameSquare::BlueKing => GameSquare::RedKing,
-            GameSquare::BluePawn => GameSquare::RedPawn,
-            GameSquare::Empty => GameSquare::Empty,
-        }
-    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -219,30 +198,6 @@ impl From<&GameState> for GameView {
                 can_move: board.can_move(),
             },
             GameState::Finished { winner } => Self::Finished { winner: *winner },
-        }
-    }
-}
-
-impl GameView {
-    pub fn invert(&self) -> GameView {
-        match self {
-            GameView::Playing { grid, red_cards, blue_cards, spare, turn, can_move } => {
-                let mut new_grid = [[GameSquare::Empty; 5]; 5];
-                for y in 0..5 {
-                    for x in 0..5 {
-                        new_grid[y][x] = grid[4-y][4-x].invert();
-                    }
-                }
-                GameView::Playing {
-                    grid: new_grid,
-                    red_cards: blue_cards.clone(),
-                    blue_cards: red_cards.clone(),
-                    spare: spare.clone(),
-                    turn: turn.invert(),
-                    can_move: *can_move,
-                }
-            }
-            GameView::Finished { winner } => GameView::Finished { winner: winner.invert() }
         }
     }
 }

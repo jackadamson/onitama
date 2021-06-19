@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
-import useOnitama from './useOnitama';
+import useSingleplayer from './hooks/useSingleplayer';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
 
@@ -19,7 +19,7 @@ const getMoves = (src, card, turn) => {
 
 const LocalGame = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { state, playMove, reset } = useOnitama();
+  const { state, playMove, reset } = useSingleplayer();
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
   const move = useCallback(

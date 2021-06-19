@@ -1,11 +1,14 @@
 pub mod cards;
-pub mod game;
+pub mod board;
 pub mod models;
+pub mod singleplayer;
+mod game;
 
 extern crate wasm_bindgen;
 
 use wasm_bindgen::prelude::*;
 use crate::models::{GameState, GameView, Move, GameError};
+pub use singleplayer::*;
 
 #[wasm_bindgen]
 pub struct Game {
@@ -23,12 +26,6 @@ impl Game {
     #[wasm_bindgen(js_name = getState)]
     pub fn get_state(&self) -> JsValue {
         let state: GameView = GameView::from(&self.state);
-        JsValue::from_serde(&state).unwrap()
-    }
-    #[wasm_bindgen(js_name = getInvertedState)]
-    pub fn get_inverted_state(&self) -> JsValue {
-        let state: GameView = GameView::from(&self.state);
-        let state = state.invert();
         JsValue::from_serde(&state).unwrap()
     }
     fn play_move_inner(&mut self, game_move: &JsValue) -> Result<GameView, GameError> {
