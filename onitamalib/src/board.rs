@@ -1,7 +1,9 @@
 use core::iter;
-use rand::prelude::*;
+
 use enum_iterator::IntoEnumIterator;
-use crate::models::{Board, Card, GameState, Move, Player, Point, GameSquare};
+use rand::prelude::*;
+
+use crate::models::{Board, Card, GameSquare, GameState, Move, Player, Point};
 
 impl Board {
     pub fn make_move(self: &Board, game_move: Move) -> Result<GameState, String> {
@@ -36,9 +38,12 @@ impl Board {
         };
         let (card, src, dst) = match game_move {
             Move::Move { card, src, dst } => (card, src, dst),
+            Move::Forfeit => {
+                return Ok(GameState::Finished { winner: turn.invert(), board: self.clone() })
+            },
             Move::Discard { card } => {
                 if self.can_move() {
-                    return Result::Err(format!("Valid moves exist"));
+                    return Err(format!("Valid moves exist"));
                 }
                 let player_hand: Vec<Card> = player_hand
                     .iter()
@@ -65,16 +70,16 @@ impl Board {
             }
         };
         if !player_hand.contains(&card) {
-            return Result::Err("Card not in hand".to_string());
+            return Err("Card not in hand".to_string());
         }
         if !player_pieces.contains(&&src) {
-            return Result::Err("No piece at src".to_string());
+            return Err("No piece at src".to_string());
         }
         if player_pieces.contains(&&dst) {
-            return Result::Err("Destination occupied by your piece".to_string());
+            return Err("Destination occupied by your piece".to_string());
         }
         if dst.out_of_bounds() {
-            return Result::Err("Destination is out of bounds".to_string());
+            return Err("Destination is out of bounds".to_string());
         }
         let raw_delta = dst - src;
         let delta = match turn {
@@ -83,20 +88,13 @@ impl Board {
         };
         let moves = card.moves();
         if !moves.contains(&delta) {
-            return Result::Err("Move not valid for card".to_string());
-        }
-        if dst == *opponent_king {
-            return Result::Ok(GameState::Finished { winner: *turn });
+            return Err("Move not valid for card".to_string());
         }
         let goal_square = match turn {
             Player::Red => Point { x: 2, y: 0 },
             Player::Blue => Point { x: 2, y: 4 },
         };
         let moving_king = *player_king == src;
-        if moving_king && dst == goal_square {
-            return Result::Ok(GameState::Finished { winner: *turn });
-        }
-
         let player_pawns = player_pawns.filter_map(
             |pawn| match *pawn == src {
                 true => None,
@@ -129,32 +127,35 @@ impl Board {
             true => dst,
             false => *player_king,
         };
-        return match self.turn {
-            Player::Red => Ok(GameState::Playing {
-                board: Board {
-                    blue_king: *blue_king,
-                    blue_pawns: opponent_pawns,
-                    blue_hand: blue_hand.clone(),
-                    red_king: player_king,
-                    red_pawns: player_pawns,
-                    red_hand: player_hand,
-                    spare_card: card,
-                    turn: Player::Blue,
-                }
-            }),
-            Player::Blue => Ok(GameState::Playing {
-                board: Board {
-                    blue_king: player_king,
-                    blue_pawns: player_pawns,
-                    blue_hand: player_hand,
-                    red_king: *red_king,
-                    red_pawns: opponent_pawns,
-                    red_hand: red_hand.clone(),
-                    spare_card: card,
-                    turn: Player::Red,
-                }
-            }),
+        let board = match self.turn {
+            Player::Red => Board {
+                blue_king: *blue_king,
+                blue_pawns: opponent_pawns,
+                blue_hand: blue_hand.clone(),
+                red_king: player_king,
+                red_pawns: player_pawns,
+                red_hand: player_hand,
+                spare_card: card,
+                turn: Player::Blue,
+            },
+            Player::Blue => Board {
+                blue_king: player_king,
+                blue_pawns: player_pawns,
+                blue_hand: player_hand,
+                red_king: *red_king,
+                red_pawns: opponent_pawns,
+                red_hand: red_hand.clone(),
+                spare_card: card,
+                turn: Player::Red,
+            }
         };
+        if dst == *opponent_king {
+            return Ok(GameState::Finished { winner: *turn, board });
+        }
+        if moving_king && dst == goal_square {
+            return Ok(GameState::Finished { winner: *turn, board });
+        }
+        return Ok(GameState::Playing { board });
     }
     pub fn new() -> Board {
         let mut rng = thread_rng();
@@ -176,7 +177,7 @@ impl Board {
                 .collect(),
             red_hand: vec![cards.next().unwrap(), cards.next().unwrap()],
             spare_card: cards.next().unwrap(),
-            turn: Player::Red
+            turn: Player::Red,
         }
     }
     pub fn to_grid(&self) -> [[GameSquare; 5]; 5] {

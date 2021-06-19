@@ -55,22 +55,27 @@ impl Game {
 }
 
 impl Game {
-    pub fn try_move(&self, game_move: &JsValue) -> Result<GameState, String> {
-        let game_move: Move = match game_move.into_serde() {
-            Ok(game_move) => game_move,
-            Err(err) => {
-                return Err(err.to_string());
-            }
-        };
+    pub fn try_move(&mut self, game_move: Move) -> Result<(), String> {
         let board = match &self.state {
             GameState::Playing { board } => board,
             GameState::Finished { .. } => {
                 return Err("Game Already Finished".to_string());
             },
         };
-        board.make_move(game_move)
+        self.state = board.make_move(game_move)?;
+        self.send_current_view();
+        Ok(())
     }
     pub fn set_state(&mut self, state: GameState) {
         self.state = state;
+    }
+    pub fn get_state(&self) -> GameState {
+        return self.state.clone();
+    }
+    pub fn is_finished(&self) -> bool {
+        match self.state {
+            GameState::Playing { .. } => false,
+            GameState::Finished { .. } => true,
+        }
     }
 }

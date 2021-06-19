@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use crate::models::{GameState, GameView, Move};
+use crate::models::Move;
 use crate::game::Game;
 
 #[wasm_bindgen]
@@ -20,10 +20,15 @@ impl SingleplayerGame {
 impl SingleplayerGame {
     #[wasm_bindgen(js_name = move)]
     pub fn play_move(&mut self, game_move: &JsValue) {
+        let game_move: Move = match game_move.into_serde() {
+            Ok(game_move) => game_move,
+            Err(err) => {
+                self.game.send_error(err.to_string());
+                return;
+            }
+        };
         match self.game.try_move(game_move) {
-            Ok(state) => {
-                self.game.set_state(state);
-                self.game.send_current_view();
+            Ok(()) => {
                 log::info!("Successfully played move");
             },
             Err(err) => {

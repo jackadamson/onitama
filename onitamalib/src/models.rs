@@ -112,7 +112,7 @@ pub struct Board {
     pub turn: Player,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type")]
 pub enum Move {
     Move {
@@ -123,15 +123,17 @@ pub enum Move {
     Discard {
         card: Card,
     },
+    Forfeit,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "status")]
 pub enum GameState {
     Playing {
         board: Board,
     },
     Finished {
+        board: Board,
         winner: Player,
     },
 }
@@ -161,6 +163,15 @@ pub enum GameView {
     },
     Finished {
         winner: Player,
+        grid: [[GameSquare; 5]; 5],
+        #[serde(rename = "redCards")]
+        red_cards: Vec<CardDescription>,
+        #[serde(rename = "blueCards")]
+        blue_cards: Vec<CardDescription>,
+        spare: CardDescription,
+        turn: Player,
+        #[serde(rename = "canMove")]
+        can_move: bool,
     },
 }
 
@@ -197,7 +208,15 @@ impl From<&GameState> for GameView {
                 turn: board.turn,
                 can_move: board.can_move(),
             },
-            GameState::Finished { winner } => Self::Finished { winner: *winner },
+            GameState::Finished { winner, board } => Self::Finished {
+                winner: *winner,
+                grid: board.to_grid(),
+                red_cards: board.red_hand.iter().map(to_card).collect(),
+                blue_cards: board.blue_hand.iter().map(to_card).collect(),
+                spare: to_card(&board.spare_card),
+                turn: board.turn,
+                can_move: true,
+            },
         }
     }
 }

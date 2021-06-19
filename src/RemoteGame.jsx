@@ -1,10 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import { useParams } from 'react-router';
-import useOnitama from './useOnitama';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
-import useSocket from './useSocket';
+import useMultiplayer from './hooks/useMultiplayer';
 
 const getMoves = (src, card, turn) => {
   if (!src || !card) {
@@ -21,10 +20,9 @@ const getMoves = (src, card, turn) => {
 
 const RemoteGame = () => {
   const { roomId = null } = useParams();
-  console.log({ roomId });
   const { enqueueSnackbar } = useSnackbar();
-  const { state, playMove, reset, importState, exportState } = useOnitama();
-  const { playLocalMove, room } = useSocket(roomId, playMove, importState, exportState);
+  const { playMove, state, reset, room } = useMultiplayer(roomId);
+  console.log({ roomId, room });
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
   const move = useCallback(
@@ -32,12 +30,12 @@ const RemoteGame = () => {
       if (!card || !src) {
         return;
       }
-      if (!playLocalMove) {
+      if (!playMove) {
         enqueueSnackbar('Game loading, try again', { variant: 'warning' });
         return;
       }
       const action = { card: card.card, src, dst, type: 'Move' };
-      const error = playLocalMove(action);
+      const error = playMove(action);
       if (error) {
         enqueueSnackbar(error, { variant: 'error' });
       } else {
@@ -45,16 +43,16 @@ const RemoteGame = () => {
         setSrc(null);
       }
     },
-    [playLocalMove, src, card, enqueueSnackbar],
+    [playMove, src, card, enqueueSnackbar],
   );
   const discard = useCallback(
     (discardCard) => {
-      if (!playLocalMove) {
+      if (!playMove) {
         enqueueSnackbar('Game loading, try again', { variant: 'warning' });
         return;
       }
       const action = { card: discardCard, type: 'Discard' };
-      const error = playLocalMove(action);
+      const error = playMove(action);
       if (error) {
         enqueueSnackbar(error, { variant: 'error' });
       } else {
@@ -62,11 +60,12 @@ const RemoteGame = () => {
         setSrc(null);
       }
     },
-    [playLocalMove, enqueueSnackbar],
+    [playMove, enqueueSnackbar],
   );
   if (!state) {
     return <Loading />;
   }
+  console.log({ state });
   const { blueCards, redCards, spare, turn, grid, canMove, winner } = state;
   const isMoveValid = getMoves(src, card, turn);
   return (

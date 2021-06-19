@@ -2,6 +2,7 @@ pub mod cards;
 pub mod board;
 pub mod models;
 pub mod singleplayer;
+pub mod multiplayer;
 mod game;
 
 extern crate wasm_bindgen;
@@ -9,6 +10,7 @@ extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use crate::models::{GameState, GameView, Move, GameError};
 pub use singleplayer::*;
+pub use multiplayer::*;
 
 #[wasm_bindgen]
 pub struct Game {
