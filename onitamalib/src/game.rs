@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use crate::models::{GameState, GameView, Move};
+use crate::models::{GameState, GameView, Move, Player};
 
 pub struct Game {
     state: GameState,
@@ -71,6 +71,12 @@ impl Game {
     }
     pub fn get_state(&self) -> GameState {
         return self.state.clone();
+    }
+    pub fn get_turn(&self) -> Option<Player> {
+        match &self.state {
+            GameState::Playing { board } => Some(board.turn),
+            GameState::Finished { .. } => None
+        }
     }
     pub fn is_finished(&self) -> bool {
         match self.state {

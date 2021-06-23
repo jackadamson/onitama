@@ -75,6 +75,7 @@ const GameSquare = ({ tile, x, y, src, setSrc, turn, move, isValid }) => {
 };
 GameSquare.defaultProps = {
   src: null,
+  turn: null,
 };
 GameSquare.propTypes = {
   tile: PropTypes.oneOf(['Empty', 'BluePawn', 'BlueKing', 'RedPawn', 'RedKing']).isRequired,
@@ -85,7 +86,7 @@ GameSquare.propTypes = {
     y: PropTypes.number.isRequired,
   }),
   setSrc: PropTypes.func.isRequired,
-  turn: PropTypes.oneOf(['Red', 'Blue']).isRequired,
+  turn: PropTypes.oneOf(['Red', 'Blue', null]),
   move: PropTypes.func.isRequired,
   isValid: PropTypes.bool.isRequired,
 };

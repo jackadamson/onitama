@@ -122,6 +122,7 @@ GameBoard.defaultProps = {
   src: null,
   winner: null,
   reset: null,
+  turn: null,
 };
 GameBoard.propTypes = {
   src: PointPropType,
@@ -129,7 +130,7 @@ GameBoard.propTypes = {
   grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
   winner: PropTypes.oneOf(['Red', 'Blue', null]),
   reset: PropTypes.func,
-  turn: PropTypes.oneOf(['Red', 'Blue']).isRequired,
+  turn: PropTypes.oneOf(['Red', 'Blue', null]),
   spare: CardPropType.isRequired,
   blueCards: PropTypes.arrayOf(CardPropType).isRequired,
   redCards: PropTypes.arrayOf(CardPropType).isRequired,

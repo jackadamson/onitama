@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
 const GameOver = ({ winner, reset }) => {
   const classes = useStyles();
   return (
-    <Dialog open={Boolean(winner)} onClose={reset} classes={{ paper: classes.dialog }}>
+    <Dialog open={Boolean(winner)} classes={{ paper: classes.dialog }}>
       <DialogTitle
         className={clsx({
           [classes.red]: winner === 'Red',

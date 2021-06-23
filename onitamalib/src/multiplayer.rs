@@ -62,6 +62,10 @@ impl MultiplayerGame {
 impl MultiplayerGame {
     #[wasm_bindgen(js_name = move)]
     pub fn play_move(&mut self, game_move: &JsValue) {
+        if !self.is_player_turn() {
+            self.game.send_error("Not your turn".to_string());
+            return;
+        }
         let game_move: Move = match game_move.into_serde() {
             Ok(game_move) => game_move,
             Err(err) => {
@@ -84,6 +88,12 @@ impl MultiplayerGame {
         log::info!("Forgeiting");
         let game_move = Move::Forfeit;
         self.try_move(game_move).unwrap();
+    }
+    fn is_player_turn(&self) -> bool {
+        match self.game.get_turn() {
+            None => false,
+            Some(turn) => turn == self.player,
+        }
     }
 }
 
@@ -162,6 +172,11 @@ impl MultiplayerGame {
             },
             (ConnectionState::Running, GameMessage::Move { game_move }) => {
                 log::info!("Received move");
+                if self.is_player_turn() {
+                    log::error!("Opponent attempted to play during our turn");
+                    self.game.send_error("Opponent played out of turn".to_string());
+                    return;
+                }
                 match self.game.try_move(game_move) {
                     Ok(()) => {}
                     Err(err) => {

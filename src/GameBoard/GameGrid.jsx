@@ -27,6 +27,7 @@ const GameGrid = ({ grid, isMoveValid, src, setSrc, turn, move }) => (
 );
 GameGrid.defaultProps = {
   src: null,
+  turn: null,
 };
 GameGrid.propTypes = {
   grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
@@ -36,7 +37,8 @@ GameGrid.propTypes = {
     y: PropTypes.number.isRequired,
   }),
   setSrc: PropTypes.func.isRequired,
-  turn: PropTypes.oneOf(['Red', 'Blue']).isRequired,
+  // Null turn means opponents turn in multiplayer
+  turn: PropTypes.oneOf(['Red', 'Blue', null]),
   move: PropTypes.func.isRequired,
 };
 
