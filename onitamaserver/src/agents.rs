@@ -27,7 +27,7 @@ pub enum AgentException {
     AgentError,
 }
 
-const TIMEOUT: Duration = Duration::from_secs(1);
+const TIMEOUT: Duration = Duration::from_millis(50);
 
 impl Agent {
     fn play_move(&mut self, state: GameState) -> Result<GameMessage, AgentException> {

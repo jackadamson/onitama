@@ -103,14 +103,14 @@ impl fmt::Display for Card {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Board {
     pub blue_king: Point,
-    pub blue_pawns: Vec<Point>,
-    pub blue_hand: Vec<Card>,
+    pub blue_pawns: [Option<Point>; 4],
+    pub blue_hand: [Card; 2],
     pub red_king: Point,
-    pub red_pawns: Vec<Point>,
-    pub red_hand: Vec<Card>,
+    pub red_pawns: [Option<Point>; 4],
+    pub red_hand: [Card; 2],
     pub spare_card: Card,
     pub turn: Player,
 }
@@ -129,7 +129,7 @@ pub enum Move {
     Forfeit,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(tag = "status")]
 pub enum GameState {
     Playing {

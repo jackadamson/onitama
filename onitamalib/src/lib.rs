@@ -1,3 +1,4 @@
+#![feature(array_map)]
 extern crate console_error_panic_hook;
 extern crate wasm_bindgen;
 

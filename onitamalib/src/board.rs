@@ -1,5 +1,3 @@
-use core::iter;
-
 use enum_iterator::IntoEnumIterator;
 use rand::prelude::*;
 
@@ -18,47 +16,33 @@ impl Board {
             Player::Red => (red_king, blue_king),
             Player::Blue => (blue_king, red_king),
         };
-        let (player_pawns, opponent_pawns) = match turn {
-            Player::Red => (red_pawns.iter(), blue_pawns.iter()),
-            Player::Blue => (blue_pawns.iter(), red_pawns.iter()),
-        };
-        let player_pieces: Vec<&Point> = match turn {
-            Player::Red => red_pawns
-                .iter()
-                .chain(iter::once(red_king))
-                .collect(),
-            Player::Blue => blue_pawns
-                .iter()
-                .chain(iter::once(blue_king))
-                .collect(),
-        };
+        let player_pieces = self.player_pieces();
         let (card, src, dst) = match game_move {
             Move::Move { card, src, dst } => (card, src, dst),
             Move::Forfeit => {
-                return Ok(GameState::Finished { winner: turn.invert(), board: self.clone() })
+                return Ok(GameState::Finished { winner: turn.invert(), board: *self })
             },
             Move::Discard { card } => {
                 if self.can_move() {
                     return Err(format!("Valid moves exist"));
                 }
-                let player_hand: Vec<Card> = self
+                let player_hand: [Card; 2] = self
                     .player_hand()
-                    .iter()
-                    .map(|c| *c)
-                    .filter(|c| *c != card)
-                    .chain(iter::once(*spare_card))
-                    .collect();
+                    .map(|c| match c == card {
+                        true => *spare_card,
+                        false => c,
+                    });
                 let (red_hand, blue_hand) = match turn {
-                    Player::Red => (player_hand, blue_hand.clone()),
-                    Player::Blue => (red_hand.clone(), player_hand),
+                    Player::Red => (player_hand, *blue_hand),
+                    Player::Blue => (*red_hand, player_hand),
                 };
                 return Ok(GameState::Playing {
                     board: Board {
                         blue_king: *blue_king,
-                        blue_pawns: blue_pawns.clone(),
+                        blue_pawns: *blue_pawns,
                         blue_hand,
                         red_king: *red_king,
-                        red_pawns: red_pawns.clone(),
+                        red_pawns: *red_pawns,
                         red_hand,
                         spare_card: card,
                         turn: turn.invert(),
@@ -69,10 +53,10 @@ impl Board {
         if !self.player_hand().contains(&card) {
             return Err("Card not in hand".to_string());
         }
-        if !player_pieces.contains(&&src) {
+        if !player_pieces.contains(&Some(src)) {
             return Err("No piece at src".to_string());
         }
-        if player_pieces.contains(&&dst) {
+        if player_pieces.contains(&Some(dst)) {
             return Err("Destination occupied by your piece".to_string());
         }
         if dst.out_of_bounds() {
@@ -93,28 +77,25 @@ impl Board {
             Player::Blue => Point { x: 2, y: 4 },
         };
         let moving_king = *player_king == src;
-        let player_pawns = player_pawns.filter_map(
-            |pawn| match *pawn == src {
-                true => None,
-                false => Some(pawn.clone()),
+        let player_pawns = self.player_pawns().map(
+            |pawn| match pawn {
+                None => None,
+                Some(pawn) if pawn == src => Some(dst),
+                Some(pawn) => Some(pawn),
             }
-        ).into_iter();
-        let player_pawns: Vec<Point> = match moving_king {
-            true => player_pawns.collect(),
-            false => player_pawns.chain(iter::once(dst)).collect(),
-        };
-        let opponent_pawns: Vec<Point> = opponent_pawns.filter_map(
-            |pawn| match *pawn == dst {
-                true => None,
-                false => Some(*pawn),
+        );
+        let opponent_pawns = self.opponent_pawns().map(
+            |pawn| match pawn {
+                None => None,
+                Some(pawn) if pawn == dst => None,
+                Some(pawn) => Some(pawn),
             }
-        ).collect();
-        let player_hand: Vec<Card> = self.player_hand()
-            .iter()
-            .map(|c| *c)
-            .filter(|c| *c != card)
-            .chain(iter::once(*spare_card))
-            .collect();
+        );
+        let player_hand: [Card; 2] = self.player_hand()
+            .map(|c| match c == card {
+                true => *spare_card,
+                false => c,
+            });
         let player_king = match moving_king {
             true => dst,
             false => *player_king,
@@ -123,7 +104,7 @@ impl Board {
             Player::Red => Board {
                 blue_king: *blue_king,
                 blue_pawns: opponent_pawns,
-                blue_hand: blue_hand.clone(),
+                blue_hand: *blue_hand,
                 red_king: player_king,
                 red_pawns: player_pawns,
                 red_hand: player_hand,
@@ -136,7 +117,7 @@ impl Board {
                 blue_hand: player_hand,
                 red_king: *red_king,
                 red_pawns: opponent_pawns,
-                red_hand: red_hand.clone(),
+                red_hand: *red_hand,
                 spare_card: card,
                 turn: Player::Red,
             }
@@ -154,31 +135,28 @@ impl Board {
         let mut cards: Vec<Card> = Card::into_enum_iter().collect();
         cards.shuffle(&mut rng);
         let mut cards = cards.into_iter();
-        let pawn_xs: Vec<i8> = vec![0, 1, 3, 4];
+        let pawn_xs: [i8; 4] = [0, 1, 3, 4];
         Board {
             blue_king: Point { x: 2, y: 0 },
             blue_pawns: pawn_xs
-                .iter()
-                .map(|x| Point { x: *x, y: 0 })
-                .collect(),
-            blue_hand: vec![cards.next().unwrap(), cards.next().unwrap()],
+                .map(|x| Some(Point { x, y: 0 })),
+
+            blue_hand: [cards.next().unwrap(), cards.next().unwrap()],
             red_king: Point { x: 2, y: 4 },
             red_pawns: pawn_xs
-                .iter()
-                .map(|x| Point { x: *x, y: 4 })
-                .collect(),
-            red_hand: vec![cards.next().unwrap(), cards.next().unwrap()],
+                .map(|x| Some(Point { x, y: 4 })),
+            red_hand: [cards.next().unwrap(), cards.next().unwrap()],
             spare_card: cards.next().unwrap(),
             turn: Player::Red,
         }
     }
     pub fn to_grid(&self) -> [[GameSquare; 5]; 5] {
         let mut grid = [[GameSquare::Empty; 5]; 5];
-        for Point { x, y } in self.blue_pawns.iter() {
-            grid[*y as usize][*x as usize] = GameSquare::BluePawn;
+        for Point { x, y } in self.blue_pawns.iter().filter_map(|p| *p ) {
+            grid[y as usize][x as usize] = GameSquare::BluePawn;
         }
-        for Point { x, y } in self.red_pawns.iter() {
-            grid[*y as usize][*x as usize] = GameSquare::RedPawn;
+        for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p ) {
+            grid[y as usize][x as usize] = GameSquare::RedPawn;
         }
         let Point { x, y } = self.red_king;
         grid[y as usize][x as usize] = GameSquare::RedKing;
@@ -188,15 +166,15 @@ impl Board {
     }
     pub fn can_move(&self) -> bool {
         let player_pieces = self.player_pieces();
-        for src in player_pieces.iter() {
+        for src in player_pieces.iter().filter_map(|src| *src ) {
             for card in self.player_hand() {
                 for raw_delta in card.moves() {
                     let delta = match self.turn {
                         Player::Red => raw_delta,
                         Player::Blue => -raw_delta,
                     };
-                    let dst = delta + *src;
-                    if dst.in_bounds() && !player_pieces.contains(&&dst) {
+                    let dst = delta + src;
+                    if dst.in_bounds() && !player_pieces.contains(&Some(dst)) {
                         return true;
                     }
                 }
@@ -215,13 +193,13 @@ impl GameState {
 }
 
 impl Board {
-    pub fn player_hand(&self) -> &Vec<Card> {
+    pub fn player_hand(&self) -> &[Card; 2] {
         match self.turn {
             Player::Red => &self.red_hand,
             Player::Blue => &self.blue_hand,
         }
     }
-    pub fn opponent_hand(&self) -> &Vec<Card> {
+    pub fn opponent_hand(&self) -> &[Card; 2] {
         match self.turn.invert() {
             Player::Red => &self.red_hand,
             Player::Blue => &self.blue_hand,
@@ -231,13 +209,13 @@ impl Board {
 
 
 impl Board {
-    pub fn player_pawns(&self) -> &Vec<Point> {
+    pub fn player_pawns(&self) -> &[Option<Point>; 4] {
         match self.turn {
             Player::Red => &self.red_pawns,
             Player::Blue => &self.blue_pawns,
         }
     }
-    pub fn opponent_pawns(&self) -> &Vec<Point> {
+    pub fn opponent_pawns(&self) -> &[Option<Point>; 4] {
         match self.turn.invert() {
             Player::Red => &self.red_pawns,
             Player::Blue => &self.blue_pawns,
@@ -261,19 +239,32 @@ impl Board {
 }
 
 impl Board {
-    pub fn player_pieces(&self) -> Vec<Point> {
-        self.player_pawns()
-            .iter()
-            .chain(iter::once(self.player_king()))
-            .map(|piece| *piece)
-            .collect()
+    pub fn player_pieces(&self) -> [Option<Point>; 5] {
+        let mut pieces: [Option<Point>; 5] = [None; 5];
+        pieces[..4].copy_from_slice(&*self.player_pawns());
+        pieces[4] = Some(*self.player_king());
+        return pieces;
     }
-    pub fn opponent_pieces(&self) -> Vec<Point> {
-        self.opponent_pawns()
-            .iter()
-            .chain(iter::once(self.opponent_king()))
-            .map(|piece| *piece)
-            .collect()
+    pub fn opponent_pieces(&self) -> [Option<Point>; 5] {
+        let mut pieces: [Option<Point>; 5] = [None; 5];
+        pieces[..4].copy_from_slice(&*self.opponent_pawns());
+        pieces[4] = Some(*self.opponent_king());
+        return pieces;
+    }
+}
+
+impl Board {
+    pub fn red_pieces(&self) -> [Option<Point>; 5] {
+        let mut pieces: [Option<Point>; 5] = [None; 5];
+        pieces[..4].copy_from_slice(self.red_pawns.as_ref());
+        pieces[4] = Some(self.red_king);
+        return pieces;
+    }
+    pub fn blue_pieces(&self) -> [Option<Point>; 5] {
+        let mut pieces: [Option<Point>; 5] = [None; 5];
+        pieces[..4].copy_from_slice(self.blue_pawns.as_ref());
+        pieces[4] = Some(self.blue_king);
+        return pieces;
     }
 }
 

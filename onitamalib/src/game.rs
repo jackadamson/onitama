@@ -70,7 +70,7 @@ impl Game {
         self.state = state;
     }
     pub fn get_state(&self) -> GameState {
-        return self.state.clone();
+        return self.state;
     }
     pub fn get_turn(&self) -> Option<Player> {
         match &self.state {

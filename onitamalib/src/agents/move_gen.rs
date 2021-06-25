@@ -5,14 +5,14 @@ impl Board {
         let mut moves = vec![];
         let pieces = self.player_pieces();
         for card in self.player_hand() {
-            for src in self.player_pieces() {
+            for src in self.player_pieces().iter().filter_map(|p| *p) {
                 for offset in card.moves() {
                     let offset = match self.turn {
                         Player::Red => offset,
                         Player::Blue => -offset,
                     };
                     let dst = src + offset;
-                    if dst.in_bounds() && !pieces.contains(&dst) {
+                    if dst.in_bounds() && !pieces.contains(&Some(dst)) {
                         moves.push(Move::Move {
                             card: *card,
                             src,

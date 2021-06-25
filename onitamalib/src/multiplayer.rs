@@ -77,7 +77,7 @@ impl MultiplayerGame {
                 return;
             }
         };
-        match self.game.try_move(game_move.clone()) {
+        match self.game.try_move(game_move) {
             Ok(()) => {
                 log::info!("Successfully played move");
                 let msg = GameMessage::Move { game_move };
