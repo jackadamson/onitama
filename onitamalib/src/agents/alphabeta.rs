@@ -1,4 +1,5 @@
 use std::time::{Instant, Duration};
+use std::cmp;
 
 use crate::models::{Move, Player, GameState};
 
@@ -43,12 +44,12 @@ impl GameState {
         let mut best_score = board
             .try_move(best_move)
             .expect("generated illegal move")
-            .minimax(depth - 1);
+            .minimax(depth - 1, i8::MIN, i8::MAX);
         for game_move in game_moves {
             if timedout() { return None; }
             let expected_score = board.try_move(game_move)
                 .expect("generated illegal move in loop")
-                .minimax(depth - 1);
+                .minimax(depth - 1, i8::MIN, i8::MAX);
             match board.turn {
                 Player::Red if expected_score > best_score => {
                     best_move = game_move;
@@ -82,11 +83,11 @@ impl GameState {
         let mut best_score = board
             .try_move(best_move)
             .expect("generated illegal move")
-            .minimax(depth - 1);
+            .minimax(depth - 1, i8::MIN, i8::MAX);
         for game_move in game_moves {
             let expected_score = board.try_move(game_move)
                 .expect("generated illegal move in loop")
-                .minimax(depth - 1);
+                .minimax(depth - 1, i8::MIN, i8::MAX);
             match board.turn {
                 Player::Red if expected_score > best_score => {
                     best_move = game_move;
@@ -101,7 +102,7 @@ impl GameState {
         }
         return Some((best_move, best_score));
     }
-    fn minimax(&self, depth: u16) -> i8 {
+    fn minimax(&self, depth: u16, mut alpha: i8, mut beta: i8) -> i8 {
         if depth == 0 {
             return self.basic_value();
         }
@@ -111,18 +112,31 @@ impl GameState {
                 return self.basic_value();
             },
         };
-        let expected_scores = board
-            .legal_moves()
-            .into_iter()
-            .map(|game_move| {
-                board
-                    .try_move(game_move)
-                    .expect("illegal move generated")
-                    .minimax(depth - 1)
-            });
-        match board.turn {
-            Player::Red => expected_scores.max().expect("no expected_scores"),
-            Player::Blue => expected_scores.min().expect("no expected_scores"),
+        let mut value = match board.turn {
+            Player::Red => i8::MIN,
+            Player::Blue => i8::MAX,
+        };
+        let legal_moves = board.legal_moves().into_iter();
+        for game_move in legal_moves {
+            let next_val = board
+                .try_move(game_move)
+                .expect("illegal move generated")
+                .minimax(depth - 1, alpha, beta);
+            value = match board.turn {
+                Player::Red => cmp::max(value, next_val),
+                Player::Blue => cmp::min(value, next_val),
+            };
+            match board.turn {
+                Player::Red if value >= beta => { break; },
+                Player::Blue if value <= alpha => { break; },
+                Player::Red => {
+                    alpha = cmp::max(alpha, value);
+                },
+                Player::Blue => {
+                    beta = cmp::min(beta, value);
+                },
+            };
         }
+        return value;
     }
 }

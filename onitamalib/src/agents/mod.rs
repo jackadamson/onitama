@@ -1,3 +1,4 @@
 pub mod move_gen;
 pub mod heuristics;
-pub mod minimax;
+pub mod alphabeta;
+// pub mod minimax;
