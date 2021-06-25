@@ -17,8 +17,9 @@ const useMultiplayer = (roomId) => {
       sock.send(data);
     };
     // Host goes first
-    const isRed = !roomId;
-    const game = new MultiplayerGame(isRed, setState, onError, onSend);
+    const isHost = !roomId;
+    const isRed = isHost || roomId === 'ai';
+    const game = new MultiplayerGame(isRed, isHost, setState, onError, onSend);
     const onMessage = (e) => {
       if (typeof e.data === 'string') {
         setRoom(e.data);

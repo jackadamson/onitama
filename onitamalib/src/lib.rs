@@ -1,16 +1,23 @@
+extern crate console_error_panic_hook;
+extern crate wasm_bindgen;
+
+use std::panic;
+
+use wasm_bindgen::prelude::*;
+
+pub use multiplayer::*;
+pub use singleplayer::*;
+
+pub use crate::models::{GameError, GameState, GameView, Move};
+
 pub mod cards;
 pub mod board;
 pub mod models;
 pub mod singleplayer;
 pub mod multiplayer;
 mod game;
-
-extern crate wasm_bindgen;
-
-use wasm_bindgen::prelude::*;
-use crate::models::{GameState, GameView, Move, GameError};
-pub use singleplayer::*;
-pub use multiplayer::*;
+#[cfg(feature = "agent")]
+mod agents;
 
 #[wasm_bindgen]
 pub struct Game {
@@ -47,7 +54,7 @@ impl Game {
                 });
             },
         };
-        let game_state = match board.make_move(game_move) {
+        let game_state = match board.try_move(game_move) {
             Ok(game_state) => game_state,
             Err(message) => {
                 return Err(GameError::Error {
@@ -96,14 +103,10 @@ impl Game {
             },
         }
     }
-    #[wasm_bindgen(js_name = exportState)]
-    pub fn export(&self, state: &JsValue) -> JsValue {
-        JsValue::from_serde(&self.state).unwrap()
-    }
 }
 
 #[wasm_bindgen(start)]
 pub fn init(){
     wasm_logger::init(wasm_logger::Config::default());
-    log::info!("Test");
+    panic::set_hook(Box::new(console_error_panic_hook::hook));
 }

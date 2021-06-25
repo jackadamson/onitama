@@ -66,6 +66,9 @@ impl Point {
     pub fn out_of_bounds(&self) -> bool {
         self.x < 0 || self.x > 4 || self.y < 0 || self.y > 4
     }
+    pub fn in_bounds(&self) -> bool {
+        !self.out_of_bounds()
+    }
     pub fn invert(&self) -> Point {
         Point {
             x: 4 - self.x,
@@ -112,7 +115,7 @@ pub struct Board {
     pub turn: Player,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(tag = "type")]
 pub enum Move {
     Move {

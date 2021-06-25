@@ -43,3 +43,5 @@ features = [
 features = ["futures_0_3"]
 version = "^0.3"
 
+[features]
+agent = []

@@ -67,7 +67,7 @@ const RemoteGame = () => {
   }
   console.log({ state });
   // Host always creates game
-  const player = roomId ? 'Blue' : 'Red';
+  const player = !roomId || roomId === 'ai' ? 'Red' : 'Blue';
   const { blueCards, redCards, spare, turn: currentTurn, grid, canMove, winner } = state;
   const turn = player === currentTurn ? player : null;
   const isMoveValid = getMoves(src, card, turn);

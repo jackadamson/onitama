@@ -1,28 +1,32 @@
 use std::collections::HashMap;
 
 use actix::prelude::*;
+use actix_web::web::Bytes;
 use actix_web_actors::ws;
+use serde_cbor::ser;
 use uuid::Uuid;
 
-use crate::messages::{CreateRoom, AddressedGameData, JoinedRoom, JoinRoom, GameData};
+use onitamalib::GameMessage;
+
+use crate::messages::{AddressedGameData, CreateRoom, GameData, JoinedRoom, JoinRoom};
 
 /// Socket
 /// 
-pub struct OnitamaWs {
+pub struct RoomWs {
     room: Option<Addr<OnitamaRoom>>,
     server: Addr<OnitamaServer>,
     room_key: Option<Uuid>,
 }
-impl OnitamaWs {
-    pub fn new(server: Addr<OnitamaServer>, room_key: Option<Uuid>) -> OnitamaWs {
-        OnitamaWs {
+impl RoomWs {
+    pub fn new(server: Addr<OnitamaServer>, room_key: Option<Uuid>) -> RoomWs {
+        RoomWs {
             room: None,
             server,
             room_key,
         }
     }
 }
-impl Actor for OnitamaWs {
+impl Actor for RoomWs {
     type Context = ws::WebsocketContext<Self>;
     fn started(&mut self, ctx: &mut Self::Context) {
         println!("Actor is alive");
@@ -32,6 +36,10 @@ impl Actor for OnitamaWs {
                 println!("Creating a room");
                 let msg = CreateRoom(addr);
                 self.server.do_send(msg);
+                let msg = GameMessage::Joined;
+                let data = ser::to_vec(&msg).expect("Failed to serialize joined");
+                let data: Bytes = Bytes::from(data);
+                ctx.binary(data);
             }
             Some(room_key) => {
                 println!("Joining a room");
@@ -41,8 +49,7 @@ impl Actor for OnitamaWs {
         }
     }
 }
-
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for OnitamaWs {
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for RoomWs {
     fn handle(
         &mut self,
         msg: Result<ws::Message, ws::ProtocolError>,
@@ -56,15 +63,14 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for OnitamaWs {
             Ok(ws::Message::Binary(data)) => GameData::Binary(data),
             Ok(ws::Message::Text(data)) => GameData::Text(data),
             _ => {
-                dbg!("Received unexpected data-type");
+                warn!("Received unexpected data-type");
                 return;
             },
         };
-        dbg!(&data);
         let room = match &self.room {
             Some(room) => room,
             None => {
-                dbg!("Message sent too early");
+                warn!("Message sent too early");
                 ctx.text("Error: Message too early");
                 return;
             },
@@ -74,7 +80,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for OnitamaWs {
     }
 }
 
-impl Handler<JoinedRoom> for OnitamaWs {
+impl Handler<JoinedRoom> for RoomWs {
     type Result = ();
     fn handle(&mut self, msg: JoinedRoom, ctx: &mut Self::Context) {
         let addr = msg.addr;
@@ -84,7 +90,7 @@ impl Handler<JoinedRoom> for OnitamaWs {
     }
 }
 
-impl Handler<AddressedGameData> for OnitamaWs {
+impl Handler<AddressedGameData> for RoomWs {
     type Result = ();
     fn handle(&mut self, msg: AddressedGameData, ctx: &mut Self::Context) {
         let AddressedGameData { data, .. } = msg;
@@ -98,7 +104,7 @@ impl Handler<AddressedGameData> for OnitamaWs {
 /// Room
 ///
 pub struct OnitamaRoom {
-    sockets: Vec<Addr<OnitamaWs>>,
+    sockets: Vec<Addr<RoomWs>>,
     key: Uuid,
 }
 

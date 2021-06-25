@@ -1,13 +1,13 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use serde::{Serialize, Deserialize};
-use crate::models::{GameState, GameView, Move, Player};
+use crate::models::{GameState, Move, Player};
 use crate::game::Game;
 use web_sys::MessageEvent;
 use serde_cbor::{ser,de};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-enum ConnectionState {
+pub enum ConnectionState {
     Connecting,
     Waiting,
     Running,
@@ -17,7 +17,7 @@ enum ConnectionState {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-enum GameMessage {
+pub enum GameMessage {
     Joined,
     Initialize {
         state: GameState,
@@ -25,6 +25,7 @@ enum GameMessage {
     Move {
         game_move: Move,
     },
+    RequestRematch,
 }
 
 #[wasm_bindgen]
@@ -33,6 +34,7 @@ pub struct MultiplayerGame {
     on_send_msg: js_sys::Function,
     conn_state: ConnectionState,
     player: Player,
+    is_host: bool,
 }
 
 #[wasm_bindgen]
@@ -40,6 +42,7 @@ impl MultiplayerGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
         is_red: bool,
+        is_host: bool,
         on_send_view: js_sys::Function,
         on_send_error: js_sys::Function,
         on_send_msg: js_sys::Function,
@@ -53,6 +56,7 @@ impl MultiplayerGame {
             game,
             player,
             on_send_msg,
+            is_host,
             conn_state: ConnectionState::Connecting,
         };
     }
@@ -124,7 +128,7 @@ impl MultiplayerGame {
             return;
         }
         self.conn_state = ConnectionState::Waiting;
-        if self.player == Player::Blue {
+        if !self.is_host {
             let msg = GameMessage::Joined;
             self.send_msg(msg);
         }

@@ -62,7 +62,7 @@ impl Game {
                 return Err("Game Already Finished".to_string());
             },
         };
-        self.state = board.make_move(game_move)?;
+        self.state = board.try_move(game_move)?;
         self.send_current_view();
         Ok(())
     }

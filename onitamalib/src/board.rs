@@ -6,17 +6,13 @@ use rand::prelude::*;
 use crate::models::{Board, Card, GameSquare, GameState, Move, Player, Point};
 
 impl Board {
-    pub fn make_move(self: &Board, game_move: Move) -> Result<GameState, String> {
+    pub fn try_move(self: &Board, game_move: Move) -> Result<GameState, String> {
         let (
             blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn
         ) = match self {
             Board { blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn } => {
                 (blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn)
             }
-        };
-        let player_hand = match turn {
-            Player::Red => red_hand,
-            Player::Blue => blue_hand,
         };
         let (player_king, opponent_king) = match turn {
             Player::Red => (red_king, blue_king),
@@ -45,7 +41,8 @@ impl Board {
                 if self.can_move() {
                     return Err(format!("Valid moves exist"));
                 }
-                let player_hand: Vec<Card> = player_hand
+                let player_hand: Vec<Card> = self
+                    .player_hand()
                     .iter()
                     .map(|c| *c)
                     .filter(|c| *c != card)
@@ -69,7 +66,7 @@ impl Board {
                 });
             }
         };
-        if !player_hand.contains(&card) {
+        if !self.player_hand().contains(&card) {
             return Err("Card not in hand".to_string());
         }
         if !player_pieces.contains(&&src) {
@@ -88,6 +85,7 @@ impl Board {
         };
         let moves = card.moves();
         if !moves.contains(&delta) {
+            log::info!("Attempted {:?} with card {:?}", &delta, &card);
             return Err("Move not valid for card".to_string());
         }
         let goal_square = match turn {
@@ -101,7 +99,6 @@ impl Board {
                 false => Some(pawn.clone()),
             }
         ).into_iter();
-        log::info!("moving_king: {}", moving_king);
         let player_pawns: Vec<Point> = match moving_king {
             true => player_pawns.collect(),
             false => player_pawns.chain(iter::once(dst)).collect(),
@@ -112,17 +109,12 @@ impl Board {
                 false => Some(*pawn),
             }
         ).collect();
-        let player_hand = match turn {
-            Player::Red => red_hand.iter(),
-            Player::Blue => blue_hand.iter(),
-        };
-        log::info!("Player hand before: {:?}", &player_hand);
-        let player_hand: Vec<Card> = player_hand
+        let player_hand: Vec<Card> = self.player_hand()
+            .iter()
             .map(|c| *c)
             .filter(|c| *c != card)
             .chain(iter::once(*spare_card))
             .collect();
-        log::info!("Player hand after: {:?}", &player_hand);
         let player_king = match moving_king {
             true => dst,
             false => *player_king,
@@ -195,30 +187,16 @@ impl Board {
         return grid;
     }
     pub fn can_move(&self) -> bool {
-        let player_hand = match self.turn {
-            Player::Red => &self.red_hand,
-            Player::Blue => &self.blue_hand,
-        };
-        let player_pieces: Vec<&Point> = match self.turn {
-            Player::Red => self.red_pawns
-                .iter()
-                .chain(iter::once(&self.red_king))
-                .collect(),
-            Player::Blue => self.blue_pawns
-                .iter()
-                .chain(iter::once(&self.blue_king))
-                .collect(),
-        };
+        let player_pieces = self.player_pieces();
         for src in player_pieces.iter() {
-            for card in player_hand {
+            for card in self.player_hand() {
                 for raw_delta in card.moves() {
                     let delta = match self.turn {
                         Player::Red => raw_delta,
                         Player::Blue => -raw_delta,
                     };
-                    let dst = delta + **src;
-                    if !dst.out_of_bounds() && !player_pieces.contains(&&dst) {
-                        log::info!("Valid card found: {:?} for piece at {:?}", card, src);
+                    let dst = delta + *src;
+                    if dst.in_bounds() && !player_pieces.contains(&&dst) {
                         return true;
                     }
                 }
@@ -232,6 +210,78 @@ impl GameState {
     pub fn new() -> GameState {
         GameState::Playing {
             board: Board::new(),
+        }
+    }
+}
+
+impl Board {
+    pub fn player_hand(&self) -> &Vec<Card> {
+        match self.turn {
+            Player::Red => &self.red_hand,
+            Player::Blue => &self.blue_hand,
+        }
+    }
+    pub fn opponent_hand(&self) -> &Vec<Card> {
+        match self.turn.invert() {
+            Player::Red => &self.red_hand,
+            Player::Blue => &self.blue_hand,
+        }
+    }
+}
+
+
+impl Board {
+    pub fn player_pawns(&self) -> &Vec<Point> {
+        match self.turn {
+            Player::Red => &self.red_pawns,
+            Player::Blue => &self.blue_pawns,
+        }
+    }
+    pub fn opponent_pawns(&self) -> &Vec<Point> {
+        match self.turn.invert() {
+            Player::Red => &self.red_pawns,
+            Player::Blue => &self.blue_pawns,
+        }
+    }
+}
+
+impl Board {
+    pub fn player_king(&self) -> &Point {
+        match self.turn {
+            Player::Red => &self.red_king,
+            Player::Blue => &self.blue_king,
+        }
+    }
+    pub fn opponent_king(&self) -> &Point {
+        match self.turn.invert() {
+            Player::Red => &self.red_king,
+            Player::Blue => &self.blue_king,
+        }
+    }
+}
+
+impl Board {
+    pub fn player_pieces(&self) -> Vec<Point> {
+        self.player_pawns()
+            .iter()
+            .chain(iter::once(self.player_king()))
+            .map(|piece| *piece)
+            .collect()
+    }
+    pub fn opponent_pieces(&self) -> Vec<Point> {
+        self.opponent_pawns()
+            .iter()
+            .chain(iter::once(self.opponent_king()))
+            .map(|piece| *piece)
+            .collect()
+    }
+}
+
+impl GameState {
+    pub fn try_move(&self, game_move: Move) -> Result<GameState, String> {
+        match self {
+            GameState::Playing { board } => board.try_move(game_move),
+            GameState::Finished { .. } => Err("Game already finished".to_string()),
         }
     }
 }
