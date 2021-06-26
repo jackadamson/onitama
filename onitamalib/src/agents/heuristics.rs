@@ -1,5 +1,6 @@
 // Red is maximizing player, Blue is minimizing
-use crate::models::{Player, GameState};
+use crate::models::{GameState, Player};
+
 fn value_from_pawn_count(count: usize) -> i8 {
     // Reserve one point for possibly distinguishing current player
     // Consider pawns more valuable, the fewer there are

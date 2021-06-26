@@ -1,6 +1,5 @@
 use crate::models::{Card, Point};
 
-
 impl Card {
     pub fn moves(&self) -> Vec<Point> {
         match self {

@@ -1,7 +1,8 @@
-use instant::{Instant, Duration};
 use std::cmp;
 
-use crate::models::{Move, Player, GameState};
+use instant::{Duration, Instant};
+
+use crate::models::{GameState, Move, Player};
 
 const MAX_DEPTH: u16 = 50;
 

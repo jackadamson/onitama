@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
-use crate::models::Move;
+
 use crate::game::Game;
+use crate::models::Move;
 
 #[wasm_bindgen]
 pub struct SingleplayerGame {

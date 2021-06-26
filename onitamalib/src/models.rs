@@ -1,7 +1,8 @@
-use std::ops::{Add, Sub, Neg};
 use std::fmt;
+use std::ops::{Add, Neg, Sub};
+
 use enum_iterator::IntoEnumIterator;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum Player {

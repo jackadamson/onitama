@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+
 use crate::models::{GameState, GameView, Move, Player};
 
 pub struct Game {

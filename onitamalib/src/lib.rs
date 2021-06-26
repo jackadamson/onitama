@@ -6,19 +6,18 @@ use std::panic;
 
 use wasm_bindgen::prelude::*;
 
-pub use multiplayer::*;
-pub use singleplayer::*;
+pub use gamemodes::multiplayer::*;
+pub use gamemodes::singleplayer::*;
 
 pub use crate::models::{GameError, GameState, GameView, Move};
 
 pub mod cards;
 pub mod board;
 pub mod models;
-pub mod singleplayer;
-pub mod multiplayer;
 mod game;
 #[cfg(feature = "agent")]
 mod agents;
+mod gamemodes;
 
 #[wasm_bindgen]
 pub struct Game {

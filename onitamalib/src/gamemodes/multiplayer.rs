@@ -1,10 +1,11 @@
-use wasm_bindgen::prelude::*;
+use serde::{Deserialize, Serialize};
+use serde_cbor::{de, ser};
 use wasm_bindgen::JsCast;
-use serde::{Serialize, Deserialize};
-use crate::models::{GameState, Move, Player};
-use crate::game::Game;
+use wasm_bindgen::prelude::*;
 use web_sys::MessageEvent;
-use serde_cbor::{ser,de};
+
+use crate::game::Game;
+use crate::models::{GameState, Move, Player};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ConnectionState {
