@@ -103,13 +103,10 @@ impl MultiplayerGame {
 
 impl MultiplayerGame {
     fn send_msg(&self, message: GameMessage) {
-        log::info!("Sending msg");
         let msg = ser::to_vec(&message).unwrap();
         let msg = serde_bytes::ByteBuf::from(msg);
         let msg = serde_wasm_bindgen::to_value(&msg).unwrap();
-        log::info!("Serialized: {:?}", &msg);
         let this = JsValue::null();
-        log::info!("Message sent");
         match self.on_send_msg.call1(&this, &msg) {
             Ok(_) => {},
             Err(err) => {
@@ -136,7 +133,6 @@ impl MultiplayerGame {
     #[wasm_bindgen(js_name = handleMsg)]
     pub fn handle_message(&mut self, msg: MessageEvent) {
         if let Ok(msg) = msg.data().dyn_into::<js_sys::ArrayBuffer>() {
-            log::info!("Received an array buffer");
             let msg = js_sys::Uint8Array::new(&msg).to_vec();
             let msg: GameMessage = match de::from_slice(&msg) {
                 Ok(message) => message,

@@ -5,5 +5,6 @@ members = [
 ]
 
 [profile.release]
-# Tell `rustc` to optimize for small code size.
-opt-level = "s"
+opt-level = 3
+lto = "fat"
+debug = 1

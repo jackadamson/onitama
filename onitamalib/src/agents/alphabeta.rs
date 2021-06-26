@@ -1,4 +1,4 @@
-use std::time::{Instant, Duration};
+use instant::{Instant, Duration};
 use std::cmp;
 
 use crate::models::{Move, Player, GameState};
