@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
-import useSingleplayer from './hooks/useSingleplayer';
+import useLocalGame from './hooks/useLocalGame';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
 
@@ -19,7 +19,7 @@ const getMoves = (src, card, turn) => {
 
 const LocalGame = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { state, playMove, reset } = useSingleplayer();
+  const { state, playMove, reset } = useLocalGame();
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
   const move = useCallback(

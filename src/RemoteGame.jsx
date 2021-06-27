@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
 import useMultiplayer from './hooks/useMultiplayer';
+import WaitingOverlay from './WaitingOverlay';
 
 const getMoves = (src, card, turn) => {
   if (!src || !card) {
@@ -68,27 +69,30 @@ const RemoteGame = () => {
   console.log({ state });
   // Host always creates game
   const player = !roomId || roomId === 'ai' ? 'Red' : 'Blue';
-  const { blueCards, redCards, spare, turn: currentTurn, grid, canMove, winner } = state;
-  const turn = player === currentTurn ? player : null;
+  const { blueCards, redCards, spare, turn, grid, canMove, winner } = state;
   const isMoveValid = getMoves(src, card, turn);
   return (
-    <GameBoard
-      src={src}
-      setSrc={setSrc}
-      card={card}
-      setCard={setCard}
-      blueCards={blueCards}
-      redCards={redCards}
-      grid={grid}
-      isMoveValid={isMoveValid}
-      canMove={canMove}
-      reset={reset}
-      winner={winner}
-      spare={spare}
-      turn={turn}
-      move={move}
-      discard={discard}
-    />
+    <>
+      <WaitingOverlay state={state} />
+      <GameBoard
+        src={src}
+        setSrc={setSrc}
+        card={card}
+        setCard={setCard}
+        blueCards={blueCards}
+        redCards={redCards}
+        grid={grid}
+        isMoveValid={isMoveValid}
+        canMove={canMove}
+        reset={reset}
+        winner={winner}
+        spare={spare}
+        turn={turn}
+        player={player}
+        move={move}
+        discard={discard}
+      />
+    </>
   );
 };
 

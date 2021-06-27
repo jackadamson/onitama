@@ -1,4 +1,5 @@
 #![feature(array_map)]
+#![feature(or_patterns)]
 extern crate console_error_panic_hook;
 extern crate wasm_bindgen;
 
@@ -7,17 +8,18 @@ use std::panic;
 use wasm_bindgen::prelude::*;
 
 pub use gamemodes::multiplayer::*;
-pub use gamemodes::singleplayer::*;
+pub use gamemodes::local::*;
+pub use messages::*;
 
 pub use crate::models::{GameError, GameState, GameView, Move};
 
 pub mod cards;
 pub mod board;
 pub mod models;
-mod game;
 #[cfg(feature = "agent")]
 mod agents;
 mod gamemodes;
+pub mod messages;
 
 #[wasm_bindgen]
 pub struct Game {

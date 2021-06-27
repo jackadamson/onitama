@@ -4,7 +4,8 @@ use uuid::Uuid;
 
 use crate::rooms::{OnitamaRoom, RoomWs};
 use crate::agents::{AgentException, AgentWs};
-use onitamalib::GameMessage;
+use onitamalib::{GameMessage, GameState};
+use onitamalib::models::Player;
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -22,6 +23,8 @@ pub struct CreateRoom(pub Addr<RoomWs>);
 pub struct JoinedRoom {
     pub addr: Addr<OnitamaRoom>,
     pub room_key: Uuid,
+    pub player: Player,
+    pub initial_state: GameState,
 }
 
 #[derive(Debug)]
@@ -32,9 +35,9 @@ pub enum GameData {
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct AddressedGameData {
+pub struct AddressedGameMessage {
     pub sender: Addr<RoomWs>,
-    pub data: GameData,
+    pub msg: GameMessage,
 }
 
 #[derive(Message)]

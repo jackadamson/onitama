@@ -5,7 +5,6 @@ import { MultiplayerGame } from '../onitamalib';
 
 const useMultiplayer = (roomId) => {
   const [state, setState] = useState(null);
-  const [room, setRoom] = useState(null);
   const [handlers, setHandlers] = useState({});
   const { enqueueSnackbar } = useSnackbar();
   useEffect(() => {
@@ -18,12 +17,10 @@ const useMultiplayer = (roomId) => {
     };
     // Host goes first
     const isHost = !roomId;
-    const isRed = isHost || roomId === 'ai';
-    const game = new MultiplayerGame(isRed, isHost, setState, onError, onSend);
+    const game = new MultiplayerGame(isHost, setState, onError, onSend);
     const onMessage = (e) => {
       if (typeof e.data === 'string') {
-        setRoom(e.data);
-        game.connected();
+        console.log('Received string', e.data);
       } else {
         game.handleMsg(e);
       }
@@ -37,7 +34,7 @@ const useMultiplayer = (roomId) => {
       sock.removeEventListener('message', onMessage);
     };
   }, [enqueueSnackbar, roomId]);
-  return { state, room: roomId || room, ...handlers };
+  return { state, ...handlers };
 };
 
 export default useMultiplayer;

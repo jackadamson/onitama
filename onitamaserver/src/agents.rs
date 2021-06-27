@@ -7,6 +7,7 @@ use serde_cbor::ser;
 use onitamalib::{GameMessage, GameState};
 
 use crate::messages::{AgentRequest, AgentResponse};
+use onitamalib::models::Player;
 
 pub struct Agent {
     state: GameState,
@@ -55,11 +56,21 @@ impl Agent {
             (GameState::Finished { .. }, GameMessage::RequestRematch) => {
                 info!("Starting rematch");
                 self.state = GameState::new();
-                Ok(GameMessage::Initialize { state: self.state.clone() })
+                Ok(GameMessage::Initialize {
+                    state: self.state.clone(),
+                    room_id: "ai".to_string(),
+                    player: Player::Red,
+                    waiting: false,
+                })
             }
             (_, GameMessage::Joined) => {
                 info!("Game started");
-                Ok(GameMessage::Initialize { state: self.state.clone() })
+                Ok(GameMessage::Initialize {
+                    state: self.state.clone(),
+                    room_id: "ai".to_string(),
+                    player: Player::Red,
+                    waiting: false,
+                })
             },
             (state, GameMessage::Move { game_move }) => {
                 let state = match state.try_move(game_move) {
@@ -118,7 +129,8 @@ impl Actor for AgentWs {
     type Context = ws::WebsocketContext<Self>;
     fn started(&mut self, ctx: &mut Self::Context) {
         info!("Agent created");
-        ctx.text("agent");
+        let msg = AgentRequest { msg: GameMessage::Joined, addr: ctx.address() };
+        self.agent.do_send(msg);
     }
 }
 

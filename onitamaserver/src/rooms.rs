@@ -6,9 +6,10 @@ use actix_web_actors::ws;
 use serde_cbor::ser;
 use uuid::Uuid;
 
-use onitamalib::GameMessage;
+use onitamalib::{GameMessage, GameState};
 
-use crate::messages::{AddressedGameData, CreateRoom, GameData, JoinedRoom, JoinRoom};
+use crate::messages::{AddressedGameMessage, CreateRoom, GameData, JoinedRoom, JoinRoom};
+use onitamalib::models::Player;
 
 /// Socket
 /// 
@@ -36,10 +37,6 @@ impl Actor for RoomWs {
                 println!("Creating a room");
                 let msg = CreateRoom(addr);
                 self.server.do_send(msg);
-                let msg = GameMessage::Joined;
-                let data = ser::to_vec(&msg).expect("Failed to serialize joined");
-                let data: Bytes = Bytes::from(data);
-                ctx.binary(data);
             }
             Some(room_key) => {
                 println!("Joining a room");
@@ -60,10 +57,16 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for RoomWs {
                 ctx.pong(&msg);
                 return;
             },
-            Ok(ws::Message::Binary(data)) => GameData::Binary(data),
-            Ok(ws::Message::Text(data)) => GameData::Text(data),
+            Ok(ws::Message::Binary(data)) => data,
             _ => {
                 warn!("Received unexpected data-type");
+                return;
+            },
+        };
+        let msg: GameMessage = match serde_cbor::from_slice(data.as_ref()) {
+            Ok(msg) => msg,
+            Err(err) => {
+                warn!("Error deserializing player message: {:?}", err);
                 return;
             },
         };
@@ -75,7 +78,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for RoomWs {
                 return;
             },
         };
-        let msg = AddressedGameData { sender: ctx.address(), data };
+        let msg = AddressedGameMessage { sender: ctx.address(), msg };
         room.do_send(msg);
     }
 }
@@ -83,27 +86,33 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for RoomWs {
 impl Handler<JoinedRoom> for RoomWs {
     type Result = ();
     fn handle(&mut self, msg: JoinedRoom, ctx: &mut Self::Context) {
-        let addr = msg.addr;
+        let JoinedRoom{ addr, room_key, player, initial_state } = msg;
         self.room = Some(addr);
-        self.room_key = Some(msg.room_key);
-        ctx.text(msg.room_key.to_string());
+        self.room_key = Some(room_key);
+        let msg = GameMessage::Initialize {
+            state: initial_state,
+            room_id: room_key.to_string(),
+            player,
+            waiting: player == Player::Red,
+        };
+        let msg = ser::to_vec(&msg).expect("failed to serialize initialize message");
+        ctx.binary(msg);
     }
 }
 
-impl Handler<AddressedGameData> for RoomWs {
+impl Handler<AddressedGameMessage> for RoomWs {
     type Result = ();
-    fn handle(&mut self, msg: AddressedGameData, ctx: &mut Self::Context) {
-        let AddressedGameData { data, .. } = msg;
-        match data {
-            GameData::Binary(data) => ctx.binary(data),
-            GameData::Text(data) => ctx.text(data),
-        }
+    fn handle(&mut self, msg: AddressedGameMessage, ctx: &mut Self::Context) {
+        let AddressedGameMessage { msg, .. } = msg;
+        let data = ser::to_vec(&msg).expect("Failed to serialize message");
+        ctx.binary(data);
     }
 }
 
 /// Room
 ///
 pub struct OnitamaRoom {
+    initial_state: GameState,
     sockets: Vec<Addr<RoomWs>>,
     key: Uuid,
 }
@@ -111,6 +120,7 @@ pub struct OnitamaRoom {
 impl OnitamaRoom {
     pub fn new() -> OnitamaRoom {
         OnitamaRoom {
+            initial_state: GameState::new(),
             sockets: vec![],
             key: Uuid::new_v4(),
         }
@@ -125,20 +135,32 @@ impl Handler<JoinRoom> for OnitamaRoom {
     type Result = ();
     fn handle(&mut self, msg: JoinRoom, ctx: &mut Self::Context) {
         let socket = msg.addr;
+        let player = match self.sockets.len() == 0 {
+            true => Player::Red,
+            false => Player::Blue,
+        };
         self.sockets.push(socket.clone());
         let addr = ctx.address();
         let room_key = self.key;
         let msg = JoinedRoom {
             addr,
             room_key,
+            player,
+            initial_state: self.initial_state
         };
         socket.do_send(msg);
+        if player == Player::Blue {
+            // Send join message
+            let socket = self.sockets.get(0).expect("No sockets");
+            let msg = AddressedGameMessage { sender: socket.clone(), msg: GameMessage::Joined };
+            socket.do_send(msg);
+        }
     }
 }
 
-impl Handler<AddressedGameData> for OnitamaRoom {
+impl Handler<AddressedGameMessage> for OnitamaRoom {
     type Result = ();
-    fn handle(&mut self, msg: AddressedGameData, _ctx: &mut Self::Context) {
+    fn handle(&mut self, msg: AddressedGameMessage, _ctx: &mut Self::Context) {
         for addr in self.sockets.iter() {
             if *addr != msg.sender {
                 addr.do_send(msg);

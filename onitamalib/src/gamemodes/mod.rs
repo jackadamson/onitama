@@ -1,2 +1,3 @@
-pub mod singleplayer;
+pub mod local;
 pub mod multiplayer;
+mod base;
