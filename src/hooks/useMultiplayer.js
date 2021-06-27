@@ -8,7 +8,7 @@ const useMultiplayer = (roomId) => {
   const [handlers, setHandlers] = useState({});
   const { enqueueSnackbar } = useSnackbar();
   useEffect(() => {
-    const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: true });
+    const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
     const roomUrl = `${WEBSOCKET_BASE}${roomId || ''}`;
     const sock = new WebSocket(roomUrl);
     sock.binaryType = 'arraybuffer';

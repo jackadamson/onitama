@@ -1,9 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button } from '@material-ui/core';
+import { Box, Button, useMediaQuery, useTheme } from '@material-ui/core';
 import GameOver from './GameOver';
 import GameCard from './GameCard';
 import GameGrid from './GameGrid';
+import GameHand from './GameHand';
+import GameTurn from './GameTurn';
 
 const GameBoard = ({
   src,
@@ -23,93 +25,90 @@ const GameBoard = ({
   discard,
   reset,
 }) => {
+  const theme = useTheme();
+  const hideSideSpare = useMediaQuery(theme.breakpoints.down('sm'));
   // Whether it's the player's turn, always true if local multiplayer
   const playerTurn = player ? player === turn : true;
   return (
-    <Box height="100vh" display="flex">
-      {reset && (
-        <Box position="fixed" x={0} y={0}>
+    <Box height="100vh" display="flex" flexDirection="column">
+      <Box display="flex" justifyContent="center">
+        <GameTurn player={player} turn={turn} />
+      </Box>
+      <Box display="flex" flexGrow={1}>
+        <Box position="absolute" top="0" left="0">
           <Button onClick={reset}>Reset</Button>
         </Box>
-      )}
-      <GameOver reset={reset} winner={winner} />
-      <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        flexBasis="33%"
-      >
-        {turn === 'Blue' && (
-          <GameCard
-            spare
-            inverted
-            moves={spare.moves}
-            enabled={false}
-            setCard={setCard}
-            name={spare.card}
-            selected={false}
-          />
-        )}
-      </Box>
-      <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1}>
-        <Box display="flex" flexDirection="column">
-          <Box display="flex" flexDirection="row" style={{ gap: '8px' }}>
-            {blueCards.map(({ card: name, moves }) => (
-              <GameCard
-                inverted
-                setCard={setCard}
-                name={name}
-                selected={card?.card === name}
-                key={name}
-                moves={moves}
-                enabled={turn === 'Blue' && playerTurn}
-                canMove={canMove}
-                discard={discard}
-              />
-            ))}
-          </Box>
-          <GameGrid
-            isMoveValid={isMoveValid}
-            move={move}
-            src={src}
-            setSrc={setSrc}
-            grid={grid}
-            turn={turn}
-          />
-          <Box display="flex" flexDirection="row" style={{ gap: '8px' }}>
-            {redCards.map(({ card: name, moves }) => (
-              <GameCard
-                setCard={setCard}
-                name={name}
-                selected={card?.card === name}
-                key={name}
-                moves={moves}
-                enabled={turn === 'Red' && playerTurn}
-                canMove={canMove}
-                discard={discard}
-              />
-            ))}
+        <GameOver reset={reset} winner={winner} />
+        <Box
+          display={hideSideSpare ? 'none' : 'flex'}
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+          flexBasis="33%"
+        >
+          {turn === 'Blue' && (
+            <GameCard
+              spare
+              inverted
+              moves={spare.moves}
+              enabled={false}
+              setCard={setCard}
+              name={spare.card}
+              selected={false}
+            />
+          )}
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1}>
+          <Box display="flex" flexDirection="column">
+            <GameHand
+              setCard={setCard}
+              selectedCard={card}
+              spare={spare}
+              discard={discard}
+              canMove={canMove}
+              cards={blueCards}
+              enabled={turn === 'Blue' && playerTurn}
+              isPlayerTurn={turn === 'Blue'}
+              inverted
+            />
+            <GameGrid
+              isMoveValid={isMoveValid}
+              move={move}
+              src={src}
+              setSrc={setSrc}
+              grid={grid}
+              turn={turn}
+            />
+            <GameHand
+              setCard={setCard}
+              selectedCard={card}
+              spare={spare}
+              discard={discard}
+              canMove={canMove}
+              cards={redCards}
+              enabled={turn === 'Red' && playerTurn}
+              isPlayerTurn={turn === 'Red'}
+            />
           </Box>
         </Box>
-      </Box>
-      <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        flexBasis="33%"
-      >
-        {turn === 'Red' && (
-          <GameCard
-            spare
-            moves={spare.moves}
-            enabled={false}
-            setCard={setCard}
-            name={spare.card}
-            selected={false}
-          />
-        )}
+        <Box
+          display={hideSideSpare ? 'none' : 'flex'}
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+          flexBasis="33%"
+        >
+          {turn === 'Red' && (
+            <GameCard
+              spare
+              moves={spare.moves}
+              enabled={false}
+              setCard={setCard}
+              name={spare.card}
+              selected={false}
+            />
+          )}
+        </Box>
       </Box>
     </Box>
   );

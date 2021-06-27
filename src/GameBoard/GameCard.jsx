@@ -36,6 +36,9 @@ const useStyles = makeStyles((theme) => ({
   error: {
     color: theme.palette.error.main,
   },
+  played: {
+    borderColor: theme.palette.secondary.dark,
+  },
 }));
 
 const GameCard = ({
@@ -48,6 +51,7 @@ const GameCard = ({
   canMove,
   discard,
   inverted,
+  showPlayed,
 }) => {
   const classes = useStyles({ enabled, spare, inverted });
   const handler = () => {
@@ -65,6 +69,7 @@ const GameCard = ({
         [classes.noMoves]: enabled && !canMove,
         [classes.hasMoves]: enabled && canMove && !selected,
         [classes.selected]: selected,
+        [classes.played]: showPlayed,
       })}
       onClick={handler}
     >
@@ -83,6 +88,7 @@ GameCard.defaultProps = {
   inverted: false,
   canMove: true,
   discard: () => {},
+  showPlayed: false,
 };
 GameCard.propTypes = {
   selected: PropTypes.bool.isRequired,
@@ -99,6 +105,7 @@ GameCard.propTypes = {
   canMove: PropTypes.bool,
   discard: PropTypes.func,
   inverted: PropTypes.bool,
+  showPlayed: PropTypes.bool,
 };
 
 export default GameCard;
