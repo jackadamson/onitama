@@ -1,5 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -11,14 +12,18 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
-import { useParams } from 'react-router';
 
 const useStyles = makeStyles((theme) => ({
   dialog: {
-    padding: theme.spacing(8),
+    padding: theme.spacing(8, 8, 8, 8),
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
   },
   invite: {
@@ -32,7 +37,6 @@ const titleFromStatus = {
   Errored: 'Game Error',
 };
 const WaitingOverlay = ({ state: { connection, roomId, error }, reconnect }) => {
-  console.log({ connection, roomId, error });
   const classes = useStyles();
   const ref = useRef();
   const title = titleFromStatus[connection] || connection;
@@ -51,28 +55,36 @@ const WaitingOverlay = ({ state: { connection, roomId, error }, reconnect }) => 
   return (
     <Dialog open={open} classes={{ paper: classes.dialog }}>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent>
+      <DialogContent className={classes.content}>
         {!showReconnect && roomId && (
-          <Box minWidth="280px">
-            <Typography variant="subtitle1">Invite Link</Typography>
-            <Box display="flex" flexDirection="row">
-              <TextField
-                inputRef={ref}
-                className={classes.invite}
-                value={`${window.location.origin}/#/r/${roomId}`}
-                spellCheck={false}
-                variant="outlined"
-              />
-              <Box m={0.5} />
-              <Button variant="contained" color="primary" size="small" onClick={copyLink}>
-                Copy
-              </Button>
+          <>
+            <Box minWidth="280px">
+              <Typography variant="subtitle1">Invite Link</Typography>
+              <Box display="flex" flexDirection="row">
+                <TextField
+                  inputRef={ref}
+                  className={classes.invite}
+                  value={`${window.location.origin}/#/r/${roomId}`}
+                  spellCheck={false}
+                  variant="outlined"
+                />
+                <Box m={0.5} />
+                <Button variant="contained" color="primary" size="small" onClick={copyLink}>
+                  Copy
+                </Button>
+              </Box>
             </Box>
-          </Box>
+            <Box pt={2}>
+              <Typography variant="h5">Or</Typography>
+            </Box>
+          </>
         )}
         {error && <Typography variant="body1">{error}</Typography>}
       </DialogContent>
       <DialogActions>
+        <Button variant="contained" color="secondary" component={Link} to="/">
+          Go Home
+        </Button>
         {showReconnect && (
           <Button variant="contained" color="primary" onClick={reconnect}>
             Reconnect

@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { Box, Button, useMediaQuery, useTheme } from '@material-ui/core';
 import GameOver from './GameOver';
 import GameCard from './GameCard';
@@ -36,9 +37,11 @@ const GameBoard = ({
       </Box>
       <Box display="flex" flexGrow={1}>
         <Box position="absolute" top="0" left="0">
-          <Button onClick={reset}>Reset</Button>
+          <Button component={Link} to="/">
+            Home
+          </Button>
         </Box>
-        <GameOver reset={reset} winner={winner} />
+        <GameOver reset={reset} winner={winner} player={player} />
         <Box
           display={hideSideSpare ? 'none' : 'flex'}
           flexDirection="column"

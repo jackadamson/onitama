@@ -18,8 +18,11 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
 }));
-const GameOver = ({ winner, reset }) => {
+const GameOver = ({ winner, reset, player }) => {
   const classes = useStyles();
+  const relativeText = player === winner ? 'You Win!' : 'You Lose!';
+  const absoluteText = `${winner} wins!`;
+  const text = player ? relativeText : absoluteText;
   return (
     <Dialog open={Boolean(winner)} classes={{ paper: classes.dialog }}>
       <DialogTitle
@@ -27,7 +30,9 @@ const GameOver = ({ winner, reset }) => {
           [classes.red]: winner === 'Red',
           [classes.blue]: winner === 'Blue',
         })}
-      >{`${winner} wins!`}</DialogTitle>
+      >
+        {text}
+      </DialogTitle>
       <DialogActions>
         <Button variant="contained" onClick={reset} color="primary">
           Play Again
@@ -38,9 +43,11 @@ const GameOver = ({ winner, reset }) => {
 };
 GameOver.defaultProps = {
   winner: null,
+  player: null,
 };
 GameOver.propTypes = {
   winner: PropTypes.oneOf(['Red', 'Blue', null]),
+  player: PropTypes.oneOf(['Red', 'Blue', null]),
   reset: PropTypes.func.isRequired,
 };
 

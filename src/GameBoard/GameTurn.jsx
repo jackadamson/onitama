@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, makeStyles, Typography } from '@material-ui/core';
+import logger from '../logger';
 
 const useStyles = makeStyles(() => ({
   Red: {
@@ -15,7 +16,7 @@ const GameTurn = ({ turn, player }) => {
   const relativeName = player === turn ? 'Your Turn' : "Opponent's Turn";
   const absoluteName = `${turn}'s Turn`;
   const label = player ? relativeName : absoluteName;
-  console.log({ turn, player });
+  logger.log({ turn, player });
   return (
     <Box>
       <Typography variant="h4" className={classes[turn]}>
@@ -24,10 +25,12 @@ const GameTurn = ({ turn, player }) => {
     </Box>
   );
 };
-
+GameTurn.defaultProps = {
+  player: null,
+};
 GameTurn.propTypes = {
   turn: PropTypes.oneOf(['Red', 'Blue']).isRequired,
-  player: PropTypes.oneOf(['Red', 'Blue', null]).isRequired,
+  player: PropTypes.oneOf(['Red', 'Blue', null]),
 };
 
 export default GameTurn;

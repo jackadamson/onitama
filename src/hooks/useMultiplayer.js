@@ -3,6 +3,7 @@ import { useSnackbar } from 'notistack';
 import { useHistory } from 'react-router';
 import { WEBSOCKET_BASE } from '../config';
 import { MultiplayerGame } from '../onitamalib';
+import logger from '../logger';
 
 const useMultiplayer = (roomId) => {
   const [state, setState] = useState(null);
@@ -27,7 +28,7 @@ const useMultiplayer = (roomId) => {
     const game = new MultiplayerGame(setState, onError, onSend);
     const onMessage = (e) => {
       if (typeof e.data === 'string') {
-        console.log('Received string', e.data);
+        logger.log('Received string', e.data);
       } else {
         game.handleMsg(e);
       }
@@ -37,7 +38,7 @@ const useMultiplayer = (roomId) => {
       reset: () => game.reset(),
     });
     const onClose = () => {
-      console.log('Disconnected');
+      logger.log('Disconnected');
       setState((current) => ({ ...current, connection: 'Disconnected' }));
     };
     sock.addEventListener('close', onClose);
@@ -46,7 +47,7 @@ const useMultiplayer = (roomId) => {
       sock.close(1000);
     };
   }, [enqueueSnackbar, roomId, history, reconnectVal]);
-  console.log(state);
+  logger.log(state);
   return { state, reconnect, ...handlers };
 };
 
