@@ -12,6 +12,11 @@ impl GameState {
         let deadline = start + duration;
         let mut result: Option<(Move, i8)> = None;
         for depth in 1..MAX_DEPTH {
+            if let Some((_, val)) = result {
+                if val == i8::MAX || val == i8::MIN {
+                    break;
+                }
+            }
             match self.optimal_move_deadline(depth, deadline) {
                 None => {
                     log::info!("Timeout at depth {}, took {}ms", depth, start.elapsed().as_millis());
