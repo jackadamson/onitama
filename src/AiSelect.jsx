@@ -3,46 +3,39 @@ import { Box, Button, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
 
-const Home = () => {
+const AiSelect = () => {
   const classes = useStyles();
   return (
     <Box className={classes.outer}>
-      <Typography variant="h2">Onitama App</Typography>
+      <Typography variant="h2">Player vs AI</Typography>
       <Box m={1} />
-      <Button variant="contained" color="secondary" className={classes.button} disabled>
-        WIP: How to Play
+      <Button variant="contained" color="primary" className={classes.button} disabled>
+        WIP: Easy
       </Button>
-      <Box m={1} />
+      <Button variant="contained" color="primary" className={classes.button} disabled>
+        WIP: Medium
+      </Button>
       <Button
         component={Link}
-        to="/ai"
+        to="/r/ai"
         variant="contained"
         color="primary"
         className={classes.button}
       >
-        Single Player
+        Hard
       </Button>
       <Box m={1} />
       <Button
         component={Link}
-        to="/l/"
-        variant="contained"
-        color="primary"
+        to="/r/ai"
+        variant="outlined"
+        color="secondary"
         className={classes.button}
       >
-        Local Multiplayer
-      </Button>
-      <Button
-        component={Link}
-        to="/r/"
-        variant="contained"
-        color="primary"
-        className={classes.button}
-      >
-        Online Multiplayer
+        Back
       </Button>
     </Box>
   );
 };
 
-export default Home;
+export default AiSelect;

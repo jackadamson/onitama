@@ -53,10 +53,10 @@ const WaitingOverlay = ({ state: { connection, roomId, error }, reconnect }) => 
     document.execCommand('copy');
   }, []);
   return (
-    <Dialog open={open} classes={{ paper: classes.dialog }}>
+    <Dialog open={open} classes={{ paper: classes.dialog }} transitionDuration={0}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent className={classes.content}>
-        {!showReconnect && roomId && (
+        {!isConnecting && !showReconnect && roomId && (
           <>
             <Box minWidth="280px">
               <Typography variant="subtitle1">Invite Link</Typography>

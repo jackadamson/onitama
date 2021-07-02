@@ -9,6 +9,7 @@ import 'typeface-roboto';
 import theme from './theme';
 import Loading from './Loading';
 import Home from './Home';
+import AiSelect from './AiSelect';
 
 const LocalGame = React.lazy(() => import('./LocalGame'));
 const RemoteGame = React.lazy(() => import('./RemoteGame'));
@@ -28,6 +29,9 @@ ReactDOM.render(
             <Suspense fallback={<Loading />}>
               <RemoteGame />
             </Suspense>
+          </Route>
+          <Route path="/ai">
+            <AiSelect />
           </Route>
           <Route>
             <Home />

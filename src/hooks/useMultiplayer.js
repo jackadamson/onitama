@@ -18,6 +18,10 @@ const useMultiplayer = (roomId) => {
     setReconnectVal((current) => !current);
   }, [setReconnectVal, state?.roomId, history]);
   useEffect(() => {
+    let mounted = true;
+    const setStateMounted = (val) => {
+      if (mounted) setState(val);
+    };
     const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
     const roomUrl = `${WEBSOCKET_BASE}${roomId || ''}`;
     const sock = new WebSocket(roomUrl);
@@ -25,7 +29,7 @@ const useMultiplayer = (roomId) => {
     const onSend = (data) => {
       sock.send(data);
     };
-    const game = new MultiplayerGame(setState, onError, onSend);
+    const game = new MultiplayerGame(setStateMounted, onError, onSend);
     const onMessage = (e) => {
       if (typeof e.data === 'string') {
         logger.log('Received string', e.data);
@@ -39,11 +43,12 @@ const useMultiplayer = (roomId) => {
     });
     const onClose = () => {
       logger.log('Disconnected');
-      setState((current) => ({ ...current, connection: 'Disconnected' }));
+      setStateMounted((current) => ({ ...current, connection: 'Disconnected' }));
     };
     sock.addEventListener('close', onClose);
     sock.addEventListener('message', onMessage);
     return () => {
+      mounted = false;
       sock.close(1000);
     };
   }, [enqueueSnackbar, roomId, history, reconnectVal]);
