@@ -1,4 +1,5 @@
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 extern crate pretty_env_logger;
 
 use std::convert::TryFrom;
@@ -31,10 +32,10 @@ async fn main() -> std::io::Result<()> {
     if !built_path.exists() {
         built_path = path::Path::new("../build");
     }
-    info!("Does build path exist ({}): {}", built_path.as_os_str().to_string_lossy(),  built_path.exists());
+    info!("Does build path exist ({}): {}", built_path.as_os_str().to_string_lossy(), built_path.exists());
     info!("Starting server");
     HttpServer::new(move || {
-        App::new()
+        let app = App::new()
             // Cache all requests to paths in /static otherwise don't cache
             .wrap_fn(|req, srv| {
                 let is_static = req.path().starts_with("/static") || req.path().ends_with(".wasm");
@@ -58,16 +59,17 @@ async fn main() -> std::io::Result<()> {
                     .route("/ai", web::get().to(ai_room))
                     .route("/{key}", web::get().to(join_room))
                     .route("/", web::get().to(create_room))
-            )
-            .service(
-                Files::new(
-                    "/",
-                    built_path,
-                )
-                    .index_file("index.html")
-            )
+            );
+        match built_path.exists() {
+            true => app
+                .service(
+                    Files::new("/", built_path)
+                        .index_file("index.html")
+                ),
+            false => app,
+        }
     })
-    .bind("0.0.0.0:8080")?
-    .run()
-    .await
+        .bind("0.0.0.0:8080")?
+        .run()
+        .await
 }

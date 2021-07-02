@@ -27,7 +27,7 @@ const AiSelect = () => {
       <Box m={1} />
       <Button
         component={Link}
-        to="/r/ai"
+        to="/"
         variant="outlined"
         color="secondary"
         className={classes.button}

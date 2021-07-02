@@ -1,7 +1,9 @@
-.git/
+.dockerignore
+.git/**
 .gitignore
 Dockerfile
-build/
-node_modules/
-onitamalib/target/
-target/
+README.md
+build/**
+node_modules/**
+onitamalib/target/**
+target/**

@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Jack Adamson <jack@mrfluffybunny.com>"]
 edition = "2018"
 description = "A library for managing the game logic of Onitama"
-license = "BSD"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]

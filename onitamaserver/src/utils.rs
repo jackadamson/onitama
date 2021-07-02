@@ -1,5 +1,5 @@
-use actix_web::HttpRequest;
 use actix_web::http::header;
+use actix_web::HttpRequest;
 
 pub fn get_identifier(req: &HttpRequest) -> String {
     let user_agent = match req.headers().get(header::USER_AGENT).map(|value| value.to_str()) {
