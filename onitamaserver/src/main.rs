@@ -1,15 +1,18 @@
 #[macro_use] extern crate log;
 extern crate pretty_env_logger;
 
+use std::convert::TryFrom;
 use std::path;
 
 use actix::prelude::*;
 use actix_files::Files;
 use actix_web::{App, HttpServer, web};
+use actix_web::dev::Service;
+use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective};
+use actix_web::http::HeaderValue;
 
 use crate::rooms::OnitamaServer;
 use crate::routes::{ai_room, create_room, join_room, ServerData};
-
 
 mod rooms;
 mod messages;
@@ -31,6 +34,23 @@ async fn main() -> std::io::Result<()> {
     info!("Starting server");
     HttpServer::new(move || {
         App::new()
+            // Cache all requests to paths in /static otherwise don't cache
+            .wrap_fn(|req, srv| {
+                let is_static = req.path().starts_with("/static") || req.path().ends_with(".wasm");
+                let cache_static = match is_static {
+                    true => CacheControl(vec![CacheDirective::MaxAge(86400)]).to_string(),
+                    false => CacheControl(vec![CacheDirective::NoCache]).to_string(),
+                };
+                let fut = srv.call(req);
+                async {
+                    let mut res = fut.await?;
+                    let cache_control: HeaderValue = HeaderValue::try_from(cache_static).expect("Oops");
+                    res.headers_mut().insert(
+                        CACHE_CONTROL, cache_control,
+                    );
+                    Ok(res)
+                }
+            })
             .app_data(data.clone())
             .service(
                 web::scope("/ws")

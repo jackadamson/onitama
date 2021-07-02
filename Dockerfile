@@ -32,7 +32,7 @@ FROM scratch
 
 COPY --from=builder /src/target/x86_64-unknown-linux-musl/release/onitamaserver /
 COPY --from=builder /src/build /build
-
+USER 1000
 ENV RUST_LOG=info
 EXPOSE 8080
 CMD ["/onitamaserver"]
