@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Button, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
+import GithubRibbon from './GithubRibbon';
 
 const AiSelect = () => {
   const classes = useStyles();
@@ -34,6 +35,7 @@ const AiSelect = () => {
       >
         Back
       </Button>
+      <GithubRibbon />
     </Box>
   );
 };
