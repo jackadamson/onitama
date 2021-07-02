@@ -10,12 +10,13 @@ use crate::messages::{AgentRequest, AgentResponse};
 
 pub struct Agent {
     state: GameState,
+    id: String,
 }
 
 impl Agent {
-    pub fn new() -> Agent {
+    pub fn new(id: String) -> Agent {
         let state = GameState::new();
-        Agent { state }
+        Agent { id, state }
     }
 }
 
@@ -80,8 +81,7 @@ impl Agent {
                     },
                 };
                 match state {
-                    GameState::Finished { winner, .. } => {
-                        info!("Game finished, {:?} won", winner);
+                    GameState::Finished { .. } => {
                         Err(AgentException::GameFinished)
                     },
                     state => self.play_move(state),
@@ -108,6 +108,12 @@ impl Handler<AgentRequest> for Agent {
     fn handle(&mut self, msg: AgentRequest, _ctx: &mut Self::Context) -> Self::Result {
         let AgentRequest { msg, addr } = msg;
         let resp = self.handle_game_message(msg);
+        match &self.state {
+            GameState::Finished { winner, .. } => {
+                info!("Game finished, {:?} won: {}", winner, self.id);
+            },
+            _ => {},
+        };
         let resp = AgentResponse { resp };
         addr.do_send(resp);
     }
@@ -118,8 +124,8 @@ pub struct AgentWs {
 }
 
 impl AgentWs {
-    pub fn new() -> AgentWs {
-        let agent = SyncArbiter::start(1, || Agent::new());
+    pub fn new(id: String) -> AgentWs {
+        let agent = SyncArbiter::start(1, move || Agent::new(id.clone()));
         AgentWs { agent }
     }
 }

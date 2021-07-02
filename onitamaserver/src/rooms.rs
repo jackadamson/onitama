@@ -18,14 +18,16 @@ pub struct RoomWs {
     room: Option<Addr<OnitamaRoom>>,
     server: Addr<OnitamaServer>,
     room_key: Option<Uuid>,
+    id: String,
 }
 
 impl RoomWs {
-    pub fn new(server: Addr<OnitamaServer>, room_key: Option<Uuid>) -> RoomWs {
+    pub fn new(server: Addr<OnitamaServer>, room_key: Option<Uuid>, id: String) -> RoomWs {
         RoomWs {
             room: None,
             server,
             room_key,
+            id,
         }
     }
 }
@@ -33,16 +35,13 @@ impl RoomWs {
 impl Actor for RoomWs {
     type Context = ws::WebsocketContext<Self>;
     fn started(&mut self, ctx: &mut Self::Context) {
-        println!("Actor is alive");
         let addr = ctx.address();
         match self.room_key {
             None => {
-                println!("Creating a room");
                 let msg = CreateRoom(addr);
                 self.server.do_send(msg);
             }
             Some(room_key) => {
-                println!("Joining a room");
                 let msg = JoinRoom { addr, room_key };
                 self.server.do_send(msg);
             }
@@ -102,6 +101,7 @@ impl Handler<JoinedRoom> for RoomWs {
                 GameMessage::Error { message }
             }
             JoinedRoom::Success { addr, room_key, player, state, waiting } => {
+                info!("Joined room {} as {:?}: {}", room_key, player, self.id);
                 self.room = Some(addr);
                 self.room_key = Some(room_key);
                 GameMessage::Initialize {
@@ -210,7 +210,6 @@ impl Handler<JoinRoom> for OnitamaRoom {
                 return;
             }
         };
-        info!("Player joined: {:?}", player);
         match player {
             Player::Red => { self.red = Some(socket.clone()); }
             Player::Blue => { self.blue = Some(socket.clone()); }

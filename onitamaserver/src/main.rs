@@ -18,6 +18,7 @@ mod rooms;
 mod messages;
 mod routes;
 mod agents;
+mod utils;
 
 
 #[actix_web::main]
