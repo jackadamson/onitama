@@ -1,5 +1,4 @@
 #![feature(array_map)]
-#![feature(or_patterns)]
 extern crate console_error_panic_hook;
 extern crate wasm_bindgen;
 
@@ -12,9 +11,9 @@ pub use gamemodes::multiplayer::*;
 pub use messages::*;
 pub use models::*;
 
-pub mod cards;
-pub mod board;
-pub mod models;
+mod cards;
+mod board;
+mod models;
 #[cfg(feature = "agent")]
 mod agents;
 mod gamemodes;

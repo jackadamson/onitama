@@ -29,5 +29,5 @@ yarn-debug.log*
 yarn-error.log*
 
 target
-Cargo.lock
+# Cargo.lock
 src/onitamalib/

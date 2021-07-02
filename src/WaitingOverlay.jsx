@@ -75,7 +75,7 @@ const WaitingOverlay = ({ state: { connection, roomId, error }, reconnect }) => 
               </Box>
             </Box>
             <Box pt={2}>
-              <Typography variant="h5">Or</Typography>
+              <Typography variant="h5">or</Typography>
             </Box>
           </>
         )}

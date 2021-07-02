@@ -47,4 +47,4 @@ version = "^0.3"
 [features]
 agent = []
 alphabeta = ["agent"]
-default = ["agent", "alphabeta"]
+default = []

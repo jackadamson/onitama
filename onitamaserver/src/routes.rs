@@ -5,8 +5,8 @@ use actix_web::{error, Error, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
 use uuid::Uuid;
 
-use crate::rooms::{OnitamaServer, RoomWs};
 use crate::agents::AgentWs;
+use crate::rooms::{OnitamaServer, RoomWs};
 
 pub async fn join_room(
     req: HttpRequest,

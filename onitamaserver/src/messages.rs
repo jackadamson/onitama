@@ -1,10 +1,10 @@
 use actix::prelude::*;
 use uuid::Uuid;
 
-use crate::rooms::{OnitamaRoom, RoomWs};
+use onitamalib::{GameMessage, GameState, Player};
+
 use crate::agents::{AgentException, AgentWs};
-use onitamalib::{GameMessage, GameState};
-use onitamalib::models::Player;
+use crate::rooms::{OnitamaRoom, RoomWs};
 
 #[derive(Message)]
 #[rtype(result = "()")]

@@ -6,8 +6,7 @@ use rand::prelude::*;
 use serde_cbor::ser;
 use uuid::Uuid;
 
-use onitamalib::{GameMessage, GameState, Move};
-use onitamalib::models::Player;
+use onitamalib::{GameMessage, GameState, Move, Player};
 
 use crate::messages::{
     AddressedGameMessage, CreateRoom, JoinedRoom, JoinRoom, LeftRoom, SocketGameMessage

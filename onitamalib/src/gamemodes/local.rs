@@ -1,8 +1,8 @@
 use wasm_bindgen::prelude::*;
 
 use crate::gamemodes::base::Game;
-use crate::models::Move;
 use crate::GameView;
+use crate::models::Move;
 
 #[wasm_bindgen]
 pub struct LocalGame {

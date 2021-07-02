@@ -4,10 +4,9 @@ use actix::prelude::*;
 use actix_web_actors::ws;
 use serde_cbor::ser;
 
-use onitamalib::{GameMessage, GameState};
+use onitamalib::{GameMessage, GameState, Player};
 
 use crate::messages::{AgentRequest, AgentResponse};
-use onitamalib::models::Player;
 
 pub struct Agent {
     state: GameState,
