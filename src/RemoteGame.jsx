@@ -22,8 +22,7 @@ const getMoves = (src, card, turn) => {
 const RemoteGame = () => {
   const { roomId = null } = useParams();
   const { enqueueSnackbar } = useSnackbar();
-  const { playMove, state, reset, room } = useMultiplayer(roomId);
-  console.log({ roomId, room });
+  const { playMove, state, reset, reconnect } = useMultiplayer(roomId);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
   const move = useCallback(
@@ -66,14 +65,12 @@ const RemoteGame = () => {
   if (!state) {
     return <Loading />;
   }
-  console.log({ state });
   // Host always creates game
-  const player = !roomId || roomId === 'ai' ? 'Red' : 'Blue';
-  const { blueCards, redCards, spare, turn, grid, canMove, winner } = state;
+  const { blueCards, redCards, spare, turn, grid, canMove, winner, player } = state;
   const isMoveValid = getMoves(src, card, turn);
   return (
     <>
-      <WaitingOverlay state={state} />
+      <WaitingOverlay state={state} reconnect={reconnect} />
       <GameBoard
         src={src}
         setSrc={setSrc}

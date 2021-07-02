@@ -13,6 +13,7 @@ actix-web-actors = "3"
 log = "0.4.14"
 onitamalib = { path = "../onitamalib", features = ["agent"] }
 pretty_env_logger = "0.4.0"
+rand = { version = "0.8.3", features = ["default", "alloc"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_cbor = "0.10"
 tokio = { version = "1.7.0", features = ["full"] }

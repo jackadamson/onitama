@@ -1,5 +1,4 @@
 use actix::prelude::*;
-use actix_web::web::Bytes;
 use uuid::Uuid;
 
 use crate::rooms::{OnitamaRoom, RoomWs};
@@ -20,17 +19,21 @@ pub struct CreateRoom(pub Addr<RoomWs>);
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct JoinedRoom {
-    pub addr: Addr<OnitamaRoom>,
-    pub room_key: Uuid,
-    pub player: Player,
-    pub initial_state: GameState,
-}
+pub struct LeftRoom(pub Addr<RoomWs>);
 
-#[derive(Debug)]
-pub enum GameData {
-    Binary(Bytes),
-    Text(String),
+#[derive(Message)]
+#[rtype(result = "()")]
+pub enum JoinedRoom {
+    Success {
+        addr: Addr<OnitamaRoom>,
+        room_key: Uuid,
+        player: Player,
+        state: GameState,
+        waiting: bool,
+    },
+    Error {
+        message: String,
+    },
 }
 
 #[derive(Message)]
@@ -39,6 +42,10 @@ pub struct AddressedGameMessage {
     pub sender: Addr<RoomWs>,
     pub msg: GameMessage,
 }
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct SocketGameMessage(pub GameMessage);
 
 #[derive(Message)]
 #[rtype(result = "()")]

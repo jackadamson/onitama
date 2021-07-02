@@ -7,11 +7,10 @@ use std::panic;
 
 use wasm_bindgen::prelude::*;
 
-pub use gamemodes::multiplayer::*;
 pub use gamemodes::local::*;
+pub use gamemodes::multiplayer::*;
 pub use messages::*;
-
-pub use crate::models::{GameError, GameState, GameView, Move};
+pub use models::*;
 
 pub mod cards;
 pub mod board;

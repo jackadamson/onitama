@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_cbor::{de, ser};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
@@ -7,7 +7,7 @@ use web_sys::MessageEvent;
 use crate::gamemodes::base::Game;
 use crate::GameView;
 use crate::messages::GameMessage;
-use crate::models::{GameState, Move, Player};
+use crate::models::{Move, Player};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize)]
 pub enum ConnectionState {
@@ -17,13 +17,16 @@ pub enum ConnectionState {
     Finished,
     RematchRequested,
     OpponentRematchRequested,
-    Closed,
+    OpponentDisconnected,
+    Disconnected,
+    Errored,
 }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct MultiplayerView {
     connection: ConnectionState,
     player: Player,
+    error: Option<String>,
     #[serde(rename = "roomId")]
     room_id: Option<String>,
     #[serde(flatten)]
@@ -38,14 +41,21 @@ pub struct MultiplayerGame {
     on_send_error: js_sys::Function,
     conn_state: ConnectionState,
     player: Player,
-    is_host: bool,
     room_id: Option<String>,
+    error: Option<String>,
 }
 
 impl MultiplayerGame {
     fn send_current_view(&self) {
         let game = GameView::from(&self.game.get_state());
-        let view = MultiplayerView { game, connection: self.conn_state, room_id: self.room_id.clone(), player: self.player };
+        let view = MultiplayerView {
+            game,
+            connection:
+            self.conn_state,
+            room_id: self.room_id.clone(),
+            player: self.player,
+            error: self.error.clone(),
+        };
         self.send_view(view);
     }
     fn send_view(&self, view: MultiplayerView) {
@@ -74,7 +84,6 @@ impl MultiplayerGame {
 impl MultiplayerGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        is_host: bool,
         on_send_view: js_sys::Function,
         on_send_error: js_sys::Function,
         on_send_msg: js_sys::Function,
@@ -87,8 +96,8 @@ impl MultiplayerGame {
             on_send_msg,
             on_send_view,
             on_send_error,
-            is_host,
             conn_state: ConnectionState::Connecting,
+            error: None,
         };
         game.send_current_view();
         return game;
@@ -178,6 +187,7 @@ impl MultiplayerGame {
         Ok(())
     }
     fn handle_game_message(&mut self, msg: GameMessage) {
+        log::info!("Message: {:?}", &msg);
         match (self.conn_state, msg) {
             (ConnectionState::Connecting | ConnectionState::RematchRequested,
                 GameMessage::Initialize { state, room_id, player, waiting }) => {
@@ -189,12 +199,10 @@ impl MultiplayerGame {
                     false => ConnectionState::Running,
                 };
                 self.game.set_state(state);
-                self.send_current_view();
             },
-            (ConnectionState::Waiting, GameMessage::Joined) => {
+            (ConnectionState::Waiting | ConnectionState::OpponentDisconnected, GameMessage::Joined) => {
                 log::info!("Player joined");
                 self.conn_state = ConnectionState::Running;
-                self.send_current_view();
             },
             (ConnectionState::Running, GameMessage::Move { game_move }) => {
                 log::info!("Received move");
@@ -213,15 +221,18 @@ impl MultiplayerGame {
             }
             (ConnectionState::Finished, GameMessage::RequestRematch) => {
                 self.conn_state = ConnectionState::OpponentRematchRequested;
-                self.send_current_view();
             },
             (_, GameMessage::Disconnected) => {
-                self.conn_state = ConnectionState::Closed;
-                self.send_current_view();
+                self.conn_state = ConnectionState::OpponentDisconnected;
+            },
+            (_, GameMessage::Error { message }) => {
+                self.conn_state = ConnectionState::Errored;
+                self.error = Some(message);
             },
             (state, msg) => {
                 log::error!("Illegal state transition state = {:?}, message = {:?}", state, msg)
             },
         }
+        self.send_current_view();
     }
 }

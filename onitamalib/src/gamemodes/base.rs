@@ -1,4 +1,4 @@
-use crate::models::{GameState, GameView, Move, Player};
+use crate::models::{GameState, Move, Player};
 
 pub struct Game {
     state: GameState,
@@ -29,9 +29,6 @@ impl Game {
         };
         self.state = board.try_move(game_move)?;
         Ok(())
-    }
-    pub fn get_view(&self) -> GameView {
-        GameView::from(&self.state)
     }
     pub fn set_state(&mut self, state: GameState) {
         self.state = state;

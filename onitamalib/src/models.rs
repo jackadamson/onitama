@@ -17,7 +17,7 @@ impl fmt::Display for Player {
 }
 
 impl Player {
-    pub(crate) fn invert(&self) -> Player {
+    pub fn invert(&self) -> Player {
         match self {
             Player::Red => Player::Blue,
             Player::Blue => Player::Red,

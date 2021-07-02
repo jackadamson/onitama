@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{GameState, Move};
 use crate::models::Player;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum GameMessage {
     Joined,
     RequestRematch,

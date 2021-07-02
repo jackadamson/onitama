@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from 'notistack';
+import { useHistory } from 'react-router';
 import { WEBSOCKET_BASE } from '../config';
 import { MultiplayerGame } from '../onitamalib';
 
@@ -7,6 +8,14 @@ const useMultiplayer = (roomId) => {
   const [state, setState] = useState(null);
   const [handlers, setHandlers] = useState({});
   const { enqueueSnackbar } = useSnackbar();
+  // Toggle this to force a reconnect
+  const [reconnectVal, setReconnectVal] = useState(false);
+  const history = useHistory();
+  const reconnect = useCallback(() => {
+    const currentRoomId = state?.roomId || roomId;
+    history.replace(`/r/${currentRoomId}`);
+    setReconnectVal((current) => !current);
+  }, [setReconnectVal, state?.roomId, history]);
   useEffect(() => {
     const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
     const roomUrl = `${WEBSOCKET_BASE}${roomId || ''}`;
@@ -15,9 +24,7 @@ const useMultiplayer = (roomId) => {
     const onSend = (data) => {
       sock.send(data);
     };
-    // Host goes first
-    const isHost = !roomId;
-    const game = new MultiplayerGame(isHost, setState, onError, onSend);
+    const game = new MultiplayerGame(setState, onError, onSend);
     const onMessage = (e) => {
       if (typeof e.data === 'string') {
         console.log('Received string', e.data);
@@ -29,12 +36,18 @@ const useMultiplayer = (roomId) => {
       playMove: (m) => game.move(m),
       reset: () => game.reset(),
     });
+    const onClose = () => {
+      console.log('Disconnected');
+      setState((current) => ({ ...current, connection: 'Disconnected' }));
+    };
+    sock.addEventListener('close', onClose);
     sock.addEventListener('message', onMessage);
     return () => {
-      sock.removeEventListener('message', onMessage);
+      sock.close(1000);
     };
-  }, [enqueueSnackbar, roomId]);
-  return { state, ...handlers };
+  }, [enqueueSnackbar, roomId, history, reconnectVal]);
+  console.log(state);
+  return { state, reconnect, ...handlers };
 };
 
 export default useMultiplayer;
