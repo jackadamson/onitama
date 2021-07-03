@@ -13,9 +13,6 @@ const AiSelect = () => {
       <Button variant="contained" color="primary" className={classes.button} disabled>
         WIP: Easy
       </Button>
-      <Button variant="contained" color="primary" className={classes.button} disabled>
-        WIP: Medium
-      </Button>
       <Button
         component={Link}
         to="/r/ai"
@@ -23,7 +20,10 @@ const AiSelect = () => {
         color="primary"
         className={classes.button}
       >
-        Hard
+        Medium
+      </Button>
+      <Button variant="contained" color="primary" className={classes.button} disabled>
+        WIP: Hard
       </Button>
       <Box m={1} />
       <Button
