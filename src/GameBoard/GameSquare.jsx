@@ -5,6 +5,7 @@ import { Box, makeStyles, Paper } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChessPawn, faChessKing } from '@fortawesome/free-solid-svg-icons';
 import Color from 'color';
+import { PointPropType } from './props';
 
 const icons = {
   Empty: null,
@@ -15,7 +16,7 @@ const icons = {
 };
 const useStyles = makeStyles((theme) => ({
   selected: {
-    borderColor: theme.palette.primary.light,
+    borderColor: theme.palette.primary.main,
   },
   valid: {
     borderColor: theme.palette.secondary.dark,
@@ -25,6 +26,9 @@ const useStyles = makeStyles((theme) => ({
       borderColor: theme.palette.primary.main,
     },
     cursor: 'pointer',
+  },
+  lastMove: {
+    borderColor: `${theme.palette.success.dark}a0`,
   },
   redBase: {
     backgroundColor: Color(theme.palette.background.paper).mix(Color('#f44336'), 0.1).hex(),
@@ -39,12 +43,15 @@ const tilePlayer = {
   RedPawn: 'Red',
   RedKing: 'Red',
 };
-const GameSquare = ({ tile, x, y, src, setSrc, turn, move, isValid }) => {
+const GameSquare = ({ tile, x, y, src, setSrc, turn, move, isValid, lastMove }) => {
   const classes = useStyles();
   const player = tilePlayer[tile];
   const activePlayer = turn === player;
   const selected = x === src?.x && y === src?.y;
   const selectable = !selected && Boolean(activePlayer || src);
+  const lastSrc = x === lastMove?.src?.x && y === lastMove?.src?.y;
+  const lastDst = x === lastMove?.dst?.x && y === lastMove?.dst?.y;
+  const moved = lastSrc || lastDst;
   return (
     <Paper
       variant="outlined"
@@ -60,6 +67,7 @@ const GameSquare = ({ tile, x, y, src, setSrc, turn, move, isValid }) => {
         [classes.valid]: isValid,
         [classes.redBase]: x === 2 && y === 4,
         [classes.blueBase]: x === 2 && y === 0,
+        [classes.lastMove]: moved && !isValid,
       })}
       onClick={() => {
         if (activePlayer) {
@@ -76,6 +84,7 @@ const GameSquare = ({ tile, x, y, src, setSrc, turn, move, isValid }) => {
 GameSquare.defaultProps = {
   src: null,
   turn: null,
+  lastMove: null,
 };
 GameSquare.propTypes = {
   tile: PropTypes.oneOf(['Empty', 'BluePawn', 'BlueKing', 'RedPawn', 'RedKing']).isRequired,
@@ -89,6 +98,10 @@ GameSquare.propTypes = {
   turn: PropTypes.oneOf(['Red', 'Blue', null]),
   move: PropTypes.func.isRequired,
   isValid: PropTypes.bool.isRequired,
+  lastMove: PropTypes.shape({
+    dst: PointPropType.isRequired,
+    src: PointPropType.isRequired,
+  }),
 };
 
 export default GameSquare;

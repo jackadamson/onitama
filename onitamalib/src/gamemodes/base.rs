@@ -2,12 +2,14 @@ use crate::models::{GameState, Move, Player};
 
 pub struct Game {
     state: GameState,
+    last_move: Option<Move>,
 }
 
 impl Game {
     pub fn new() -> Game {
         let game = Game {
             state: GameState::new(),
+            last_move: None,
         };
         return game;
     }
@@ -16,6 +18,7 @@ impl Game {
 impl Game {
     pub fn reset(&mut self) {
         self.state = GameState::new();
+        self.last_move = None;
     }
 }
 
@@ -28,7 +31,11 @@ impl Game {
             },
         };
         self.state = board.try_move(game_move)?;
+        self.last_move = Some(game_move);
         Ok(())
+    }
+    pub fn get_last_move(&self) -> Option<Move> {
+        self.last_move
     }
     pub fn set_state(&mut self, state: GameState) {
         self.state = state;

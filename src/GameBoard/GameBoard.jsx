@@ -7,6 +7,7 @@ import GameCard from './GameCard';
 import GameGrid from './GameGrid';
 import GameHand from './GameHand';
 import GameTurn from './GameTurn';
+import { CardPropType, PointPropType } from './props';
 
 const GameBoard = ({
   src,
@@ -21,6 +22,7 @@ const GameBoard = ({
   setCard,
   card,
   canMove,
+  lastMove,
   isMoveValid,
   move,
   discard,
@@ -81,6 +83,7 @@ const GameBoard = ({
               setSrc={setSrc}
               grid={grid}
               turn={turn}
+              lastMove={lastMove}
             />
             <GameHand
               setCard={setCard}
@@ -116,20 +119,13 @@ const GameBoard = ({
     </Box>
   );
 };
-const PointPropType = PropTypes.shape({
-  x: PropTypes.number.isRequired,
-  y: PropTypes.number.isRequired,
-});
-const CardPropType = PropTypes.shape({
-  card: PropTypes.string.isRequired,
-  moves: PropTypes.arrayOf(PointPropType).isRequired,
-});
 GameBoard.defaultProps = {
   card: null,
   src: null,
   winner: null,
   reset: null,
   player: null,
+  lastMove: null,
 };
 GameBoard.propTypes = {
   src: PointPropType,
@@ -142,6 +138,10 @@ GameBoard.propTypes = {
   spare: CardPropType.isRequired,
   blueCards: PropTypes.arrayOf(CardPropType).isRequired,
   redCards: PropTypes.arrayOf(CardPropType).isRequired,
+  lastMove: PropTypes.shape({
+    dst: PointPropType.isRequired,
+    src: PointPropType.isRequired,
+  }),
   setCard: PropTypes.func.isRequired,
   card: CardPropType,
   canMove: PropTypes.bool.isRequired,

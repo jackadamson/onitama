@@ -23,14 +23,15 @@ pub enum ConnectionState {
 }
 
 #[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct MultiplayerView {
     connection: ConnectionState,
     player: Player,
     error: Option<String>,
-    #[serde(rename = "roomId")]
     room_id: Option<String>,
     #[serde(flatten)]
     game: GameView,
+    last_move: Option<Move>,
 }
 
 #[wasm_bindgen]
@@ -55,6 +56,7 @@ impl MultiplayerGame {
             room_id: self.room_id.clone(),
             player: self.player,
             error: self.error.clone(),
+            last_move: self.game.get_last_move(),
         };
         self.send_view(view);
     }
