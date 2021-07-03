@@ -20,3 +20,5 @@ jobs:
         with:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/onitama:latest
+          cache-from: type=gha
+          cache-to: type=gha
