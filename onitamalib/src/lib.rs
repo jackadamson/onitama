@@ -14,8 +14,12 @@ pub use models::*;
 mod cards;
 mod board;
 mod models;
+
 #[cfg(feature = "agent")]
 mod agents;
+#[cfg(feature = "agent")]
+pub use agents::*;
+
 mod gamemodes;
 pub mod messages;
 

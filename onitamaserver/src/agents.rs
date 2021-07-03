@@ -4,7 +4,7 @@ use actix::{Actor, Addr, StreamHandler, Handler, SyncContext, SyncArbiter, Async
 use actix_web_actors::ws;
 use serde_cbor::ser;
 
-use onitamalib::{GameMessage, GameState, Player};
+use onitamalib::{GameMessage, GameState, Player, montecarlo};
 
 use crate::messages::{AgentRequest, AgentResponse};
 
@@ -28,12 +28,12 @@ pub enum AgentException {
     AgentError,
 }
 
-const TIMEOUT: Duration = Duration::from_millis(50);
+const TIMEOUT: Duration = Duration::from_millis(500);
 
 impl Agent {
     fn play_move(&mut self, state: GameState) -> Result<GameMessage, AgentException> {
         // The state is guaranteed to be Playing
-        let (game_move, expected_score) = match state.iterative_deepening(TIMEOUT) {
+        let (game_move, expected_score) = match montecarlo::montecarlo_agent(&state, TIMEOUT) {
             None => {
                 error!("No moves available");
                 return Err(AgentException::AgentError);
