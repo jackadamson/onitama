@@ -1,4 +1,4 @@
-use actix::prelude::*;
+use actix::{Addr, Message};
 use uuid::Uuid;
 
 use onitamalib::{GameMessage, GameState, Player};
@@ -59,3 +59,7 @@ pub struct AgentRequest {
 pub struct AgentResponse {
     pub resp: Result<GameMessage,AgentException>,
 }
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct CloseRoom;

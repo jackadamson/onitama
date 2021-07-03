@@ -11,10 +11,11 @@ use crate::utils::get_identifier;
 
 pub async fn join_room(
     req: HttpRequest,
-    web::Path(key): web::Path<String>,
+    path: web::Path<String>,
     stream: web::Payload,
     data: web::Data<ServerData>,
 ) -> Result<HttpResponse, Error> {
+    let key = path.to_string();
     let server: Addr<OnitamaServer> = data.server_addr.clone();
     let id = get_identifier(&req);
     let key = match Uuid::from_str(&key) {

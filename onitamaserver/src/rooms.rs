@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
-use actix::prelude::*;
+use actix::{Actor, Addr, StreamHandler, Handler, Context, ActorContext, AsyncContext};
 use actix_web_actors::ws;
 use rand::prelude::*;
 use serde_cbor::ser;
+use tokio::task::JoinHandle;
+use tokio::time;
 use uuid::Uuid;
 
 use onitamalib::{GameMessage, GameState, Move, Player};
 
-use crate::messages::{
-    AddressedGameMessage, CreateRoom, JoinedRoom, JoinRoom, LeftRoom, SocketGameMessage
-};
+use crate::messages::{AddressedGameMessage, CloseRoom, CreateRoom, JoinedRoom, JoinRoom, LeftRoom, SocketGameMessage};
 
 /// Socket
 ///
@@ -134,6 +134,7 @@ pub struct OnitamaRoom {
     blue: Option<Addr<RoomWs>>,
     key: Uuid,
     requested_rematch: Option<Player>,
+    close_room_handle: Option<JoinHandle<()>>,
 }
 
 impl OnitamaRoom {
@@ -144,6 +145,7 @@ impl OnitamaRoom {
             blue: None,
             key: Uuid::new_v4(),
             requested_rematch: None,
+            close_room_handle: None,
         }
     }
 }
@@ -210,6 +212,14 @@ impl Handler<JoinRoom> for OnitamaRoom {
                 return;
             }
         };
+        match &self.close_room_handle {
+            None => {}
+            Some(handle) => {
+                info!("Canceled room close: {}", self.key);
+                handle.abort();
+                self.close_room_handle = None;
+            }
+        };
         match player {
             Player::Red => { self.red = Some(socket.clone()); }
             Player::Blue => { self.blue = Some(socket.clone()); }
@@ -229,10 +239,15 @@ impl Handler<JoinRoom> for OnitamaRoom {
     }
 }
 
+async fn delay_exit(addr: Addr<OnitamaRoom>) {
+    time::sleep(time::Duration::from_secs(15)).await;
+    addr.do_send(CloseRoom {});
+}
+
 impl Handler<LeftRoom> for OnitamaRoom {
     type Result = ();
     fn handle(&mut self, msg: LeftRoom, ctx: &mut Self::Context) {
-        info!("handling left room");
+        info!("Player left room: {}", self.key);
         let LeftRoom(addr) = msg;
         if self.blue.as_ref() == Some(&addr) {
             self.blue = None;
@@ -242,11 +257,28 @@ impl Handler<LeftRoom> for OnitamaRoom {
         }
         match (&self.blue, &self.red) {
             (None, None) => {
+                info!("Room Empty: {}", self.key.clone());
+                let addr = ctx.address();
+                let handle = tokio::spawn(delay_exit(addr));
+                self.close_room_handle = Some(handle);
+            },
+            _ => {
+                self.broadcast(GameMessage::Disconnected);
+            }
+        };
+    }
+}
+
+impl Handler<CloseRoom> for OnitamaRoom {
+    type Result = ();
+    fn handle(&mut self, _msg: CloseRoom, ctx: &mut Self::Context) {
+        match (&self.blue, &self.red) {
+            (None, None) => {
                 info!("Room Closing: {}", self.key.clone());
                 ctx.stop();
             },
             _ => {
-                self.broadcast(GameMessage::Disconnected);
+                error!("Almost closed running room ({}), this is a bug", self.key);
             }
         };
     }
@@ -363,12 +395,12 @@ impl Actor for OnitamaServer {
 impl Handler<JoinRoom> for OnitamaServer {
     type Result = ();
     fn handle(&mut self, msg: JoinRoom, _: &mut Self::Context) {
-        println!("Server received join room request");
-        let room_key = &msg.room_key;
+        let room_key = msg.room_key.clone();
         let addr = msg.addr.clone();
-        let err_resp = GameMessage::Error { message: "Requested room doesn't exist".to_string() };
-        let room = match self.rooms.get(room_key) {
+        let room = match self.rooms.get(&room_key) {
             None => {
+                warn!("Player attempted to join non-existent room: {}", &room_key);
+                let err_resp = GameMessage::Error { message: "Requested room doesn't exist".to_string() };
                 addr.do_send(SocketGameMessage(err_resp));
                 return;
             }
@@ -377,6 +409,10 @@ impl Handler<JoinRoom> for OnitamaServer {
         match room.try_send(msg) {
             Ok(_) => {}
             Err(_) => {
+                warn!("Player attempted to join closed room: {}", &room_key);
+                let err_resp = GameMessage::Error {
+                    message: "Requested room was closed due to being empty too long".to_string(),
+                };
                 addr.do_send(SocketGameMessage(err_resp));
             }
         };

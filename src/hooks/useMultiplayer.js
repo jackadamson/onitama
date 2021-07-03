@@ -52,6 +52,12 @@ const useMultiplayer = (roomId) => {
       sock.close(1000);
     };
   }, [enqueueSnackbar, roomId, history, reconnectVal]);
+  const stateRoomId = state?.roomId;
+  useEffect(() => {
+    if (stateRoomId && !roomId) {
+      history.replace(`/r/${stateRoomId}`);
+    }
+  }, [history, roomId, stateRoomId]);
   logger.log(state);
   return { state, reconnect, ...handlers };
 };

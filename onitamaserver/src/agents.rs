@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use actix::prelude::*;
+use actix::{Actor, Addr, StreamHandler, Handler, SyncContext, SyncArbiter, AsyncContext};
 use actix_web_actors::ws;
 use serde_cbor::ser;
 
