@@ -38,8 +38,8 @@ impl Game {
         self.last_move
     }
     pub fn set_state(&mut self, state: GameState) {
-        self.state = state;
         self.last_move = None;
+        self.state = state;
     }
     pub fn get_state(&self) -> GameState {
         return self.state;

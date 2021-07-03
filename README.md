@@ -8,7 +8,7 @@ Can be played at [https://onitama.mrfluffy.dev/](https://onitama.mrfluffy.dev/)
 Things that could be cool to implement, that aren't done yet, and might one day get done
 
 - [x] Show piece that last moved, and where it moved from
-- [ ] Say when opponent has requested a rematch
+- [x] Say when opponent has requested a rematch
 - [ ] Add chat (maybe)
 - [ ] Add "how to play"
 - [ ] Add different difficulty AIs

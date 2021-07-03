@@ -23,6 +23,7 @@ const GameBoard = ({
   card,
   canMove,
   lastMove,
+  connectionStatus,
   isMoveValid,
   move,
   discard,
@@ -43,7 +44,12 @@ const GameBoard = ({
             Home
           </Button>
         </Box>
-        <GameOver reset={reset} winner={winner} player={player} />
+        <GameOver
+          reset={reset}
+          winner={winner}
+          player={player}
+          connectionStatus={connectionStatus}
+        />
         <Box
           display={hideSideSpare ? 'none' : 'flex'}
           flexDirection="column"
@@ -126,6 +132,7 @@ GameBoard.defaultProps = {
   reset: null,
   player: null,
   lastMove: null,
+  connectionStatus: null,
 };
 GameBoard.propTypes = {
   src: PointPropType,
@@ -142,6 +149,7 @@ GameBoard.propTypes = {
     dst: PointPropType.isRequired,
     src: PointPropType.isRequired,
   }),
+  connectionStatus: PropTypes.string,
   setCard: PropTypes.func.isRequired,
   card: CardPropType,
   canMove: PropTypes.bool.isRequired,

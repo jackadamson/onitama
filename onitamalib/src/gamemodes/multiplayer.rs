@@ -41,6 +41,7 @@ pub struct MultiplayerGame {
     on_send_view: js_sys::Function,
     on_send_error: js_sys::Function,
     conn_state: ConnectionState,
+    resume_state: ConnectionState,
     player: Player,
     room_id: Option<String>,
     error: Option<String>,
@@ -99,6 +100,7 @@ impl MultiplayerGame {
             on_send_view,
             on_send_error,
             conn_state: ConnectionState::Connecting,
+            resume_state: ConnectionState::Connecting,
             error: None,
         };
         game.send_current_view();
@@ -191,20 +193,27 @@ impl MultiplayerGame {
     fn handle_game_message(&mut self, msg: GameMessage) {
         log::info!("Message: {:?}", &msg);
         match (self.conn_state, msg) {
-            (ConnectionState::Connecting | ConnectionState::RematchRequested,
+            (ConnectionState::Connecting | ConnectionState::RematchRequested | ConnectionState::Finished,
                 GameMessage::Initialize { state, room_id, player, waiting }) => {
                 log::info!("Initializing");
                 self.room_id = Some(room_id);
                 self.player = player;
                 self.conn_state = match waiting {
                     true => ConnectionState::Waiting,
-                    false => ConnectionState::Running,
+                    false => match state.finished() {
+                        true => ConnectionState::Finished,
+                        false => ConnectionState::Running,
+                    },
                 };
                 self.game.set_state(state);
             },
-            (ConnectionState::Waiting | ConnectionState::OpponentDisconnected, GameMessage::Joined) => {
+            (ConnectionState::Waiting, GameMessage::Joined) => {
                 log::info!("Player joined");
                 self.conn_state = ConnectionState::Running;
+            },
+            (ConnectionState::OpponentDisconnected, GameMessage::Joined) => {
+                log::info!("Player re-joined");
+                self.conn_state = self.resume_state;
             },
             (ConnectionState::Running, GameMessage::Move { game_move }) => {
                 log::info!("Received move");
@@ -225,6 +234,7 @@ impl MultiplayerGame {
                 self.conn_state = ConnectionState::OpponentRematchRequested;
             },
             (_, GameMessage::Disconnected) => {
+                self.resume_state = self.conn_state;
                 self.conn_state = ConnectionState::OpponentDisconnected;
             },
             (_, GameMessage::Error { message }) => {

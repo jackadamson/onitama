@@ -1,6 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles, Dialog, DialogActions, DialogTitle, Button } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import {
+  makeStyles,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  Button,
+  Typography,
+} from '@material-ui/core';
 import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) => ({
@@ -18,11 +26,16 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
 }));
-const GameOver = ({ winner, reset, player }) => {
+const captionsFromStatus = {
+  OpponentRematchRequested: 'Opponent requested a rematch',
+  RematchRequested: 'Rematch request sent',
+};
+const GameOver = ({ winner, reset, player, connectionStatus }) => {
   const classes = useStyles();
   const relativeText = player === winner ? 'You Win!' : 'You Lose!';
   const absoluteText = `${winner} wins!`;
   const text = player ? relativeText : absoluteText;
+  const caption = captionsFromStatus[connectionStatus];
   return (
     <Dialog open={Boolean(winner)} classes={{ paper: classes.dialog }}>
       <DialogTitle
@@ -35,19 +48,25 @@ const GameOver = ({ winner, reset, player }) => {
       </DialogTitle>
       <DialogActions>
         <Button variant="contained" onClick={reset} color="primary">
-          Play Again
+          Rematch
+        </Button>
+        <Button variant="outlined" color="secondary" component={Link} to="/">
+          Main Menu
         </Button>
       </DialogActions>
+      <Typography variant="subtitle1">{caption}</Typography>
     </Dialog>
   );
 };
 GameOver.defaultProps = {
   winner: null,
   player: null,
+  connectionStatus: null,
 };
 GameOver.propTypes = {
   winner: PropTypes.oneOf(['Red', 'Blue', null]),
   player: PropTypes.oneOf(['Red', 'Blue', null]),
+  connectionStatus: PropTypes.string,
   reset: PropTypes.func.isRequired,
 };
 

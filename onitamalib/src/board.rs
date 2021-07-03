@@ -269,6 +269,12 @@ impl Board {
 }
 
 impl GameState {
+    pub fn finished(&self) -> bool {
+        match self {
+            GameState::Playing { .. } => false,
+            GameState::Finished { .. } => true,
+        }
+    }
     pub fn try_move(&self, game_move: Move) -> Result<GameState, String> {
         match self {
             GameState::Playing { board } => board.try_move(game_move),

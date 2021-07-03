@@ -66,7 +66,8 @@ const RemoteGame = () => {
     return <Loading />;
   }
   // Host always creates game
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove } = state;
+  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, connection } =
+    state;
   const isMoveValid = getMoves(src, card, turn);
   return (
     <>
@@ -89,6 +90,7 @@ const RemoteGame = () => {
         move={move}
         discard={discard}
         lastMove={lastMove}
+        connectionStatus={connection}
       />
     </>
   );
