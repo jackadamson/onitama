@@ -1,11 +1,12 @@
-use instant::{Duration, Instant};
-use rand::seq::IteratorRandom;
-use rand::thread_rng;
-
-use crate::{alphabeta, Board, GameState, Move, Player};
 use std::cell::Cell;
 
+use instant::{Duration, Instant};
+use rand::prelude::*;
+
+use crate::{alphabeta, Board, GameState, Move, Player};
+
 pub fn montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
+    log::debug!("Game State: {:?}", state);
     let alphabeta_duration = duration / 2;
     let moves_scored = match alphabeta::moves_scored_deepening(state, alphabeta_duration) {
         None => {
@@ -37,18 +38,31 @@ pub fn montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, 
     let moves: Vec<Move> = moves_scored
         .iter()
         .filter_map(|(game_move, expected_score)| match *expected_score == guaranteed_lose_score {
-            true => None,
-            false => Some(*game_move),
+            true => {
+                log::debug!("Ruling out move: {:?}", game_move);
+                None
+            },
+            false => {
+                log::debug!("Acceptable score: {:?} - {:?}", expected_score, game_move);
+                Some(*game_move)
+            },
         })
         .collect();
     // If all moves lead to loss, still choose a move
     let moves = match moves.len() > 0 {
         true => moves,
-        false => moves_scored
-            .iter()
-            .map(|(game_move, _)| *game_move)
-            .collect()
+        false => {
+            log::debug!("Opponent can force a win");
+            moves_scored
+                .iter()
+                .map(|(game_move, _)| *game_move)
+                .collect()
+        }
     };
+    if moves.len() == 1 {
+        log::debug!("One legal move");
+        return Some((moves[0], 0));
+    }
     let monte_carlo_duration = duration / 2;
     let scored_moves = montecarlo(board, moves, monte_carlo_duration);
     scored_moves.into_iter().reduce(|(move_a, score_a), (move_b, score_b)| match score_a > score_b {
@@ -68,12 +82,13 @@ fn montecarlo(board: &Board, moves: Vec<Move>, duration: Duration) -> Vec<(Move,
         .map(|game_move| (game_move, Cell::new(0i64)))
         .collect();
     let mut simulations = 0u64;
+    let mut rng = thread_rng();
     while !timedout() {
         for _ in 0..ITERATIONS_PER_TIME_CHECK {
             for (game_move, score) in results.iter() {
                 simulations += 1;
                 let state = board.try_move(*game_move).expect("illegal move");
-                let new_score = score.get() + match simulate(state) {
+                let new_score = score.get() + match simulate(state, &mut rng) {
                     Some(Player::Red) => 1,
                     Some(Player::Blue) => -1,
                     None => 0,
@@ -96,12 +111,13 @@ pub fn montecarlo_count_simulations(board: &Board, moves: Vec<Move>, duration: D
         .map(|game_move| (game_move, Cell::new(0i64)))
         .collect();
     let mut simulations = 0u64;
+    let mut rng = SmallRng::seed_from_u64(0);
     while !timedout() {
         for _ in 0..ITERATIONS_PER_TIME_CHECK {
             for (game_move, score) in results.iter() {
                 simulations += 1;
                 let state = board.try_move(*game_move).expect("illegal move");
-                let new_score = score.get() + match simulate(state) {
+                let new_score = score.get() + match simulate(state, &mut rng) {
                     Some(Player::Red) => 1,
                     Some(Player::Blue) => -1,
                     None => 0,
@@ -115,9 +131,8 @@ pub fn montecarlo_count_simulations(board: &Board, moves: Vec<Move>, duration: D
 }
 
 // Choose random moves and return the player that one, or None if loop
-fn simulate(state: GameState) -> Option<Player> {
+fn simulate<R: Rng>(state: GameState, rng: &mut R) -> Option<Player> {
     let mut state = state;
-    let mut rng = thread_rng();
     for _ in 0..100 {
         let board = match state {
             GameState::Playing { board } => board,
@@ -125,8 +140,7 @@ fn simulate(state: GameState) -> Option<Player> {
                 return Some(winner);
             }
         };
-        let moves = board.legal_moves();
-        let game_move = moves.into_iter().choose(&mut rng).expect("No legal moves in montecarlo sim");
+        let game_move = board.random_legal_move(rng);
         state = state.try_move(game_move).expect("montecarlo played illegal move");
     }
     log::debug!("Game failed to end after being simulated for 100 turns");

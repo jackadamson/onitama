@@ -1,9 +1,11 @@
 use indicatif::ProgressBar;
 use instant::Duration;
 
-use crate::{alphabeta, minimax};
+use crate::{alphabeta, Board, Card, GameState, minimax, Player, Point};
 
 use super::utils;
+use crate::Card::*;
+use crate::Player::*;
 
 const SHARED_DEPTH: u16 = 3;
 
