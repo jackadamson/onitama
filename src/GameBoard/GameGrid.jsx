@@ -6,11 +6,16 @@ import GameSquare from './GameSquare';
 import { PointPropType } from './props';
 import LastMove from './LastMove';
 
-const GameGrid = ({ grid, isMoveValid, src, setSrc, turn, move, lastMove }) => (
-  <Paper component={Box} display="flex" flexDirection="column" my={2}>
-    <LastMove lastMove={lastMove} />
+const GameGrid = ({ grid, isMoveValid, src, setSrc, turn, move, lastMove, redOriented }) => (
+  <Paper
+    component={Box}
+    display="flex"
+    flexDirection={redOriented ? 'column' : 'column-reverse'}
+    my={2}
+  >
+    <LastMove lastMove={lastMove} redOriented={redOriented} />
     {grid.map((row, y) => (
-      <Box display="flex" flexDirection="row" key={y}>
+      <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'} key={y}>
         {row.map((tile, x) => (
           <GameSquare
             tile={tile}
@@ -35,6 +40,7 @@ GameGrid.defaultProps = {
   lastMove: null,
 };
 GameGrid.propTypes = {
+  redOriented: PropTypes.bool.isRequired,
   grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
   isMoveValid: PropTypes.func.isRequired,
   src: PropTypes.shape({

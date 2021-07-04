@@ -33,12 +33,14 @@ const GameBoard = ({
   const hideSideSpare = useMediaQuery(theme.breakpoints.down('sm'));
   // Whether it's the player's turn, always true if local multiplayer
   const playerTurn = player ? player === turn : true;
+  // Whether perspective should have red at bottom of screen
+  const redOriented = player !== 'Blue';
   return (
     <Box height="100vh" display="flex" flexDirection="column">
       <Box display="flex" justifyContent="center">
         <GameTurn player={player} turn={turn} />
       </Box>
-      <Box display="flex" flexGrow={1}>
+      <Box display="flex" flexGrow={1} flexDirection={redOriented ? 'row' : 'row-reverse'}>
         <Box position="absolute" top="0" left="0">
           <Button component={Link} to="/">
             Home
@@ -60,7 +62,7 @@ const GameBoard = ({
           {turn === 'Blue' && (
             <GameCard
               spare
-              inverted
+              inverted={redOriented}
               moves={spare.moves}
               enabled={false}
               setCard={setCard}
@@ -70,7 +72,7 @@ const GameBoard = ({
           )}
         </Box>
         <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1}>
-          <Box display="flex" flexDirection="column">
+          <Box display="flex" flexDirection={redOriented ? 'column' : 'column-reverse'}>
             <GameHand
               setCard={setCard}
               selectedCard={card}
@@ -80,7 +82,7 @@ const GameBoard = ({
               cards={blueCards}
               enabled={turn === 'Blue' && playerTurn}
               isPlayerTurn={turn === 'Blue'}
-              inverted
+              inverted={redOriented}
             />
             <GameGrid
               isMoveValid={isMoveValid}
@@ -90,6 +92,7 @@ const GameBoard = ({
               grid={grid}
               turn={turn}
               lastMove={lastMove}
+              redOriented={redOriented}
             />
             <GameHand
               setCard={setCard}
@@ -100,6 +103,7 @@ const GameBoard = ({
               cards={redCards}
               enabled={turn === 'Red' && playerTurn}
               isPlayerTurn={turn === 'Red'}
+              inverted={!redOriented}
             />
           </Box>
         </Box>
@@ -113,6 +117,7 @@ const GameBoard = ({
           {turn === 'Red' && (
             <GameCard
               spare
+              inverted={!redOriented}
               moves={spare.moves}
               enabled={false}
               setCard={setCard}

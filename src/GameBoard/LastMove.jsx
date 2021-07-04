@@ -12,7 +12,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 const radToDeg = 180 / Math.PI;
-const LastMove = ({ lastMove }) => {
+const LastMove = ({ lastMove, redOriented }) => {
   const classes = useStyles();
   if (!lastMove) {
     return null;
@@ -21,6 +21,7 @@ const LastMove = ({ lastMove }) => {
   const deltaX = dst.x - src.x;
   const deltaY = dst.y - src.y;
   const angle = Math.atan2(deltaY, deltaX) * radToDeg;
+  const angleAdjusted = redOriented ? angle : angle + 180;
   const scale = Math.sqrt(deltaX ** 2 + deltaY ** 2);
   const length = 64 * scale;
   const points = [
@@ -33,9 +34,11 @@ const LastMove = ({ lastMove }) => {
   ]
     .flatMap((x) => x.toString())
     .join(' ');
+  const x = redOriented ? src.x : 4 - src.x;
+  const y = redOriented ? src.y : 4 - src.y;
   return (
     <svg className={classes.svg}>
-      <g transform={`translate(${src.x * 64 + 32} ${src.y * 64 + 32}) rotate(${angle})`}>
+      <g transform={`translate(${x * 64 + 32} ${y * 64 + 32}) rotate(${angleAdjusted})`}>
         <polygon
           points={points}
           stroke="rgba(80, 255, 80, 0.15)"
@@ -50,6 +53,7 @@ LastMove.defaultProps = {
   lastMove: null,
 };
 LastMove.propTypes = {
+  redOriented: PropTypes.bool.isRequired,
   lastMove: PropTypes.shape({
     dst: PointPropType.isRequired,
     src: PointPropType.isRequired,
