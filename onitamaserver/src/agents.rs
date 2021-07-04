@@ -24,7 +24,6 @@ impl Agent {
 pub enum AgentException {
     IllegalMove,
     InvalidMessageForState,
-    GameFinished,
     AgentError,
 }
 
@@ -80,9 +79,10 @@ impl Agent {
                         return Err(AgentException::IllegalMove);
                     },
                 };
+                self.state = state;
                 match state {
                     GameState::Finished { .. } => {
-                        Err(AgentException::GameFinished)
+                        Ok(GameMessage::RequestRematch)
                     },
                     state => self.play_move(state),
                 }

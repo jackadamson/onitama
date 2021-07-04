@@ -29,6 +29,30 @@ pub fn iterative_deepening(state: &GameState, duration: Duration) -> Option<(Mov
     return result;
 }
 
+#[cfg(test)]
+pub fn iterative_deepening_just_depth(state: &GameState, duration: Duration) -> Option<u16> {
+    let start = Instant::now();
+    let deadline = start + duration;
+    let mut result: Option<(Move, i8)> = None;
+    for depth in 1..MAX_DEPTH {
+        if let Some((_, val)) = result {
+            if val == i8::MAX || val == i8::MIN {
+                break;
+            }
+        }
+        match optimal_move_deadline(state, depth, deadline) {
+            None => {
+                log::info!("Timeout at depth {}, took {}ms", depth, start.elapsed().as_millis());
+                return Some(depth);
+            }
+            Some(val) => {
+                result = Some(val);
+            },
+        };
+    }
+    return None;
+}
+
 fn optimal_move_deadline(state: &GameState, depth: u16, deadline: Instant) -> Option<(Move, i8)> {
     let timedout = || Instant::now() >  deadline;
     let board = match state {

@@ -6,7 +6,7 @@ const useLocalGame = () => {
   const [state, setState] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const handlers = useMemo(() => {
-    const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: true });
+    const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
     const game = new LocalGame(setState, onError);
     return {
       playMove: (m) => game.move(m),

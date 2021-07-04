@@ -18,7 +18,7 @@ getrandom = { version = "0.2", features = ["js"] }
 gloo = "0.2.1"
 js-sys = "0.3.45"
 log = "0.4.6"
-rand = { version = "0.8.3", features = ["default", "alloc"] }
+rand = { version = "0.8.3", features = ["default", "alloc", "small_rng"] }
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.3.0"
 serde_bytes = "0.11.5"
@@ -27,6 +27,9 @@ wasm-bindgen = { version="0.2.63", features = ["serde-serialize"] }
 wasm-logger = "0.2.0"
 wee_alloc = { version = "0.4.5", optional = true }
 instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
+
+[dev-dependencies]
+indicatif = { version = "0.16.2" }
 
 [dependencies.web-sys]
 version = "0.3.51"

@@ -7,4 +7,4 @@ members = [
 [profile.release]
 opt-level = 3
 lto = "fat"
-debug = 0
+debug = 1

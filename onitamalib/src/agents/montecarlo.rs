@@ -86,6 +86,34 @@ fn montecarlo(board: &Board, moves: Vec<Move>, duration: Duration) -> Vec<(Move,
     return results.into_iter().map(|(game_move, score)| (game_move, score.get())).collect();
 }
 
+#[cfg(test)]
+pub fn montecarlo_count_simulations(board: &Board, moves: Vec<Move>, duration: Duration) -> u64 {
+    let start = Instant::now();
+    let deadline = start + duration;
+    let timedout = || Instant::now() >  deadline;
+    let results: Vec<(Move, Cell<i64>)> = moves
+        .into_iter()
+        .map(|game_move| (game_move, Cell::new(0i64)))
+        .collect();
+    let mut simulations = 0u64;
+    while !timedout() {
+        for _ in 0..ITERATIONS_PER_TIME_CHECK {
+            for (game_move, score) in results.iter() {
+                simulations += 1;
+                let state = board.try_move(*game_move).expect("illegal move");
+                let new_score = score.get() + match simulate(state) {
+                    Some(Player::Red) => 1,
+                    Some(Player::Blue) => -1,
+                    None => 0,
+                };
+                score.set(new_score);
+            }
+        }
+    }
+    log::info!("Monte-carlo timed out after {} simulations", simulations);
+    return simulations;
+}
+
 // Choose random moves and return the player that one, or None if loop
 fn simulate(state: GameState) -> Option<Player> {
     let mut state = state;
@@ -101,6 +129,6 @@ fn simulate(state: GameState) -> Option<Player> {
         let game_move = moves.into_iter().choose(&mut rng).expect("No legal moves in montecarlo sim");
         state = state.try_move(game_move).expect("montecarlo played illegal move");
     }
-    log::info!("Game failed to end after being simulated for 100 turns");
+    log::debug!("Game failed to end after being simulated for 100 turns");
     None
 }
