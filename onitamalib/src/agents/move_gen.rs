@@ -24,6 +24,17 @@ impl Board {
             }
         }
         if moves.len() > 0 {
+            let opponent_pieces = self.opponent_pieces();
+            let key = |game_move: &Move| {
+                match game_move {
+                    Move::Move { dst, .. } => match opponent_pieces.contains(&Some(*dst)) {
+                        true => 0,
+                        false => 1,
+                    }
+                    Move::Discard { .. } => 0,
+                }
+            };
+            moves.sort_by_cached_key(key);
             return moves;
         }
         // No moves, have to discard

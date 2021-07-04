@@ -133,7 +133,7 @@ pub fn montecarlo_count_simulations(board: &Board, moves: Vec<Move>, duration: D
 // Choose random moves and return the player that one, or None if loop
 fn simulate<R: Rng>(state: GameState, rng: &mut R) -> Option<Player> {
     let mut state = state;
-    for _ in 0..100 {
+    for _ in 0..1000 {
         let board = match state {
             GameState::Playing { board } => board,
             GameState::Finished { winner, .. } => {
@@ -143,6 +143,5 @@ fn simulate<R: Rng>(state: GameState, rng: &mut R) -> Option<Player> {
         let game_move = board.random_legal_move(rng);
         state = state.try_move(game_move).expect("montecarlo played illegal move");
     }
-    log::debug!("Game failed to end after being simulated for 100 turns");
     None
 }

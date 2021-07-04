@@ -127,7 +127,6 @@ pub enum Move {
     Discard {
         card: Card,
     },
-    Forfeit,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]

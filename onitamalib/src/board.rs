@@ -19,9 +19,6 @@ impl Board {
         let player_pieces = self.player_pieces();
         let (card, src, dst) = match game_move {
             Move::Move { card, src, dst } => (card, src, dst),
-            Move::Forfeit => {
-                return Ok(GameState::Finished { winner: turn.invert(), board: *self })
-            },
             Move::Discard { card } => {
                 if self.can_move() {
                     return Err(format!("Valid moves exist"));
@@ -241,14 +238,14 @@ impl Board {
 impl Board {
     pub fn player_pieces(&self) -> [Option<Point>; 5] {
         let mut pieces: [Option<Point>; 5] = [None; 5];
-        pieces[..4].copy_from_slice(&*self.player_pawns());
-        pieces[4] = Some(*self.player_king());
+        pieces[1..].copy_from_slice(&*self.player_pawns());
+        pieces[0] = Some(*self.player_king());
         return pieces;
     }
     pub fn opponent_pieces(&self) -> [Option<Point>; 5] {
         let mut pieces: [Option<Point>; 5] = [None; 5];
-        pieces[..4].copy_from_slice(&*self.opponent_pawns());
-        pieces[4] = Some(*self.opponent_king());
+        pieces[1..].copy_from_slice(&*self.opponent_pawns());
+        pieces[0] = Some(*self.opponent_king());
         return pieces;
     }
 }
