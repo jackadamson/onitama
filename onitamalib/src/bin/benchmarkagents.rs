@@ -11,12 +11,14 @@ use std::thread::JoinHandle;
 
 const TURN_DURATION: Duration = Duration::from_millis(100);
 const MATCH_REPEATS: u64 = 10;
+const MAX_TURNS: u64 = 250;
+const PARALLELISM: u64 = 14;
+
 struct Match {
     red: AiAgent,
     blue: AiAgent,
 }
-const MAX_TURNS: u64 = 250;
-const PARALLELISM: u64 = 14;
+
 impl Match {
     fn agent_from_player(&self, player: Player) -> AiAgent {
         match player {

@@ -76,6 +76,82 @@ pub fn hybrid_montecarlo_agent(state: &GameState, duration: Duration) -> Option<
             false => (move_b, score_b),
         })
 }
+pub fn hybrid_hard_montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
+    log::debug!("Game State: {:?}", state);
+    let alphabeta_duration = duration / 2;
+    let moves_scored = match alphabeta::moves_scored_deepening(state, alphabeta_duration) {
+        None => {
+            return None;
+        }
+        Some(val) => val,
+    };
+    let board = match state {
+        GameState::Playing { board } => board,
+        GameState::Finished { .. } => {
+            return None;
+        }
+    };
+    let guaranteed_win_score = match board.turn {
+        Player::Red => i64::MAX,
+        Player::Blue => i64::MIN,
+    };
+    for (game_move, expected_score) in moves_scored.iter() {
+        if *expected_score == guaranteed_win_score {
+            log::info!("Guaranteed to win");
+            return Some((*game_move, *expected_score));
+        }
+    }
+    log::info!("Using monte-carlo");
+    let compare = match board.turn {
+        Player::Red => i64::max,
+        Player::Blue => i64::min,
+    };
+    let best_move = moves_scored
+        .iter()
+        .map(|(_, expected_score)| *expected_score)
+        .reduce(compare)
+        .unwrap();
+    let moves: Vec<Move> = moves_scored
+        .iter()
+        .filter_map(|(game_move, expected_score)| match *expected_score == best_move {
+            false => {
+                log::debug!("Ruling out move: {} - {:?}", expected_score, game_move);
+                None
+            }
+            true => {
+                log::debug!("Acceptable score: {:?} - {:?}", expected_score, game_move);
+                Some(*game_move)
+            }
+        })
+        .collect();
+    // If all moves lead to loss, still choose a move
+    let moves = match moves.len() > 0 {
+        true => moves,
+        false => {
+            log::debug!("Opponent can force a win");
+            moves_scored
+                .iter()
+                .map(|(game_move, _)| *game_move)
+                .collect()
+        }
+    };
+    if moves.len() == 1 {
+        log::debug!("One legal move");
+        return Some((moves[0], 0));
+    }
+    let monte_carlo_duration = duration / 2;
+    let scored_moves = montecarlo(board, moves, monte_carlo_duration);
+    let compare = match board.turn {
+        Player::Red => |a, b| a > b,
+        Player::Blue => |a, b| a < b,
+    };
+    scored_moves
+        .into_iter()
+        .reduce(|(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
+            true => (move_a, score_a),
+            false => (move_b, score_b),
+        })
+}
 
 const ITERATIONS_PER_TIME_CHECK: u8 = 50;
 

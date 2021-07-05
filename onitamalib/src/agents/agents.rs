@@ -18,7 +18,7 @@ impl AiAgent {
         match self {
             AiAgent::Greedy => greedy::greedy_agent(state),
             AiAgent::PureMonteCarlo => montecarlo::pure_montecarlo_agent(state, duration),
-            AiAgent::HybridMonteCarlo => montecarlo::hybrid_montecarlo_agent(state, duration),
+            AiAgent::HybridMonteCarlo => montecarlo::hybrid_hard_montecarlo_agent(state, duration),
             AiAgent::Minimax => minimax::iterative_deepening(state, duration),
             AiAgent::Alphabeta => alphabeta::iterative_deepening(state, duration),
         }
