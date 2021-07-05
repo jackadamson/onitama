@@ -1,5 +1,5 @@
 // Red is maximizing player, Blue is minimizing
-use crate::models::{GameState, Player};
+use crate::{GameState, Player, Point};
 
 fn value_from_pawn_count(count: usize) -> i8 {
     // Reserve one point for possibly distinguishing current player
@@ -24,8 +24,12 @@ impl GameState {
                 return i8::MAX;
             },
         };
-        let red_count = board.red_pawns.len();
-        let blue_count = board.blue_pawns.len();
+        let count_pieces = |acc, piece: &Option<Point>| match piece {
+            None => acc,
+            Some(_) => acc + 1,
+        };
+        let red_count = board.red_pawns.iter().fold(0, count_pieces);
+        let blue_count = board.blue_pawns.iter().fold(0, count_pieces);
         return value_from_pawn_count(red_count) - value_from_pawn_count(blue_count);
     }
 }

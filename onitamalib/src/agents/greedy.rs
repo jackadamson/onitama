@@ -1,12 +1,15 @@
 use crate::minimax;
 use crate::models::{GameState, Move, Player};
+use rand::prelude::*;
 
 pub fn greedy_agent(state: &GameState) -> Option<(Move, i64)> {
     let board = match state {
         GameState::Playing { board, .. } => Some(board),
         GameState::Finished { .. } => None,
     }?;
-    let legal_moves = board.legal_moves();
+    let mut rng = thread_rng();
+    let mut legal_moves = board.legal_moves();
+    legal_moves.shuffle(&mut rng);
     let mut legal_moves: Vec<(Move, i64)> = legal_moves
         .into_iter()
         .map(|game_move| {
