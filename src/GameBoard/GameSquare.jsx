@@ -28,7 +28,8 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
   },
   lastMove: {
-    borderColor: `${theme.palette.success.dark}a0`,
+    // Styling for the squares the were in the last move
+    // borderColor: `${theme.palette.success.dark}a0`,
   },
   redBase: {
     backgroundColor: Color(theme.palette.background.paper).mix(Color('#f44336'), 0.1).hex(),
