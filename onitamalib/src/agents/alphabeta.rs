@@ -6,13 +6,13 @@ use crate::models::{GameState, Move, Player};
 
 const MAX_DEPTH: u16 = 50;
 
-pub fn iterative_deepening(state: &GameState, duration: Duration) -> Option<(Move, i8)> {
+pub fn iterative_deepening(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
     let start = Instant::now();
     let deadline = start + duration;
-    let mut result: Option<(Move, i8)> = None;
+    let mut result: Option<(Move, i64)> = None;
     for depth in 1..MAX_DEPTH {
         if let Some((_, val)) = result {
-            if val == i8::MAX || val == i8::MIN {
+            if val == i64::MAX || val == i64::MIN {
                 break;
             }
         }
@@ -33,10 +33,10 @@ pub fn iterative_deepening(state: &GameState, duration: Duration) -> Option<(Mov
 pub fn iterative_deepening_just_depth(state: &GameState, duration: Duration) -> Option<u16> {
     let start = Instant::now();
     let deadline = start + duration;
-    let mut result: Option<(Move, i8)> = None;
+    let mut result: Option<(Move, i64)> = None;
     for depth in 1..MAX_DEPTH {
         if let Some((_, val)) = result {
-            if val == i8::MAX || val == i8::MIN {
+            if val == i64::MAX || val == i64::MIN {
                 break;
             }
         }
@@ -53,7 +53,7 @@ pub fn iterative_deepening_just_depth(state: &GameState, duration: Duration) -> 
     return None;
 }
 
-fn optimal_move_deadline(state: &GameState, depth: u16, deadline: Instant) -> Option<(Move, i8)> {
+fn optimal_move_deadline(state: &GameState, depth: u16, deadline: Instant) -> Option<(Move, i64)> {
     let timedout = || Instant::now() >  deadline;
     let board = match state {
         GameState::Playing { board } => board,
@@ -74,12 +74,12 @@ fn optimal_move_deadline(state: &GameState, depth: u16, deadline: Instant) -> Op
     let state = board
         .try_move(best_move)
         .expect("generated illegal move");
-    let mut best_score = minimax(&state,depth - 1, i8::MIN, i8::MAX);
+    let mut best_score = minimax(&state,depth - 1, i64::MIN, i64::MAX);
     for game_move in game_moves {
         if timedout() { return None; }
         let state = board.try_move(game_move)
             .expect("generated illegal move in loop");
-        let expected_score = minimax(&state, depth - 1, i8::MIN, i8::MAX);
+        let expected_score = minimax(&state, depth - 1, i64::MIN, i64::MAX);
         match board.turn {
             Player::Red if expected_score > best_score => {
                 best_move = game_move;
@@ -95,10 +95,10 @@ fn optimal_move_deadline(state: &GameState, depth: u16, deadline: Instant) -> Op
     return Some((best_move, best_score));
 }
 
-pub fn moves_scored_deepening(state: &GameState, duration: Duration) -> Option<Vec<(Move, i8)>> {
+pub fn moves_scored_deepening(state: &GameState, duration: Duration) -> Option<Vec<(Move, i64)>> {
     let start = Instant::now();
     let deadline = start + duration;
-    let mut result: Option<Vec<(Move, i8)>> = None;
+    let mut result: Option<Vec<(Move, i64)>> = None;
     for depth in 1..MAX_DEPTH {
         match moves_scored_deadline(state, depth, deadline) {
             None => {
@@ -113,7 +113,7 @@ pub fn moves_scored_deepening(state: &GameState, duration: Duration) -> Option<V
     return result;
 }
 
-fn moves_scored_deadline(state: &GameState, depth: u16, deadline: Instant) -> Option<Vec<(Move, i8)>> {
+fn moves_scored_deadline(state: &GameState, depth: u16, deadline: Instant) -> Option<Vec<(Move, i64)>> {
     let timedout = || Instant::now() >  deadline;
     let board = match state {
         GameState::Playing { board } => board,
@@ -125,7 +125,7 @@ fn moves_scored_deadline(state: &GameState, depth: u16, deadline: Instant) -> Op
         return None;
     }
     if timedout() { return None; }
-    let mut scored_moves: Vec<(Move, i8)> = vec![];
+    let mut scored_moves: Vec<(Move, i64)> = vec![];
     let game_moves = board
         .legal_moves()
         .into_iter();
@@ -133,13 +133,13 @@ fn moves_scored_deadline(state: &GameState, depth: u16, deadline: Instant) -> Op
         if timedout() { return None; }
         let state = board.try_move(game_move)
             .expect("generated illegal move in loop");
-        let expected_score = minimax(&state, depth - 1, i8::MIN, i8::MAX);
+        let expected_score = minimax(&state, depth - 1, i64::MIN, i64::MAX);
         scored_moves.push((game_move, expected_score));
     }
     return Some(scored_moves);
 }
 
-fn minimax(state: &GameState, depth: u16, mut alpha: i8, mut beta: i8) -> i8 {
+fn minimax(state: &GameState, depth: u16, mut alpha: i64, mut beta: i64) -> i64 {
     if depth == 0 {
         return state.basic_value();
     }
@@ -150,8 +150,8 @@ fn minimax(state: &GameState, depth: u16, mut alpha: i8, mut beta: i8) -> i8 {
         },
     };
     let mut value = match board.turn {
-        Player::Red => i8::MIN,
-        Player::Blue => i8::MAX,
+        Player::Red => i64::MIN,
+        Player::Blue => i64::MAX,
     };
     let legal_moves = board.legal_moves().into_iter();
     for game_move in legal_moves {
@@ -177,7 +177,7 @@ fn minimax(state: &GameState, depth: u16, mut alpha: i8, mut beta: i8) -> i8 {
     return value;
 }
 
-pub fn optimal_move(state: &GameState, depth: u16) -> Option<(Move, i8)> {
+pub fn optimal_move(state: &GameState, depth: u16) -> Option<(Move, i64)> {
     let board = match state {
         GameState::Playing { board } => board,
         GameState::Finished { .. } => {
@@ -196,11 +196,11 @@ pub fn optimal_move(state: &GameState, depth: u16) -> Option<(Move, i8)> {
     let state = board
         .try_move(best_move)
         .expect("generated illegal move");
-    let mut best_score = minimax(&state, depth - 1, i8::MIN, i8::MAX);
+    let mut best_score = minimax(&state, depth - 1, i64::MIN, i64::MAX);
     for game_move in game_moves {
         let state = board.try_move(game_move)
             .expect("generated illegal move in loop");
-        let expected_score = minimax(&state, depth - 1, i8::MIN, i8::MAX);
+        let expected_score = minimax(&state, depth - 1, i64::MIN, i64::MAX);
         match board.turn {
             Player::Red if expected_score > best_score => {
                 best_move = game_move;

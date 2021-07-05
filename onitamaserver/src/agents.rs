@@ -4,37 +4,21 @@ use actix::{Actor, Addr, StreamHandler, Handler, SyncContext, SyncArbiter, Async
 use actix_web_actors::ws;
 use serde_cbor::ser;
 
-use onitamalib::{GameMessage, GameState, Player, Move, montecarlo, greedy};
+use onitamalib::{GameMessage, GameState, Player, AiAgent};
 
 use crate::messages::{AgentRequest, AgentResponse};
 
-#[derive(Copy, Clone, Debug)]
-pub enum Difficulty {
-    Easy,
-    Medium,
-    Hard,
-}
-
-impl Difficulty {
-    pub fn play_move(&self, state: &GameState, duration: Duration) -> Option<(Move, i64)> {
-        match self {
-            Difficulty::Easy => greedy::greedy_agent(state),
-            Difficulty::Medium => montecarlo::pure_montecarlo_agent(state, duration),
-            Difficulty::Hard => montecarlo::hybrid_montecarlo_agent(state, duration),
-        }
-    }
-}
 
 pub struct Agent {
     state: GameState,
     id: String,
-    difficulty: Difficulty,
+    ai: AiAgent,
 }
 
 impl Agent {
-    pub fn new(id: String, difficulty: Difficulty) -> Agent {
+    pub fn new(id: String, ai: AiAgent) -> Agent {
         let state = GameState::new();
-        Agent { id, state, difficulty }
+        Agent { id, state, ai }
     }
 }
 
@@ -50,7 +34,7 @@ const TIMEOUT: Duration = Duration::from_millis(500);
 impl Agent {
     fn play_move(&mut self, state: GameState) -> Result<GameMessage, AgentException> {
         // The state is guaranteed to be Playing
-        let (game_move, expected_score) = match self.difficulty.play_move(&state, TIMEOUT) {
+        let (game_move, expected_score) = match self.ai.play_move(&state, TIMEOUT) {
             None => {
                 error!("No moves available");
                 return Err(AgentException::AgentError);
@@ -142,8 +126,8 @@ pub struct AgentWs {
 }
 
 impl AgentWs {
-    pub fn new(id: String, difficulty: Difficulty) -> AgentWs {
-        let agent = SyncArbiter::start(1, move || Agent::new(id.clone(), difficulty));
+    pub fn new(id: String, ai: AiAgent) -> AgentWs {
+        let agent = SyncArbiter::start(1, move || Agent::new(id.clone(), ai));
         AgentWs { agent }
     }
 }

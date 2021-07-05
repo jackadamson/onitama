@@ -5,7 +5,9 @@ use actix_web::{error, Error, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
 use uuid::Uuid;
 
-use crate::agents::{AgentWs, Difficulty};
+use onitamalib::AiAgent;
+
+use crate::agents::AgentWs;
 use crate::rooms::{OnitamaServer, RoomWs};
 use crate::utils::get_identifier;
 
@@ -48,14 +50,14 @@ pub async fn ai_room(
 ) -> Result<HttpResponse, Error> {
     let id = get_identifier(&req);
     let difficulty = difficulty.as_str();
-    let difficulty = match difficulty {
-        "easy" => Difficulty::Easy,
-        "medium" => Difficulty::Medium,
-        "hard" => Difficulty::Hard,
-        _ => Difficulty::Medium,
+    let ai = match difficulty {
+        "easy" => AiAgent::Greedy,
+        "medium" => AiAgent::PureMonteCarlo,
+        "hard" => AiAgent::HybridMonteCarlo,
+        _ => AiAgent::PureMonteCarlo,
     };
-    info!("AI Game Start: {}, ({:?})", &id, difficulty);
-    let actor = AgentWs::new(id, difficulty);
+    info!("AI Game Start: {}, ({:?})", &id, ai);
+    let actor = AgentWs::new(id, ai);
     let resp = ws::start(actor, &req, stream);
     resp
 }

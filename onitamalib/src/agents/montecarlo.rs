@@ -21,19 +21,19 @@ pub fn hybrid_montecarlo_agent(state: &GameState, duration: Duration) -> Option<
         }
     };
     let guaranteed_win_score = match board.turn {
-        Player::Red => i8::MAX,
-        Player::Blue => i8::MIN,
+        Player::Red => i64::MAX,
+        Player::Blue => i64::MIN,
     };
     for (game_move, expected_score) in moves_scored.iter() {
         if *expected_score == guaranteed_win_score {
             log::info!("Guaranteed to win");
-            return Some((*game_move, *expected_score as i64));
+            return Some((*game_move, *expected_score));
         }
     }
     log::info!("Using monte-carlo");
     let guaranteed_lose_score = match board.turn.invert() {
-        Player::Red => i8::MAX,
-        Player::Blue => i8::MIN,
+        Player::Red => i64::MAX,
+        Player::Blue => i64::MIN,
     };
     let moves: Vec<Move> = moves_scored
         .iter()

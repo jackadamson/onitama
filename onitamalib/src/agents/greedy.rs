@@ -14,7 +14,7 @@ pub fn greedy_agent(state: &GameState) -> Option<(Move, i64)> {
         .into_iter()
         .map(|game_move| {
             let state = board.try_move(game_move).unwrap();
-            (game_move, minimax::minimax(&state, 3) as i64)
+            (game_move, minimax::minimax(&state, 3))
         })
         .collect();
     let key = |(_, score): &(Move, i64)| *score;

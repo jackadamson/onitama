@@ -1,7 +1,7 @@
 // Red is maximizing player, Blue is minimizing
 use crate::{GameState, Player, Point};
 
-fn value_from_pawn_count(count: usize) -> i8 {
+fn value_from_pawn_count(count: usize) -> i64 {
     // Reserve one point for possibly distinguishing current player
     // Consider pawns more valuable, the fewer there are
     match count {
@@ -14,14 +14,14 @@ fn value_from_pawn_count(count: usize) -> i8 {
     }
 }
 impl GameState {
-    pub fn basic_value(&self) -> i8 {
+    pub fn basic_value(&self) -> i64 {
         let board = match self {
             GameState::Playing { board } => board,
             GameState::Finished { winner: Player::Blue, .. } => {
-                return i8::MIN;
+                return i64::MIN;
             },
             GameState::Finished { winner: Player::Red, .. } => {
-                return i8::MAX;
+                return i64::MAX;
             },
         };
         let count_pieces = |acc, piece: &Option<Point>| match piece {

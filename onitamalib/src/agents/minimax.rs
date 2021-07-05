@@ -3,10 +3,10 @@ use instant::{Duration, Instant};
 use crate::models::{GameState, Move, Player};
 
 const MAX_DEPTH: u16 = 50;
-pub fn iterative_deepening(state: &GameState, duration: Duration) -> Option<(Move, i8)> {
+pub fn iterative_deepening(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
     let start = Instant::now();
     let deadline = start + duration;
-    let mut result: Option<(Move, i8)> = None;
+    let mut result: Option<(Move, i64)> = None;
     for depth in 1..MAX_DEPTH {
         match optimal_move_deadline(state, depth, deadline) {
             None => {
@@ -21,7 +21,7 @@ pub fn iterative_deepening(state: &GameState, duration: Duration) -> Option<(Mov
     return result;
 }
 
-fn optimal_move_deadline(state: &GameState, depth: u16, deadline: Instant) -> Option<(Move, i8)> {
+fn optimal_move_deadline(state: &GameState, depth: u16, deadline: Instant) -> Option<(Move, i64)> {
     let timedout = || Instant::now() >  deadline;
     let board = match state {
         GameState::Playing { board } => board,
@@ -64,7 +64,7 @@ fn optimal_move_deadline(state: &GameState, depth: u16, deadline: Instant) -> Op
     return Some((best_move, best_score));
 }
 
-pub fn optimal_move(state: &GameState, depth: u16) -> Option<(Move, i8)> {
+pub fn optimal_move(state: &GameState, depth: u16) -> Option<(Move, i64)> {
     let board = match state {
         GameState::Playing { board } => board,
         GameState::Finished { .. } => {
@@ -102,7 +102,7 @@ pub fn optimal_move(state: &GameState, depth: u16) -> Option<(Move, i8)> {
     return Some((best_move, best_score));
 }
 
-pub fn minimax(state: &GameState, depth: u16) -> i8 {
+pub fn minimax(state: &GameState, depth: u16) -> i64 {
     if depth == 0 {
         return state.basic_value();
     }

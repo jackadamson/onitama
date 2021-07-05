@@ -4,3 +4,6 @@ pub mod alphabeta;
 pub mod montecarlo;
 pub mod minimax;
 pub mod greedy;
+pub mod agents;
+
+pub use agents::AiAgent;

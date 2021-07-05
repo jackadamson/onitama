@@ -27,9 +27,7 @@ wasm-bindgen = { version="0.2.63", features = ["serde-serialize"] }
 wasm-logger = "0.2.0"
 wee_alloc = { version = "0.4.5", optional = true }
 instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
-
-[dev-dependencies]
-indicatif = { version = "0.16.2" }
+indicatif = { version = "0.16.2", optional = true }
 
 [dependencies.web-sys]
 version = "0.3.51"
@@ -47,7 +45,12 @@ features = [
 features = ["futures_0_3"]
 version = "^0.3"
 
+[[bin]]
+name = "benchmarkagents"
+required-features = ["agent", "benchmark"]
+
 [features]
 agent = []
 alphabeta = ["agent"]
 default = []
+benchmark = ["indicatif"]
