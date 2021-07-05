@@ -13,6 +13,7 @@ import AiSelect from './AiSelect';
 
 const LocalGame = React.lazy(() => import('./LocalGame'));
 const RemoteGame = React.lazy(() => import('./RemoteGame'));
+const Rules = React.lazy(() => import('./Rules'));
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
@@ -23,6 +24,11 @@ ReactDOM.render(
           <Route path="/l/" exact>
             <Suspense fallback={<Loading />}>
               <LocalGame />
+            </Suspense>
+          </Route>
+          <Route path="/help" exact>
+            <Suspense fallback={<Loading />}>
+              <Rules />
             </Suspense>
           </Route>
           <Route path={['/r/:roomId', '/r/']}>

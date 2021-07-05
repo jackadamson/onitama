@@ -20,9 +20,6 @@ const useStyles = makeStyles((theme) => ({
     borderWidth: '1px',
     [inverted ? 'borderBottomColor' : 'borderTopColor']: theme.palette.primary.main,
   }),
-  text: ({ inverted }) => ({
-    // transform: inverted ? 'rotate(180deg)' : '',
-  }),
   selected: {
     borderColor: theme.palette.primary.main,
   },
@@ -77,9 +74,7 @@ const GameCard = ({
       })}
       onClick={handler}
     >
-      <Typography variant="subtitle1" className={classes.text}>
-        {name}
-      </Typography>
+      <Typography variant="subtitle1">{name}</Typography>
       <GameMove moves={moves} inverted={inverted} />
       {!canMove && enabled && (
         <Typography className={classes.error} variant="caption">

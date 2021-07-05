@@ -10,7 +10,7 @@ Things that could be cool to implement, that aren't done yet, and might one day 
 - [x] Show piece that last moved, and where it moved from
 - [x] Say when opponent has requested a rematch
 - [ ] Add chat (maybe)
-- [ ] Add "how to play"
+- [x] Add "how to play"
 - [x] Add different difficulty AIs
 
 ## Deployment

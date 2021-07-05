@@ -11,8 +11,14 @@ const Home = () => {
       <GithubRibbon />
       <Typography variant="h2">Onitama App</Typography>
       <Box m={1} />
-      <Button variant="contained" color="secondary" className={classes.button} disabled>
-        WIP: How to Play
+      <Button
+        component={Link}
+        to="/help"
+        variant="contained"
+        color="secondary"
+        className={classes.button}
+      >
+        How to Play
       </Button>
       <Box m={1} />
       <Button
