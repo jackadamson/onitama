@@ -101,7 +101,8 @@ pub fn optimal_move(state: &GameState, depth: u16) -> Option<(Move, i8)> {
     }
     return Some((best_move, best_score));
 }
-fn minimax(state: &GameState, depth: u16) -> i8 {
+
+pub fn minimax(state: &GameState, depth: u16) -> i8 {
     if depth == 0 {
         return state.basic_value();
     }

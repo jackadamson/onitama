@@ -11,7 +11,7 @@ Things that could be cool to implement, that aren't done yet, and might one day 
 - [x] Say when opponent has requested a rematch
 - [ ] Add chat (maybe)
 - [ ] Add "how to play"
-- [ ] Add different difficulty AIs
+- [x] Add different difficulty AIs
 
 ## Deployment
 

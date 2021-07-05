@@ -4,13 +4,13 @@ use actix::{Actor, Addr, StreamHandler, Handler, SyncContext, SyncArbiter, Async
 use actix_web_actors::ws;
 use serde_cbor::ser;
 
-use onitamalib::{GameMessage, GameState, Player, montecarlo, Move};
+use onitamalib::{GameMessage, GameState, Player, Move, montecarlo, greedy};
 
 use crate::messages::{AgentRequest, AgentResponse};
 
 #[derive(Copy, Clone, Debug)]
 pub enum Difficulty {
-    // Easy,
+    Easy,
     Medium,
     Hard,
 }
@@ -18,6 +18,7 @@ pub enum Difficulty {
 impl Difficulty {
     pub fn play_move(&self, state: &GameState, duration: Duration) -> Option<(Move, i64)> {
         match self {
+            Difficulty::Easy => greedy::greedy_agent(state),
             Difficulty::Medium => montecarlo::pure_montecarlo_agent(state, duration),
             Difficulty::Hard => montecarlo::hybrid_montecarlo_agent(state, duration),
         }

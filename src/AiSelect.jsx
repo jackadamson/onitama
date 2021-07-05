@@ -10,8 +10,14 @@ const AiSelect = () => {
     <Box className={classes.outer}>
       <Typography variant="h2">Player vs AI</Typography>
       <Box m={1} />
-      <Button variant="contained" color="primary" className={classes.button} disabled>
-        WIP: Easy
+      <Button
+        component={Link}
+        to="/ai/easy"
+        variant="contained"
+        color="primary"
+        className={classes.button}
+      >
+        Easy
       </Button>
       <Button
         component={Link}

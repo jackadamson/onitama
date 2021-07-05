@@ -49,6 +49,7 @@ pub async fn ai_room(
     let id = get_identifier(&req);
     let difficulty = difficulty.as_str();
     let difficulty = match difficulty {
+        "easy" => Difficulty::Easy,
         "medium" => Difficulty::Medium,
         "hard" => Difficulty::Hard,
         _ => Difficulty::Medium,
