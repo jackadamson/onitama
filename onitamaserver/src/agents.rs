@@ -112,7 +112,11 @@ impl Handler<AgentRequest> for Agent {
         let resp = self.handle_game_message(msg);
         match &self.state {
             GameState::Finished { winner, .. } => {
-                info!("Game finished, {:?} won: {}", winner, self.id);
+                let won = match winner {
+                    Player::Red => "won",
+                    Player::Blue => "lost",
+                };
+                info!("Game finished, player {} against {:?}: {}", won, self.ai, self.id);
             },
             _ => {},
         };
