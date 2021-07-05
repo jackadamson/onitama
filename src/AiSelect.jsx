@@ -15,15 +15,21 @@ const AiSelect = () => {
       </Button>
       <Button
         component={Link}
-        to="/r/ai"
+        to="/ai/medium"
         variant="contained"
         color="primary"
         className={classes.button}
       >
         Medium
       </Button>
-      <Button variant="contained" color="primary" className={classes.button} disabled>
-        WIP: Hard
+      <Button
+        component={Link}
+        to="/ai/hard"
+        variant="contained"
+        color="primary"
+        className={classes.button}
+      >
+        Hard
       </Button>
       <Box m={1} />
       <Button

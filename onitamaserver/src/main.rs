@@ -56,7 +56,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(data.clone())
             .service(
                 web::scope("/ws")
-                    .route("/ai", web::get().to(ai_room))
+                    .route("/ai/{difficulty}", web::get().to(ai_room))
                     .route("/{key}", web::get().to(join_room))
                     .route("/", web::get().to(create_room))
             );

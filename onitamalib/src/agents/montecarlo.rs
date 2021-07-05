@@ -5,7 +5,7 @@ use rand::prelude::*;
 
 use crate::{alphabeta, Board, GameState, Move, Player};
 
-pub fn montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
+pub fn hybrid_montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
     log::debug!("Game State: {:?}", state);
     let alphabeta_duration = duration / 2;
     let moves_scored = match alphabeta::moves_scored_deepening(state, alphabeta_duration) {
@@ -41,11 +41,11 @@ pub fn montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, 
             true => {
                 log::debug!("Ruling out move: {:?}", game_move);
                 None
-            },
+            }
             false => {
                 log::debug!("Acceptable score: {:?} - {:?}", expected_score, game_move);
                 Some(*game_move)
-            },
+            }
         })
         .collect();
     // If all moves lead to loss, still choose a move
@@ -65,10 +65,16 @@ pub fn montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, 
     }
     let monte_carlo_duration = duration / 2;
     let scored_moves = montecarlo(board, moves, monte_carlo_duration);
-    scored_moves.into_iter().reduce(|(move_a, score_a), (move_b, score_b)| match score_a > score_b {
-        true => (move_a, score_a),
-        false => (move_b, score_b),
-    } )
+    let compare = match board.turn {
+        Player::Red => |a, b| a > b,
+        Player::Blue => |a, b| a < b,
+    };
+    scored_moves
+        .into_iter()
+        .reduce(|(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
+            true => (move_a, score_a),
+            false => (move_b, score_b),
+        })
 }
 
 const ITERATIONS_PER_TIME_CHECK: u8 = 50;
@@ -76,7 +82,7 @@ const ITERATIONS_PER_TIME_CHECK: u8 = 50;
 fn montecarlo(board: &Board, moves: Vec<Move>, duration: Duration) -> Vec<(Move, i64)> {
     let start = Instant::now();
     let deadline = start + duration;
-    let timedout = || Instant::now() >  deadline;
+    let timedout = || Instant::now() > deadline;
     let results: Vec<(Move, Cell<i64>)> = moves
         .into_iter()
         .map(|game_move| (game_move, Cell::new(0i64)))
@@ -105,7 +111,7 @@ fn montecarlo(board: &Board, moves: Vec<Move>, duration: Duration) -> Vec<(Move,
 pub fn montecarlo_count_simulations(board: &Board, moves: Vec<Move>, duration: Duration) -> u64 {
     let start = Instant::now();
     let deadline = start + duration;
-    let timedout = || Instant::now() >  deadline;
+    let timedout = || Instant::now() > deadline;
     let results: Vec<(Move, Cell<i64>)> = moves
         .into_iter()
         .map(|game_move| (game_move, Cell::new(0i64)))
@@ -128,6 +134,23 @@ pub fn montecarlo_count_simulations(board: &Board, moves: Vec<Move>, duration: D
     }
     log::info!("Monte-carlo timed out after {} simulations", simulations);
     return simulations;
+}
+
+pub fn pure_montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
+    let board = match state {
+        GameState::Playing { board, .. } => Some(*board),
+        GameState::Finished { .. } => None,
+    }?;
+    let moves = board.legal_moves();
+    let scored_moves = montecarlo(&board, moves, duration);
+    let compare = match board.turn {
+        Player::Red => |a, b| a > b,
+        Player::Blue => |a, b| a < b,
+    };
+    scored_moves.into_iter().reduce(|(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
+        true => (move_a, score_a),
+        false => (move_b, score_b),
+    })
 }
 
 // Choose random moves and return the player that one, or None if loop

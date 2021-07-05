@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack';
 import { useParams } from 'react-router';
 import Loading from './Loading';
@@ -19,10 +20,10 @@ const getMoves = (src, card, turn) => {
   return (x, y) => dstSet.has(`${x},${y}`);
 };
 
-const RemoteGame = () => {
+const RemoteGame = ({ isAi }) => {
   const { roomId = null } = useParams();
   const { enqueueSnackbar } = useSnackbar();
-  const { playMove, state, reset, reconnect } = useMultiplayer(roomId);
+  const { playMove, state, reset, reconnect } = useMultiplayer(roomId, isAi);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
   const move = useCallback(
@@ -95,5 +96,10 @@ const RemoteGame = () => {
     </>
   );
 };
-
+RemoteGame.defaultProps = {
+  isAi: false,
+};
+RemoteGame.propTypes = {
+  isAi: PropTypes.bool,
+};
 export default RemoteGame;

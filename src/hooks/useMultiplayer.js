@@ -5,7 +5,7 @@ import { WEBSOCKET_BASE } from '../config';
 import { MultiplayerGame } from '../onitamalib';
 import logger from '../logger';
 
-const useMultiplayer = (roomId) => {
+const useMultiplayer = (roomId, isAi) => {
   const [state, setState] = useState(null);
   const [handlers, setHandlers] = useState({});
   const { enqueueSnackbar } = useSnackbar();
@@ -13,8 +13,6 @@ const useMultiplayer = (roomId) => {
   const [reconnectVal, setReconnectVal] = useState(false);
   const history = useHistory();
   const reconnect = useCallback(() => {
-    const currentRoomId = state?.roomId || roomId;
-    history.replace(`/r/${currentRoomId}`);
     setReconnectVal((current) => !current);
   }, [setReconnectVal, state?.roomId, history]);
   useEffect(() => {
@@ -23,7 +21,7 @@ const useMultiplayer = (roomId) => {
       if (mounted) setState(val);
     };
     const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
-    const roomUrl = `${WEBSOCKET_BASE}${roomId || ''}`;
+    const roomUrl = `${WEBSOCKET_BASE}${isAi ? 'ai/' : ''}${roomId || ''}`;
     const sock = new WebSocket(roomUrl);
     sock.binaryType = 'arraybuffer';
     const onSend = (data) => {
@@ -51,7 +49,7 @@ const useMultiplayer = (roomId) => {
       mounted = false;
       sock.close(1000);
     };
-  }, [enqueueSnackbar, roomId, history, reconnectVal]);
+  }, [enqueueSnackbar, roomId, history, reconnectVal, isAi]);
   const stateRoomId = state?.roomId;
   useEffect(() => {
     if (stateRoomId && !roomId) {
