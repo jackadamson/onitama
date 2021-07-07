@@ -6,8 +6,7 @@ use std::panic;
 
 use wasm_bindgen::prelude::*;
 
-pub use gamemodes::local::*;
-pub use gamemodes::multiplayer::*;
+pub use gamemodes::*;
 pub use messages::*;
 pub use models::*;
 

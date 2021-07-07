@@ -13,7 +13,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 console_error_panic_hook = { version = "0.1.6", optional = true }
 enum-iterator = "0.6.0"
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = { version = "0.2" }
 gloo = { version = "0.2.1", optional = true }
 js-sys = { version = "0.3.45", optional = true }
 log = "0.4.6"
@@ -25,7 +25,7 @@ serde_cbor = "0.10"
 wasm-bindgen = { version="0.2.63", features = ["serde-serialize"], optional = true }
 wasm-logger = { version = "0.2.0", optional = true }
 wee_alloc = { version = "0.4.5", optional = true }
-instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
+instant = { version = "0.1" }
 indicatif = { version = "0.16.2", optional = true }
 
 [dependencies.web-sys]
@@ -51,9 +51,8 @@ name = "benchmarkagents"
 required-features = ["agent", "benchmark"]
 
 [features]
+default = ["agent"]
 agent = []
-alphabeta = ["agent"]
-default = ["web"]
 benchmark = ["indicatif"]
 web = [
     "console_error_panic_hook",
@@ -64,5 +63,7 @@ web = [
     "wasm-bindgen-futures",
     "web-sys",
     "wee_alloc",
+    "instant/wasm-bindgen",
+    "instant/inaccurate",
+    "getrandom/js",
 ]
-

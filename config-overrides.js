@@ -26,6 +26,7 @@ module.exports = override(
       new WasmPackPlugin({
         crateDirectory: path.resolve(__dirname, './onitamalib'),
         outDir: path.resolve(__dirname, './src/onitamalib'),
+        extraArgs: '-- --features=web',
       }),
     ]);
 

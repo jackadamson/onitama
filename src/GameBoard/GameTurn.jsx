@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, makeStyles, Typography } from '@material-ui/core';
-import logger from '../logger';
 
 const useStyles = makeStyles(() => ({
   Red: {
@@ -16,7 +15,6 @@ const GameTurn = ({ turn, player }) => {
   const relativeName = player === turn ? 'Your Turn' : "Opponent's Turn";
   const absoluteName = `${turn}'s Turn`;
   const label = player ? relativeName : absoluteName;
-  logger.log({ turn, player });
   return (
     <Box>
       <Typography variant="h4" className={classes[turn]}>

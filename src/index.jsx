@@ -13,6 +13,7 @@ import AiSelect from './AiSelect';
 
 const LocalGame = React.lazy(() => import('./LocalGame'));
 const RemoteGame = React.lazy(() => import('./RemoteGame'));
+const SinglePlayerGame = React.lazy(() => import('./SinglePlayerGame'));
 const Rules = React.lazy(() => import('./Rules'));
 
 ReactDOM.render(
@@ -36,9 +37,9 @@ ReactDOM.render(
               <RemoteGame />
             </Suspense>
           </Route>
-          <Route path="/ai/:roomId">
+          <Route path="/ai/:difficulty">
             <Suspense fallback={<Loading />}>
-              <RemoteGame isAi />
+              <SinglePlayerGame />
             </Suspense>
           </Route>
           <Route path="/ai">
