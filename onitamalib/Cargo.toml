@@ -11,25 +11,25 @@ license = "MIT"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-cfg-if = "0.1"
-console_error_panic_hook = "0.1.6"
+console_error_panic_hook = { version = "0.1.6", optional = true }
 enum-iterator = "0.6.0"
 getrandom = { version = "0.2", features = ["js"] }
-gloo = "0.2.1"
-js-sys = "0.3.45"
+gloo = { version = "0.2.1", optional = true }
+js-sys = { version = "0.3.45", optional = true }
 log = "0.4.6"
 rand = { version = "0.8.3", features = ["default", "alloc", "small_rng"] }
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.3.0"
 serde_bytes = "0.11.5"
 serde_cbor = "0.10"
-wasm-bindgen = { version="0.2.63", features = ["serde-serialize"] }
-wasm-logger = "0.2.0"
+wasm-bindgen = { version="0.2.63", features = ["serde-serialize"], optional = true }
+wasm-logger = { version = "0.2.0", optional = true }
 wee_alloc = { version = "0.4.5", optional = true }
 instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
 indicatif = { version = "0.16.2", optional = true }
 
 [dependencies.web-sys]
+optional = true
 version = "0.3.51"
 features = [
     "BinaryType",
@@ -42,6 +42,7 @@ features = [
 ]
 
 [dependencies.wasm-bindgen-futures]
+optional = true
 features = ["futures_0_3"]
 version = "^0.3"
 
@@ -52,5 +53,16 @@ required-features = ["agent", "benchmark"]
 [features]
 agent = []
 alphabeta = ["agent"]
-default = []
+default = ["web"]
 benchmark = ["indicatif"]
+web = [
+    "console_error_panic_hook",
+    "gloo",
+    "js-sys",
+    "wasm-bindgen",
+    "wasm-logger",
+    "wasm-bindgen-futures",
+    "web-sys",
+    "wee_alloc",
+]
+
