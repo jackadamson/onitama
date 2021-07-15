@@ -13,6 +13,26 @@ Things that could be cool to implement, that aren't done yet, and might one day 
 - [x] Add "how to play"
 - [x] Add different difficulty AIs
 
+## Local AI
+
+The default Dockerfile will disable server-side AI, and instead compile the AI Agent as web-assembly and run in a
+JS WebWorker.
+
+An alternate Dockerfile (`Dockerfile.remoteai`) uses server-side AI which runs the agent code in the same process that
+serves the game and delivers messages for multiplayer games.
+
+~~The server-side AI is roughly 30x faster at running Monte Carlo simulations, meaning that the hard bot is notably harder when run server side.~~  
+The server side AI is roughly 2x faster, ever since swapping out the RNG used in the Monte Carlo search. Previously it was
+significantly slower.
+
+To use server-side AI, build the container with
+```bash
+docker build -t onitama:remoteai -f Dockerfile.remoteai .
+```
+
+As of writing this, [https://onitama.mrfluffy.dev/](https://onitama.mrfluffy.dev/) uses the **local AI** as it is
+very light on server resource requirements.
+
 ## Deployment
 
 ### Run from GitHub

@@ -1,10 +1,11 @@
 use enum_iterator::IntoEnumIterator;
 use instant::Duration;
+use serde::{Serialize, Deserialize};
 
 use crate::{GameState, Move};
 use crate::agents::{alphabeta, greedy, minimax, montecarlo};
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, IntoEnumIterator)]
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq, Hash, IntoEnumIterator)]
 pub enum AiAgent {
     Greedy,
     PureMonteCarlo,
@@ -23,4 +24,20 @@ impl AiAgent {
             AiAgent::Alphabeta => alphabeta::iterative_deepening(state, duration),
         }
     }
+}
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "web")] {
+        use wasm_bindgen::prelude::*;
+        use crate::MoveRequest;
+
+        #[cfg(feature = "web")]
+        #[wasm_bindgen(js_name = agentMove)]
+        pub fn agent_move(request: &JsValue) -> JsValue {
+            let MoveRequest { state, agent } = request.into_serde().unwrap();
+            let duration = Duration::from_millis(1000);
+            let (game_move, _) = agent.play_move(&state, duration).unwrap();
+            JsValue::from_serde(&game_move).unwrap()
+        }
+   }
 }

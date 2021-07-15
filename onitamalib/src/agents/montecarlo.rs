@@ -145,12 +145,16 @@ pub fn hybrid_hard_montecarlo_agent(state: &GameState, duration: Duration) -> Op
         Player::Red => |a, b| a > b,
         Player::Blue => |a, b| a < b,
     };
-    scored_moves
+    let result = scored_moves
         .into_iter()
         .reduce(|(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
             true => (move_a, score_a),
             false => (move_b, score_b),
-        })
+        });
+    if let Some((_, expected_score)) = &result {
+        log::debug!("Expected result: {}", expected_score);
+    }
+    result
 }
 
 const ITERATIONS_PER_TIME_CHECK: u8 = 50;
@@ -164,7 +168,13 @@ fn montecarlo(board: &Board, moves: Vec<Move>, duration: Duration) -> Vec<(Move,
         .map(|game_move| (game_move, Cell::new(0i64)))
         .collect();
     let mut simulations = 0u64;
-    let mut rng = thread_rng();
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "web")] {
+            let mut rng = rand_mt::Mt::default();
+        } else {
+            let mut rng = thread_rng();
+        }
+    }
     while !timedout() {
         for _ in 0..ITERATIONS_PER_TIME_CHECK {
             for (game_move, score) in results.iter() {
@@ -193,7 +203,13 @@ pub fn montecarlo_count_simulations(board: &Board, moves: Vec<Move>, duration: D
         .map(|game_move| (game_move, Cell::new(0i64)))
         .collect();
     let mut simulations = 0u64;
-    let mut rng = SmallRng::seed_from_u64(0);
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "web")] {
+            let mut rng = rand_mt::Mt::default();
+        } else {
+            let mut rng = thread_rng();
+        }
+    }
     while !timedout() {
         for _ in 0..ITERATIONS_PER_TIME_CHECK {
             for (game_move, score) in results.iter() {

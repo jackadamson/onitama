@@ -19,7 +19,6 @@ COPY ./ /src/
 
 # Build react app including wasm library
 ENV GENERATE_SOURCEMAP=false
-ENV REACT_APP_LOCAL_AI=true
 RUN yarn run build --production
 
 FROM rust:1.53 as server-builder
@@ -37,7 +36,7 @@ COPY onitamalib /src/onitamalib
 COPY onitamaserver /src/onitamaserver
 
 # Build onitamaserver binary
-RUN cargo build --target x86_64-unknown-linux-musl --release --bin onitamaserver
+RUN cargo build --target x86_64-unknown-linux-musl --release --bin onitamaserver --features agent
 
 FROM scratch
 

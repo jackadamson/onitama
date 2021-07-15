@@ -13,13 +13,14 @@ use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective};
 use actix_web::http::HeaderValue;
 
 use crate::rooms::OnitamaServer;
-use crate::routes::{ai_room, create_room, join_room, ServerData};
+use crate::routes::{create_room, join_room, ServerData};
 
 mod rooms;
 mod messages;
 mod routes;
-mod agents;
 mod utils;
+#[cfg(feature = "agent")]
+mod agents;
 
 
 #[actix_web::main]
@@ -35,6 +36,21 @@ async fn main() -> std::io::Result<()> {
     info!("Does build path exist ({}): {}", built_path.as_os_str().to_string_lossy(), built_path.exists());
     info!("Starting server");
     HttpServer::new(move || {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "agent")] {
+                use crate::routes::ai_room;
+                let factory =
+                    web::scope("/ws")
+                        .route("/ai/{difficulty}", web::get().to(ai_room))
+                        .route("/{key}", web::get().to(join_room))
+                        .route("/", web::get().to(create_room));
+            } else {
+                let factory =
+                    web::scope("/ws")
+                        .route("/{key}", web::get().to(join_room))
+                        .route("/", web::get().to(create_room));
+            }
+        }
         let app = App::new()
             // Cache all requests to paths in /static otherwise don't cache
             .wrap_fn(|req, srv| {
@@ -54,12 +70,7 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             .app_data(data.clone())
-            .service(
-                web::scope("/ws")
-                    .route("/ai/{difficulty}", web::get().to(ai_room))
-                    .route("/{key}", web::get().to(join_room))
-                    .route("/", web::get().to(create_room))
-            );
+            .service(factory);
         match built_path.exists() {
             true => app
                 .service(

@@ -1,7 +1,6 @@
 /* eslint-disable */
 const path = require('path');
 const { override } = require('customize-cra');
-// const enableEslintIgnore = require('customize-cra-eslint-ignore');
 
 const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin');
 
@@ -26,11 +25,17 @@ module.exports = override(
       new WasmPackPlugin({
         crateDirectory: path.resolve(__dirname, './onitamalib'),
         outDir: path.resolve(__dirname, './src/onitamalib'),
-        extraArgs: '-- --features=web',
+        extraArgs: '-- --features=web  --features=agent',
       }),
     ]);
 
     return config;
   },
-  // enableEslintIgnore(),
+  (config) => {
+    config.module.rules.push({
+      test: /\.worker\.js$/,
+      use: { loader: "worker-loader" },
+    });
+    return config;
+  },
 );

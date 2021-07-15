@@ -35,7 +35,8 @@
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.3",
-    "typeface-roboto": "^1.1.13"
+    "typeface-roboto": "^1.1.13",
+    "worker-loader": "^3.0.8"
   },
   "devDependencies": {
     "@material-ui/types": "latest",

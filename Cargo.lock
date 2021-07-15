@@ -1113,6 +1113,7 @@ checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
 name = "onitamalib"
 version = "0.1.0"
 dependencies = [
+ "cfg-if 1.0.0",
  "console_error_panic_hook",
  "enum-iterator",
  "getrandom",
@@ -1122,6 +1123,7 @@ dependencies = [
  "js-sys",
  "log",
  "rand",
+ "rand_mt",
  "serde",
  "serde-wasm-bindgen",
  "serde_bytes",
@@ -1141,6 +1143,7 @@ dependencies = [
  "actix-files",
  "actix-web",
  "actix-web-actors",
+ "cfg-if 1.0.0",
  "futures 0.3.15",
  "log",
  "onitamalib",
@@ -1315,6 +1318,15 @@ name = "rand_hc"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d51e9f596de227fda2ea6c84607f5558e196eeaf43c986b724ba4fb8fdf497e7"
+dependencies = [
+ "rand_core",
+]
+
+[[package]]
+name = "rand_mt"
+version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9850304db7122f5b5f33bf751a4d15aabb298f3659141fb392012062e7bdb9fc"
 dependencies = [
  "rand_core",
 ]

@@ -11,7 +11,8 @@ license = "MIT"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-console_error_panic_hook = { version = "0.1.6", optional = true }
+cfg-if = "1.0.0"
+console_error_panic_hook = { version = "0.1.6" }
 enum-iterator = "0.6.0"
 getrandom = { version = "0.2" }
 gloo = { version = "0.2.1", optional = true }
@@ -27,6 +28,7 @@ wasm-logger = { version = "0.2.0", optional = true }
 wee_alloc = { version = "0.4.5", optional = true }
 instant = { version = "0.1" }
 indicatif = { version = "0.16.2", optional = true }
+rand_mt = { version = "4.0.1", features = ["rand-traits"] }
 
 [dependencies.web-sys]
 optional = true
@@ -51,11 +53,10 @@ name = "benchmarkagents"
 required-features = ["agent", "benchmark"]
 
 [features]
-default = ["agent"]
+default = []
 agent = []
 benchmark = ["indicatif"]
 web = [
-    "console_error_panic_hook",
     "gloo",
     "js-sys",
     "wasm-bindgen",

@@ -5,9 +5,6 @@ use actix_web::{error, Error, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
 use uuid::Uuid;
 
-use onitamalib::AiAgent;
-
-use crate::agents::AgentWs;
 use crate::rooms::{OnitamaServer, RoomWs};
 use crate::utils::get_identifier;
 
@@ -43,25 +40,32 @@ pub async fn create_room(
     resp
 }
 
-pub async fn ai_room(
-    req: HttpRequest,
-    difficulty: web::Path<String>,
-    stream: web::Payload,
-) -> Result<HttpResponse, Error> {
-    let id = get_identifier(&req);
-    let difficulty = difficulty.as_str();
-    let ai = match difficulty {
-        "easy" => AiAgent::Greedy,
-        "medium" => AiAgent::PureMonteCarlo,
-        "hard" => AiAgent::HybridMonteCarlo,
-        _ => AiAgent::PureMonteCarlo,
-    };
-    info!("AI Game Start: {}, ({:?})", &id, ai);
-    let actor = AgentWs::new(id, ai);
-    let resp = ws::start(actor, &req, stream);
-    resp
-}
-
 pub struct ServerData {
     pub server_addr: Addr<OnitamaServer>,
+}
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "agent")] {
+        use onitamalib::AiAgent;
+
+        use crate::agents::AgentWs;
+        pub async fn ai_room(
+            req: HttpRequest,
+            difficulty: web::Path<String>,
+            stream: web::Payload,
+        ) -> Result<HttpResponse, Error> {
+            let id = get_identifier(&req);
+            let difficulty = difficulty.as_str();
+            let ai = match difficulty {
+                "easy" => AiAgent::Greedy,
+                "medium" => AiAgent::PureMonteCarlo,
+                "hard" => AiAgent::HybridMonteCarlo,
+                _ => AiAgent::PureMonteCarlo,
+            };
+            info!("AI Game Start: {}, ({:?})", &id, ai);
+            let actor = AgentWs::new(id, ai);
+            let resp = ws::start(actor, &req, stream);
+            resp
+        }
+    }
 }

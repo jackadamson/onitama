@@ -1,11 +1,10 @@
-use wasm_bindgen::prelude::*;
 use rand::prelude::*;
 use serde::Serialize;
+use wasm_bindgen::prelude::*;
 
-use crate::{AiAgent, GameView, Player};
+use crate::{AiAgent, GameView, MoveRequest, Player};
 use crate::gamemodes::base::Game;
 use crate::models::Move;
-use instant::Duration;
 
 #[wasm_bindgen]
 pub struct SinglePlayerGame {
@@ -15,6 +14,7 @@ pub struct SinglePlayerGame {
     last_move: Option<Move>,
     on_send_view: js_sys::Function,
     on_send_error: js_sys::Function,
+    request_ai_move: js_sys::Function,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -29,7 +29,9 @@ pub struct SinglePlayerView {
 #[wasm_bindgen]
 impl SinglePlayerGame {
     #[wasm_bindgen(constructor)]
-    pub fn new(difficulty: &str, on_send_view: js_sys::Function, on_send_error: js_sys::Function) -> SinglePlayerGame {
+    pub fn new(
+        difficulty: &str, on_send_view: js_sys::Function, on_send_error: js_sys::Function, request_ai_move: js_sys::Function
+    ) -> SinglePlayerGame {
         let is_red: bool = random();
         let agent = match difficulty {
             "easy" => AiAgent::PureMonteCarlo,
@@ -43,7 +45,7 @@ impl SinglePlayerGame {
         };
         let game = Game::new();
         let mut game = SinglePlayerGame {
-            game, on_send_view, on_send_error, player, agent, last_move: None
+            game, on_send_view, on_send_error, player, agent, last_move: None, request_ai_move,
         };
         game.agent_move();
         game.send_current_view();
@@ -57,16 +59,15 @@ impl SinglePlayerGame {
             return;
         }
         let state = self.game.get_state();
-        let duration = Duration::from_millis(50);
-        let (game_move, expected) = match self.agent.play_move(&state, duration) {
-            None => {
-                self.send_error("AI failed to play".to_string());
-                return;
-            }
-            Some(game_move) => game_move,
+        let msg = MoveRequest { state, agent: self.agent };
+        let msg = JsValue::from_serde(&msg).unwrap();
+        let this = JsValue::null();
+        match self.request_ai_move.call1(&this, &msg) {
+            Ok(_) => {},
+            Err(err) => {
+                log::error!("Failed to call request_ai_move: {:?}", err);
+            },
         };
-        log::info!("Expected score {} with move {:?}", expected, game_move);
-        self.try_move(game_move).unwrap();
     }
 }
 impl SinglePlayerGame {
@@ -110,8 +111,9 @@ impl SinglePlayerGame {
 #[wasm_bindgen]
 impl SinglePlayerGame {
     #[wasm_bindgen(js_name = move)]
-    pub fn play_move(&mut self, game_move: &JsValue) {
-        if self.game.get_turn() != Some(self.player) {
+    pub fn play_move(&mut self, game_move: &JsValue, is_player: bool) {
+        let player_turn = self.game.get_turn() == Some(self.player);
+        if player_turn != is_player {
             return self.send_error("Not your turn".to_string());
         }
         let game_move: Move = match game_move.into_serde() {

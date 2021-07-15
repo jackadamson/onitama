@@ -3,6 +3,7 @@ use std::ops::{Add, Neg, Sub};
 
 use enum_iterator::IntoEnumIterator;
 use serde::{Deserialize, Serialize};
+use crate::AiAgent;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum Player {
@@ -222,4 +223,11 @@ impl From<&GameState> for GameView {
             },
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct MoveRequest {
+    pub state: GameState,
+    pub agent: AiAgent,
 }

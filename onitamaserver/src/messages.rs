@@ -3,7 +3,6 @@ use uuid::Uuid;
 
 use onitamalib::{GameMessage, GameState, Player};
 
-use crate::agents::{AgentException, AgentWs};
 use crate::rooms::{OnitamaRoom, RoomWs};
 
 #[derive(Message)]
@@ -49,17 +48,23 @@ pub struct SocketGameMessage(pub GameMessage);
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct AgentRequest {
-    pub msg: GameMessage,
-    pub addr: Addr<AgentWs>,
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct AgentResponse {
-    pub resp: Result<GameMessage,AgentException>,
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
 pub struct CloseRoom;
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "agent")] {
+        use crate::agents::{AgentException, AgentWs};
+
+        #[derive(Message)]
+        #[rtype(result = "()")]
+        pub struct AgentRequest {
+            pub msg: GameMessage,
+            pub addr: Addr<AgentWs>,
+        }
+
+        #[derive(Message)]
+        #[rtype(result = "()")]
+        pub struct AgentResponse {
+            pub resp: Result<GameMessage,AgentException>,
+        }
+    }
+}

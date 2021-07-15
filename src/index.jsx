@@ -37,11 +37,19 @@ ReactDOM.render(
               <RemoteGame />
             </Suspense>
           </Route>
-          <Route path="/ai/:difficulty">
-            <Suspense fallback={<Loading />}>
-              <SinglePlayerGame />
-            </Suspense>
-          </Route>
+          {process.env.REACT_APP_LOCAL_AI ? (
+            <Route path="/ai/:difficulty">
+              <Suspense fallback={<Loading />}>
+                <SinglePlayerGame />
+              </Suspense>
+            </Route>
+          ) : (
+            <Route path="/ai/:roomId">
+              <Suspense fallback={<Loading />}>
+                <RemoteGame isAi />
+              </Suspense>
+            </Route>
+          )}
           <Route path="/ai">
             <AiSelect />
           </Route>
