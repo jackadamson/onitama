@@ -54,10 +54,13 @@ async fn main() -> std::io::Result<()> {
         let app = App::new()
             // Cache all requests to paths in /static otherwise don't cache
             .wrap_fn(|req, srv| {
-                let is_static = req.path().starts_with("/static") || req.path().ends_with(".wasm");
+                let is_static = req.path().starts_with("/static")
+                        || req.path().ends_with(".wasm");
                 let cache_static = match is_static {
                     true => CacheControl(vec![CacheDirective::MaxAge(86400)]).to_string(),
-                    false => CacheControl(vec![CacheDirective::NoCache]).to_string(),
+                    false => CacheControl(vec![
+                        CacheDirective::Extension("s-maxage".to_owned(), Some("300".to_owned())),
+                    ]).to_string(),
                 };
                 let fut = srv.call(req);
                 async {

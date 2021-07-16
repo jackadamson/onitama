@@ -1,7 +1,7 @@
 # Onitama App
 [![Docker Image CI](https://github.com/jackadamson/onitama/actions/workflows/docker-image.yml/badge.svg)](https://github.com/jackadamson/onitama/pkgs/container/onitama)
 
-Can be played at [https://onitama.mrfluffy.dev/](https://onitama.mrfluffy.dev/)
+Can be played at [https://onitama.app/](https://onitama.app/)
 
 ## Roadmap
 
@@ -30,7 +30,7 @@ To use server-side AI, build the container with
 docker build -t onitama:remoteai -f Dockerfile.remoteai .
 ```
 
-As of writing this, [https://onitama.mrfluffy.dev/](https://onitama.mrfluffy.dev/) uses the **local AI** as it is
+As of writing this, [https://onitama.app/](https://onitama.app/) uses the **local AI** as it is
 very light on server resource requirements.
 
 ## Deployment

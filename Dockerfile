@@ -20,6 +20,8 @@ COPY ./ /src/
 # Build react app including wasm library
 ENV GENERATE_SOURCEMAP=false
 ENV REACT_APP_LOCAL_AI=true
+# To allow for more strict CSP
+ENV INLINE_RUNTIME_CHUNK=false
 RUN yarn run build --production
 
 FROM rust:1.53 as server-builder

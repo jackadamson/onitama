@@ -2,6 +2,7 @@
 name = "onitamaserver"
 version = "0.1.0"
 authors = ["Jack Adamson <jack@mrfluffybunny.com>"]
+repository = "https://github.com/jackadamson/onitama"
 edition = "2018"
 license = "MIT"
 default-run = "onitamaserver"
