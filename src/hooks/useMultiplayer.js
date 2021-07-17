@@ -23,6 +23,9 @@ const useMultiplayer = (roomId, isAi) => {
     const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
     const roomUrl = `${WEBSOCKET_BASE}${isAi ? 'ai/' : ''}${roomId || ''}`;
     const sock = new WebSocket(roomUrl);
+    const keepAlive = setInterval(() => {
+      sock.send('ping');
+    }, 30000);
     sock.binaryType = 'arraybuffer';
     const onSend = (data) => {
       sock.send(data);
@@ -46,6 +49,7 @@ const useMultiplayer = (roomId, isAi) => {
     sock.addEventListener('close', onClose);
     sock.addEventListener('message', onMessage);
     return () => {
+      clearInterval(keepAlive);
       mounted = false;
       sock.close(1000);
     };

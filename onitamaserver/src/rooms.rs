@@ -68,6 +68,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for RoomWs {
                 }
                 return;
             }
+            Ok(ws::Message::Text(_)) => {
+                ctx.text("pong");
+                return;
+            }
             msg => {
                 warn!("Received unexpected msg: {:?}", msg);
                 return;
