@@ -10,6 +10,7 @@ import theme from './theme';
 import Loading from './Loading';
 import Home from './Home';
 import AiSelect from './AiSelect';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 const LocalGame = React.lazy(() => import('./LocalGame'));
 const RemoteGame = React.lazy(() => import('./RemoteGame'));
@@ -62,3 +63,5 @@ ReactDOM.render(
   </ThemeProvider>,
   document.querySelector('#root'),
 );
+
+serviceWorkerRegistration.register();
