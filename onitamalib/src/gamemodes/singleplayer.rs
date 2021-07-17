@@ -136,6 +136,7 @@ impl SinglePlayerGame {
     }
     pub fn reset(&mut self) {
         self.game.reset();
+        self.last_move = None;
         self.send_current_view();
     }
 }
