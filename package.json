@@ -56,7 +56,7 @@
     "lint-staged": "^11.0.0",
     "prettier": "^2.0.5",
     "react-app-rewired": "^2.1.6",
-    "wasm-pack": "^0.9.1"
+    "wasm-pack": "^0.10.0"
   },
   "browserslist": {
     "production": [

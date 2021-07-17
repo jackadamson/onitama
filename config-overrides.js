@@ -38,4 +38,13 @@ module.exports = override(
     });
     return config;
   },
+  (config) => {
+    (config.optimization.minimizer || []).forEach((plugin) => {
+      if (plugin.constructor.name === 'TerserPlugin') {
+        plugin.options.terserOptions.keep_fnames = true;
+        plugin.options.terserOptions.keep_classnames = true;
+      }
+    });
+    return config;
+  },
 );
