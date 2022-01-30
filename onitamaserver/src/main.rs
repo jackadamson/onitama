@@ -57,7 +57,7 @@ async fn main() -> std::io::Result<()> {
                 let is_static = req.path().starts_with("/static")
                         || req.path().ends_with(".wasm");
                 let cache_static = match is_static {
-                    true => CacheControl(vec![CacheDirective::MaxAge(86400)]).to_string(),
+                    true => CacheControl(vec![CacheDirective::MaxAge(86400), CacheDirective::Public, CacheDirective::Extension("immutable".to_string(), None)]).to_string(),
                     false => CacheControl(vec![
                         CacheDirective::Extension("s-maxage".to_owned(), Some("300".to_owned())),
                     ]).to_string(),
