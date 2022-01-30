@@ -1,4 +1,3 @@
-#![feature(array_map)]
 extern crate console_error_panic_hook;
 pub use messages::*;
 pub use models::*;

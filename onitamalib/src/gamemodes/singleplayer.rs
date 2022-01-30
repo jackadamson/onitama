@@ -138,5 +138,6 @@ impl SinglePlayerGame {
         self.game.reset();
         self.last_move = None;
         self.send_current_view();
+        self.agent_move();
     }
 }
