@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+/* eslint-disable no-param-reassign,no-console */
 // Base off: https://github.com/cra-template/pwa/blob/master/packages/cra-template-pwa/template/src/serviceWorkerRegistration.js
 
 // This optional code is used to register a service worker.
@@ -128,7 +128,7 @@ export function register(config) {
         navigator.serviceWorker.ready.then(() => {
           console.log(
             'This web app is being served cache-first by a service ' +
-            'worker. To learn more, visit https://cra.link/PWA',
+              'worker. To learn more, visit https://cra.link/PWA',
           );
         });
       } else {
