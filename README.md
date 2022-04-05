@@ -67,3 +67,8 @@ Requires Rust (nightly) and Node (v14)
 1. Start the backend with `cargo run onitamaserver`
 1. Start the frontend with `yarn start`
 1. Visit [http://localhost:3000](http://localhost:3000) to see the app
+
+To develop single-player without the backend, start the frontend with
+```bash
+REACT_APP_LOCAL_AI=true yarn start
+```
