@@ -81,6 +81,7 @@ const GameCard = ({
           Discard
         </Typography>
       )}
+      {showPlayed && <Typography variant="caption">(played)</Typography>}
     </Paper>
   );
 };

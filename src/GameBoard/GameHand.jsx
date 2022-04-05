@@ -28,7 +28,7 @@ const GameHand = ({
           canMove={canMove}
           discard={discard}
           showPlayed
-          inverted={inverted}
+          inverted={!inverted}
         />
       )}
       {cards.map(({ card: name, moves }) => (
