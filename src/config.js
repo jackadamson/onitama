@@ -7,3 +7,5 @@ export const PRODUCTION_WEBSOCKET_BASE = `${websocketProtocol}://${document.loca
 
 export const WEBSOCKET_BASE =
   process.env.NODE_ENV === 'development' ? 'ws://localhost:8080/ws/' : PRODUCTION_WEBSOCKET_BASE;
+export const EVENT_URL =
+  process.env.NODE_ENV === 'development' ? 'http://localhost:8080/ws/event' : '/ws/event';

@@ -3,8 +3,10 @@ use std::str::FromStr;
 use actix::prelude::*;
 use actix_web::{error, Error, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
+use futures::StreamExt;
 use uuid::Uuid;
-
+use onitamalib::GameEvent;
+use serde_cbor::de;
 use crate::rooms::{OnitamaServer, RoomWs};
 use crate::utils::get_identifier;
 
@@ -68,4 +70,30 @@ cfg_if::cfg_if! {
             resp
         }
     }
+}
+
+pub async fn event_receive(req: HttpRequest, mut body: web::Payload) -> Result<String, Error> {
+    let id = get_identifier(&req);
+    let mut bytes = web::BytesMut::new();
+    while let Some(item) = body.next().await {
+        let item = item?;
+        bytes.extend_from_slice(&item);
+    }
+    let data: GameEvent = match de::from_slice(bytes.as_ref()) {
+        Ok(data) => data,
+        Err(err) => {
+            warn!("Failed to deserialize event: {:?}", &err);
+            return Ok("ok".to_string());
+        }
+    };
+
+    match data {
+        GameEvent::Start { against } => {
+            info!("Game started against {} :: {}", against, &id);
+        },
+        GameEvent::End { against, winner } => {
+            info!("Game ended against {} winner was {} :: {}", against, winner, &id);
+        }
+    };
+    Ok("test".to_string())
 }

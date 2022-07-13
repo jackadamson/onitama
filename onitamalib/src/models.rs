@@ -225,6 +225,18 @@ impl From<&GameState> for GameView {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum GameEvent {
+    Start {
+        against: String,
+    },
+    End {
+        against: String,
+        winner: String,
+    },
+}
+
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveRequest {

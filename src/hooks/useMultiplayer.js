@@ -4,6 +4,7 @@ import { useHistory } from 'react-router';
 import { WEBSOCKET_BASE } from '../config';
 import { MultiplayerGame } from '../onitamalib';
 import logger from '../logger';
+import onEvent from '../events';
 
 const useMultiplayer = (roomId, isAi) => {
   const [state, setState] = useState(null);
@@ -30,7 +31,7 @@ const useMultiplayer = (roomId, isAi) => {
     const onSend = (data) => {
       sock.send(data);
     };
-    const game = new MultiplayerGame(setStateMounted, onError, onSend);
+    const game = new MultiplayerGame(setStateMounted, onError, onSend, onEvent);
     const onMessage = (e) => {
       if (typeof e.data === 'string') {
         logger.log('Received string', e.data);

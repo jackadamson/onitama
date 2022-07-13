@@ -13,7 +13,7 @@ use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective};
 use actix_web::http::HeaderValue;
 
 use crate::rooms::OnitamaServer;
-use crate::routes::{create_room, join_room, ServerData};
+use crate::routes::{create_room, event_receive, join_room, ServerData};
 
 mod rooms;
 mod messages;
@@ -41,12 +41,14 @@ async fn main() -> std::io::Result<()> {
                 use crate::routes::ai_room;
                 let factory =
                     web::scope("/ws")
+                        .route("/event", web::post().to(event_receive))
                         .route("/ai/{difficulty}", web::get().to(ai_room))
                         .route("/{key}", web::get().to(join_room))
                         .route("/", web::get().to(create_room));
             } else {
                 let factory =
                     web::scope("/ws")
+                        .route("/event", web::post().to(event_receive))
                         .route("/{key}", web::get().to(join_room))
                         .route("/", web::get().to(create_room));
             }

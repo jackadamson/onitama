@@ -1,8 +1,9 @@
 use rand::prelude::*;
 use serde::Serialize;
+use serde_cbor::ser;
 use wasm_bindgen::prelude::*;
 
-use crate::{AiAgent, GameView, MoveRequest, Player};
+use crate::{AiAgent, GameEvent, GameView, MoveRequest, Player};
 use crate::gamemodes::base::Game;
 use crate::models::Move;
 
@@ -14,6 +15,7 @@ pub struct SinglePlayerGame {
     last_move: Option<Move>,
     on_send_view: js_sys::Function,
     on_send_error: js_sys::Function,
+    on_send_event: js_sys::Function,
     request_ai_move: js_sys::Function,
 }
 
@@ -30,7 +32,7 @@ pub struct SinglePlayerView {
 impl SinglePlayerGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        difficulty: &str, on_send_view: js_sys::Function, on_send_error: js_sys::Function, request_ai_move: js_sys::Function
+        difficulty: &str, on_send_view: js_sys::Function, on_send_error: js_sys::Function, request_ai_move: js_sys::Function, on_send_event: js_sys::Function,
     ) -> SinglePlayerGame {
         let is_red: bool = random();
         let agent = match difficulty {
@@ -45,8 +47,10 @@ impl SinglePlayerGame {
         };
         let game = Game::new();
         let mut game = SinglePlayerGame {
-            game, on_send_view, on_send_error, player, agent, last_move: None, request_ai_move,
+            game, on_send_view, on_send_error, player, agent, last_move: None, request_ai_move, on_send_event,
         };
+        let against = format!("{:?}", agent);
+        game.send_event(GameEvent::Start { against });
         game.agent_move();
         game.send_current_view();
         return game;
@@ -75,6 +79,20 @@ impl SinglePlayerGame {
         self.game.try_move(game_move)?;
         self.last_move = Some(game_move);
         self.send_current_view();
+        match self.game.get_winner() {
+            None => {},
+            Some(winner) => {
+                let winner = match winner == self.player {
+                    true => "player".to_string(),
+                    false => "ai".to_string(),
+                };
+                let against = format!("{:?}", self.agent);
+                self.send_event(GameEvent::End {
+                    against,
+                    winner,
+                })
+            },
+        };
         Ok(())
     }
     fn send_current_view(&self) {
@@ -106,6 +124,16 @@ impl SinglePlayerGame {
             },
         };
     }
+    fn send_event(&self, event: GameEvent) {
+        let msg = ser::to_vec(&event).unwrap();
+        let msg = serde_bytes::ByteBuf::from(msg);
+        let msg = serde_wasm_bindgen::to_value(&msg).unwrap();
+        let this = JsValue::null();
+        match self.on_send_event.call1(&this, &msg) {
+            Ok(_) => {},
+            Err(_) => {},
+        };
+    }
 }
 
 #[wasm_bindgen]
@@ -135,6 +163,8 @@ impl SinglePlayerGame {
         self.agent_move();
     }
     pub fn reset(&mut self) {
+        let against = format!("{:?}", self.agent);
+        self.send_event(GameEvent::Start { against });
         self.game.reset();
         self.last_move = None;
         self.send_current_view();

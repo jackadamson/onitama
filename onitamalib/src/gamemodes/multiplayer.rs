@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 use web_sys::MessageEvent;
 
 use crate::gamemodes::base::Game;
-use crate::GameView;
+use crate::{GameEvent, GameView};
 use crate::messages::GameMessage;
 use crate::models::{Move, Player};
 
@@ -40,6 +40,7 @@ pub struct MultiplayerGame {
     on_send_msg: js_sys::Function,
     on_send_view: js_sys::Function,
     on_send_error: js_sys::Function,
+    on_send_event: js_sys::Function,
     conn_state: ConnectionState,
     resume_state: ConnectionState,
     player: Player,
@@ -90,6 +91,7 @@ impl MultiplayerGame {
         on_send_view: js_sys::Function,
         on_send_error: js_sys::Function,
         on_send_msg: js_sys::Function,
+        on_send_event: js_sys::Function,
     ) -> MultiplayerGame {
         let game = Game::new();
         let game = MultiplayerGame {
@@ -99,6 +101,7 @@ impl MultiplayerGame {
             on_send_msg,
             on_send_view,
             on_send_error,
+            on_send_event,
             conn_state: ConnectionState::Connecting,
             resume_state: ConnectionState::Connecting,
             error: None,
@@ -162,6 +165,16 @@ impl MultiplayerGame {
             },
         };
     }
+    fn send_event(&self, event: GameEvent) {
+        let msg = ser::to_vec(&event).unwrap();
+        let msg = serde_bytes::ByteBuf::from(msg);
+        let msg = serde_wasm_bindgen::to_value(&msg).unwrap();
+        let this = JsValue::null();
+        match self.on_send_event.call1(&this, &msg) {
+            Ok(_) => {},
+            Err(_) => {},
+        };
+    }
 }
 
 #[wasm_bindgen]
@@ -186,6 +199,19 @@ impl MultiplayerGame {
         self.game.try_move(game_move)?;
         if self.game.is_finished() {
             self.conn_state = ConnectionState::Finished;
+            let winner = match self.game.get_winner() {
+                Some(player) => {
+                    match player == self.player {
+                        true => "player",
+                        false => "opponent",
+                    }
+                }
+                None => "unknown",
+            }.to_string();
+            self.send_event(GameEvent::End {
+                against: "remote".to_string(),
+                winner,
+            })
         }
         self.send_current_view();
         Ok(())
@@ -198,6 +224,7 @@ impl MultiplayerGame {
                 log::info!("Initializing");
                 self.room_id = Some(room_id);
                 self.player = player;
+                self.send_event(GameEvent::Start { against: "online".to_string()});
                 self.conn_state = match waiting {
                     true => ConnectionState::Waiting,
                     false => match state.finished() {

@@ -56,4 +56,10 @@ impl Game {
             GameState::Finished { .. } => true,
         }
     }
+    pub fn get_winner(&self) -> Option<Player> {
+        match self.state {
+            GameState::Finished { winner, .. } => Some(winner),
+            GameState::Playing { .. } => None,
+        }
+    }
 }
