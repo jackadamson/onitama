@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Box, Button, useMediaQuery, useTheme } from '@material-ui/core';
@@ -30,6 +30,12 @@ const GameBoard = ({
   reset,
 }) => {
   const theme = useTheme();
+  const [minimizedGameOver, setMinimizedGameOver] = useState(false);
+  useEffect(() => {
+    if (!winner) {
+      setMinimizedGameOver(false);
+    }
+  }, [winner, setMinimizedGameOver]);
   const hideSideSpare = useMediaQuery(theme.breakpoints.down('sm'));
   // Whether it's the player's turn, always true if local multiplayer
   const playerTurn = player ? player === turn : true;
@@ -40,7 +46,7 @@ const GameBoard = ({
       <Box display="flex" justifyContent="center">
         <GameTurn player={player} turn={turn} />
       </Box>
-      <Box display="flex" flexGrow={1} flexDirection={redOriented ? 'row' : 'row-reverse'}>
+      <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'}>
         <Box position="absolute" top="0" left="0">
           <Button component={Link} to="/">
             Home
@@ -51,6 +57,8 @@ const GameBoard = ({
           winner={winner}
           player={player}
           connectionStatus={connectionStatus}
+          minimizedGameOver={minimizedGameOver}
+          setMinimizedGameOver={setMinimizedGameOver}
         />
         <Box
           display={hideSideSpare ? 'none' : 'flex'}
@@ -127,6 +135,24 @@ const GameBoard = ({
           )}
         </Box>
       </Box>
+      {minimizedGameOver && Boolean(winner) && (
+        <>
+          <Box
+            p={1}
+            display="flex"
+            position="sticky"
+            justifyContent="center"
+            bottom="0px"
+            width="100%"
+          >
+            <Box width="100%" maxWidth="320px" display="flex" flexDirection="column">
+              <Button variant="contained" onClick={reset}>
+                Rematch
+              </Button>
+            </Box>
+          </Box>
+        </>
+      )}
     </Box>
   );
 };

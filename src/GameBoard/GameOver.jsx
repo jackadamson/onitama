@@ -8,8 +8,11 @@ import {
   DialogTitle,
   Button,
   Typography,
+  Box,
+  IconButton,
 } from '@material-ui/core';
 import clsx from 'clsx';
+import { Close } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme) => ({
   blue: {
@@ -19,7 +22,10 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.error.main,
   },
   dialog: {
-    padding: theme.spacing(8),
+    padding: theme.spacing(2),
+    [theme.breakpoints.up('md')]: {
+      padding: theme.spacing(8),
+    },
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -30,14 +36,26 @@ const captionsFromStatus = {
   OpponentRematchRequested: 'Opponent requested a rematch',
   RematchRequested: 'Rematch request sent',
 };
-const GameOver = ({ winner, reset, player, connectionStatus }) => {
+const GameOver = ({
+  winner,
+  reset,
+  player,
+  connectionStatus,
+  minimizedGameOver,
+  setMinimizedGameOver,
+}) => {
   const classes = useStyles();
   const relativeText = player === winner ? 'You Win!' : 'You Lose!';
   const absoluteText = `${winner} wins!`;
   const text = player ? relativeText : absoluteText;
   const caption = captionsFromStatus[connectionStatus];
   return (
-    <Dialog open={Boolean(winner)} classes={{ paper: classes.dialog }}>
+    <Dialog open={Boolean(winner) && !minimizedGameOver} classes={{ paper: classes.dialog }}>
+      <Box position="absolute" top="0px" right="0px">
+        <IconButton onClick={() => setMinimizedGameOver(true)}>
+          <Close />
+        </IconButton>
+      </Box>
       <DialogTitle
         className={clsx({
           [classes.red]: winner === 'Red',
@@ -68,6 +86,8 @@ GameOver.propTypes = {
   player: PropTypes.oneOf(['Red', 'Blue', null]),
   connectionStatus: PropTypes.string,
   reset: PropTypes.func.isRequired,
+  minimizedGameOver: PropTypes.bool.isRequired,
+  setMinimizedGameOver: PropTypes.func.isRequired,
 };
 
 export default GameOver;
