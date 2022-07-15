@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Box, Button, useMediaQuery, useTheme } from '@material-ui/core';
+import UndoIcon from '@material-ui/icons/Undo';
 import GameOver from './GameOver';
 import GameCard from './GameCard';
 import GameGrid from './GameGrid';
@@ -28,6 +29,8 @@ const GameBoard = ({
   move,
   discard,
   reset,
+  canUndo,
+  undo,
 }) => {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
@@ -135,6 +138,15 @@ const GameBoard = ({
           )}
         </Box>
       </Box>
+      {undo && (
+        <Box width="100%" display="flex" justifyContent="center" py={2}>
+          <Box display="flex" flexDirection="column" width="100%" maxWidth="320px">
+            <Button variant="contained" disabled={!canUndo} startIcon={<UndoIcon />} onClick={undo}>
+              Undo last move
+            </Button>
+          </Box>
+        </Box>
+      )}
       {minimizedGameOver && Boolean(winner) && (
         <>
           <Box
@@ -164,6 +176,8 @@ GameBoard.defaultProps = {
   player: null,
   lastMove: null,
   connectionStatus: null,
+  canUndo: null,
+  undo: null,
 };
 GameBoard.propTypes = {
   src: PointPropType,
@@ -187,6 +201,8 @@ GameBoard.propTypes = {
   isMoveValid: PropTypes.func.isRequired,
   move: PropTypes.func.isRequired,
   discard: PropTypes.func.isRequired,
+  canUndo: PropTypes.bool,
+  undo: PropTypes.func,
 };
 
 export default GameBoard;

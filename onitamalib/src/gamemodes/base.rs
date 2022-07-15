@@ -1,5 +1,6 @@
 use crate::models::{GameState, Move, Player};
 
+#[derive(Clone)]
 pub struct Game {
     state: GameState,
     last_move: Option<Move>,

@@ -14,6 +14,9 @@ const useStyles = makeStyles((theme) => ({
     width: 'calc(100% - 32px)',
     maxWidth: '320px',
   },
+  centeredHeading: {
+    textAlign: 'center',
+  },
 }));
 
 export default useStyles;

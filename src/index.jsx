@@ -11,10 +11,12 @@ import Loading from './Loading';
 import Home from './Home';
 import AiSelect from './AiSelect';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import TrainingSelect from './TrainingSelect';
 
 const LocalGame = React.lazy(() => import('./LocalGame'));
 const RemoteGame = React.lazy(() => import('./RemoteGame'));
 const SinglePlayerGame = React.lazy(() => import('./SinglePlayerGame'));
+const TrainingGame = React.lazy(() => import('./TrainingGame'));
 const Rules = React.lazy(() => import('./Rules'));
 
 ReactDOM.render(
@@ -54,6 +56,18 @@ ReactDOM.render(
           <Route path="/ai">
             <AiSelect />
           </Route>
+          {process.env.REACT_APP_LOCAL_AI && (
+            <Route path="/t/:difficulty">
+              <Suspense fallback={<Loading />}>
+                <TrainingGame />
+              </Suspense>
+            </Route>
+          )}
+          {process.env.REACT_APP_LOCAL_AI && (
+            <Route path="/t">
+              <TrainingSelect />
+            </Route>
+          )}
           <Route>
             <Home />
           </Route>

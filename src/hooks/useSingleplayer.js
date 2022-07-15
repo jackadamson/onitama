@@ -17,6 +17,7 @@ const useSingleplayer = (difficulty) => {
     return {
       playMove: (m) => game.move(m, true),
       reset: (m) => game.reset(m),
+      undo: () => game.undo(),
     };
   }, [setState, enqueueSnackbar, difficulty]);
   logger.log(state);

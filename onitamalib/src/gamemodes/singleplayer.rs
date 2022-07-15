@@ -7,12 +7,18 @@ use crate::{AiAgent, GameEvent, GameView, MoveRequest, Player};
 use crate::gamemodes::base::Game;
 use crate::models::Move;
 
+struct PreviousState {
+    game: Game,
+    last_move: Option<Move>,
+}
+
 #[wasm_bindgen]
 pub struct SinglePlayerGame {
     game: Game,
     player: Player,
     agent: AiAgent,
     last_move: Option<Move>,
+    previous_states: Vec<PreviousState>,
     on_send_view: js_sys::Function,
     on_send_error: js_sys::Function,
     on_send_event: js_sys::Function,
@@ -26,6 +32,7 @@ pub struct SinglePlayerView {
     #[serde(flatten)]
     game: GameView,
     last_move: Option<Move>,
+    can_undo: bool,
 }
 
 #[wasm_bindgen]
@@ -47,7 +54,15 @@ impl SinglePlayerGame {
         };
         let game = Game::new();
         let mut game = SinglePlayerGame {
-            game, on_send_view, on_send_error, player, agent, last_move: None, request_ai_move, on_send_event,
+            game,
+            on_send_view,
+            on_send_error,
+            player,
+            agent,
+            last_move: None,
+            previous_states: vec![],
+            request_ai_move,
+            on_send_event,
         };
         let against = format!("{:?}", agent);
         game.send_event(GameEvent::Start { against });
@@ -56,6 +71,7 @@ impl SinglePlayerGame {
         return game;
     }
 }
+
 impl SinglePlayerGame {
     fn agent_move(&mut self) {
         if self.game.get_turn() != Some(self.player.invert()) {
@@ -67,20 +83,21 @@ impl SinglePlayerGame {
         let msg = JsValue::from_serde(&msg).unwrap();
         let this = JsValue::null();
         match self.request_ai_move.call1(&this, &msg) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call request_ai_move: {:?}", err);
-            },
+            }
         };
     }
 }
+
 impl SinglePlayerGame {
     fn try_move(&mut self, game_move: Move) -> Result<(), String> {
         self.game.try_move(game_move)?;
         self.last_move = Some(game_move);
         self.send_current_view();
         match self.game.get_winner() {
-            None => {},
+            None => {}
             Some(winner) => {
                 let winner = match winner == self.player {
                     true => "player".to_string(),
@@ -91,7 +108,7 @@ impl SinglePlayerGame {
                     against,
                     winner,
                 })
-            },
+            }
         };
         Ok(())
     }
@@ -104,24 +121,25 @@ impl SinglePlayerGame {
             player: self.player,
             game: view,
             last_move: self.last_move,
+            can_undo: !self.previous_states.is_empty()
         };
         let view = JsValue::from_serde(&view).unwrap();
         let this = JsValue::null();
         match self.on_send_view.call1(&this, &view) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call on_send_view: {:?}", err);
-            },
+            }
         };
     }
     fn send_error(&self, error: String) {
         let error = JsValue::from(error);
         let this = JsValue::null();
         match self.on_send_error.call1(&this, &error) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call on_send_error: {:?}", err);
-            },
+            }
         };
     }
     fn send_event(&self, event: GameEvent) {
@@ -130,8 +148,8 @@ impl SinglePlayerGame {
         let msg = serde_wasm_bindgen::to_value(&msg).unwrap();
         let this = JsValue::null();
         match self.on_send_event.call1(&this, &msg) {
-            Ok(_) => {},
-            Err(_) => {},
+            Ok(_) => {}
+            Err(_) => {}
         };
     }
 }
@@ -144,6 +162,10 @@ impl SinglePlayerGame {
         if player_turn != is_player {
             return self.send_error("Not your turn".to_string());
         }
+        let current_state = PreviousState {
+            game: self.game.clone(),
+            last_move: self.last_move
+        };
         let game_move: Move = match game_move.into_serde() {
             Ok(game_move) => game_move,
             Err(err) => {
@@ -154,14 +176,31 @@ impl SinglePlayerGame {
         match self.try_move(game_move) {
             Ok(()) => {
                 log::info!("Successfully played move");
-            },
+            }
             Err(err) => {
                 self.send_error(err);
                 return;
             }
         };
+        if is_player {
+            self.previous_states.push(current_state);
+        }
         self.agent_move();
     }
+
+    #[wasm_bindgen(js_name = undo)]
+    pub fn undo_move(&mut self) {
+        let previous_state = match self.previous_states.pop() {
+            Some(state) => state,
+            None => {
+                return;
+            },
+        };
+        self.game = previous_state.game;
+        self.last_move = previous_state.last_move;
+        self.send_current_view();
+    }
+
     pub fn reset(&mut self) {
         let against = format!("{:?}", self.agent);
         self.send_event(GameEvent::Start { against });

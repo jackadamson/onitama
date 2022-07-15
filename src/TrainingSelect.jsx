@@ -2,70 +2,54 @@ import React from 'react';
 import { Box, Button, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
-import GithubRibbon from './GithubRibbon';
 
-const Home = () => {
+const AiSelect = () => {
   const classes = useStyles();
   return (
     <Box className={classes.outer}>
-      <GithubRibbon />
-      <Typography variant="h2">Onitama App</Typography>
+      <Typography variant="h2" className={classes.centeredHeading}>
+        Select an AI to train with
+      </Typography>
       <Box m={1} />
       <Button
         component={Link}
-        to="/help"
+        to="/t/easy"
         variant="contained"
+        color="primary"
+        className={classes.button}
+      >
+        Easy
+      </Button>
+      <Button
+        component={Link}
+        to="/t/medium"
+        variant="contained"
+        color="primary"
+        className={classes.button}
+      >
+        Medium
+      </Button>
+      <Button
+        component={Link}
+        to="/t/hard"
+        variant="contained"
+        color="primary"
+        className={classes.button}
+      >
+        Hard
+      </Button>
+      <Box m={1} />
+      <Button
+        component={Link}
+        to="/"
+        variant="outlined"
         color="secondary"
         className={classes.button}
       >
-        How to Play
+        Back
       </Button>
-      <Box m={1} />
-      <Button
-        component={Link}
-        to="/ai"
-        variant="contained"
-        color="primary"
-        className={classes.button}
-      >
-        Single Player
-      </Button>
-      <Box m={1} />
-      <Button
-        component={Link}
-        to="/l/"
-        variant="contained"
-        color="primary"
-        className={classes.button}
-      >
-        Local Multiplayer
-      </Button>
-      <Button
-        component={Link}
-        to="/r/"
-        variant="contained"
-        color="primary"
-        className={classes.button}
-      >
-        Online Multiplayer
-      </Button>
-
-      {process.env.REACT_APP_LOCAL_AI && (
-        <>
-          <Box m={1} />
-          <Button
-            component={Link}
-            to="/r/"
-            variant="contained"
-            color="primary"
-            className={classes.button}
-          >
-            Training Mode
-          </Button>
-        </>
-      )}
     </Box>
   );
 };
 
-export default Home;
+export default AiSelect;
