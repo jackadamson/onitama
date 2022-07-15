@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
 import GithubRibbon from './GithubRibbon';
 
-const AiSelect = () => {
+function AiSelect() {
   const classes = useStyles();
   return (
     <Box className={classes.outer}>
@@ -50,6 +50,6 @@ const AiSelect = () => {
       <GithubRibbon />
     </Box>
   );
-};
+}
 
 export default AiSelect;

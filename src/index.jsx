@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { CssBaseline } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { SnackbarProvider } from 'notistack';
@@ -19,7 +19,8 @@ const SinglePlayerGame = React.lazy(() => import('./SinglePlayerGame'));
 const TrainingGame = React.lazy(() => import('./TrainingGame'));
 const Rules = React.lazy(() => import('./Rules'));
 
-ReactDOM.render(
+const root = createRoot(document.querySelector('#root'));
+root.render(
   <ThemeProvider theme={theme}>
     <HashRouter>
       <CssBaseline />
@@ -75,7 +76,6 @@ ReactDOM.render(
       </SnackbarProvider>
     </HashRouter>
   </ThemeProvider>,
-  document.querySelector('#root'),
 );
 
 serviceWorkerRegistration.register();

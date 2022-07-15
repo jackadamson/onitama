@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
 import GithubRibbon from './GithubRibbon';
 
-const Home = () => {
+function Home() {
   const classes = useStyles();
   return (
     <Box className={classes.outer}>
@@ -66,6 +66,6 @@ const Home = () => {
       )}
     </Box>
   );
-};
+}
 
 export default Home;

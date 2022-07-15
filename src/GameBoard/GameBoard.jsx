@@ -10,7 +10,7 @@ import GameHand from './GameHand';
 import GameTurn from './GameTurn';
 import { CardPropType, PointPropType } from './props';
 
-const GameBoard = ({
+function GameBoard({
   src,
   setSrc,
   grid,
@@ -31,7 +31,7 @@ const GameBoard = ({
   reset,
   canUndo,
   undo,
-}) => {
+}) {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
   useEffect(() => {
@@ -148,26 +148,24 @@ const GameBoard = ({
         </Box>
       )}
       {minimizedGameOver && Boolean(winner) && (
-        <>
-          <Box
-            p={1}
-            display="flex"
-            position="sticky"
-            justifyContent="center"
-            bottom="0px"
-            width="100%"
-          >
-            <Box width="100%" maxWidth="320px" display="flex" flexDirection="column">
-              <Button variant="contained" onClick={reset}>
-                Rematch
-              </Button>
-            </Box>
+        <Box
+          p={1}
+          display="flex"
+          position="sticky"
+          justifyContent="center"
+          bottom="0px"
+          width="100%"
+        >
+          <Box width="100%" maxWidth="320px" display="flex" flexDirection="column">
+            <Button variant="contained" onClick={reset}>
+              Rematch
+            </Button>
           </Box>
-        </>
+        </Box>
       )}
     </Box>
   );
-};
+}
 GameBoard.defaultProps = {
   card: null,
   src: null,

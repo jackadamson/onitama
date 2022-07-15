@@ -44,7 +44,7 @@ const tilePlayer = {
   RedPawn: 'Red',
   RedKing: 'Red',
 };
-const GameSquare = ({ tile, x, y, src, setSrc, turn, move, isValid, lastMove }) => {
+function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove }) {
   const classes = useStyles();
   const player = tilePlayer[tile];
   const activePlayer = turn === player;
@@ -81,7 +81,7 @@ const GameSquare = ({ tile, x, y, src, setSrc, turn, move, isValid, lastMove }) 
       {icons[tile]}
     </Paper>
   );
-};
+}
 GameSquare.defaultProps = {
   src: null,
   turn: null,

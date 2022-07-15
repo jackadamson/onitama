@@ -20,7 +20,7 @@ const getMoves = (src, card, turn) => {
   return (x, y) => dstSet.has(`${x},${y}`);
 };
 
-const RemoteGame = ({ isAi }) => {
+function RemoteGame({ isAi }) {
   const { roomId = null } = useParams();
   const { enqueueSnackbar } = useSnackbar();
   const { playMove, state, reset, reconnect } = useMultiplayer(roomId, isAi);
@@ -95,7 +95,7 @@ const RemoteGame = ({ isAi }) => {
       />
     </>
   );
-};
+}
 RemoteGame.defaultProps = {
   isAi: false,
 };

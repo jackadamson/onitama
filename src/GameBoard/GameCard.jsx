@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const GameCard = ({
+function GameCard({
   name,
   setCard,
   selected,
@@ -53,7 +53,7 @@ const GameCard = ({
   discard,
   inverted,
   showPlayed,
-}) => {
+}) {
   const classes = useStyles({ enabled, spare, inverted });
   const handler = () => {
     if (enabled && !canMove) {
@@ -84,7 +84,7 @@ const GameCard = ({
       {showPlayed && <Typography variant="caption">(played)</Typography>}
     </Paper>
   );
-};
+}
 GameCard.defaultProps = {
   spare: false,
   inverted: false,

@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
   }),
 }));
 
-const GameMoves = ({ moves, inverted }) => {
+function GameMoves({ moves, inverted }) {
   const classes = useStyles({ inverted });
   const moveSet = new Set(moves.map(({ x, y }) => `${x},${y}`));
   const indexes = [-2, -1, 0, 1, 2];
@@ -53,7 +53,7 @@ const GameMoves = ({ moves, inverted }) => {
       ))}
     </Box>
   );
-};
+}
 GameMoves.propTypes = {
   inverted: PropTypes.bool.isRequired,
   moves: PropTypes.arrayOf(

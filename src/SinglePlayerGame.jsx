@@ -18,7 +18,7 @@ const getMoves = (src, card, turn) => {
   return (x, y) => dstSet.has(`${x},${y}`);
 };
 
-const SinglePlayerGame = () => {
+function SinglePlayerGame() {
   const { enqueueSnackbar } = useSnackbar();
   const { difficulty } = useParams();
   const { state, playMove, reset } = useSingleplayer(difficulty);
@@ -87,6 +87,6 @@ const SinglePlayerGame = () => {
       lastMove={lastMove}
     />
   );
-};
+}
 
 export default SinglePlayerGame;

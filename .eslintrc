@@ -1,11 +1,14 @@
 {
   "extends": ["airbnb", "prettier"],
   "plugins": ["prettier", "import"],
-  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
   "rules": {
     "prettier/prettier": ["warn"],
     "no-undef": "warn",
-    "no-unused-vars": "warn"
+    "no-unused-vars": "warn",
+    "import/no-relative-packages": "off"
   },
   "env": {
     "browser": true

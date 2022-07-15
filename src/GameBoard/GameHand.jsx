@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, useMediaQuery, useTheme } from '@material-ui/core';
 import GameCard from './GameCard';
 
-const GameHand = ({
+function GameHand({
   cards,
   setCard,
   selectedCard,
@@ -13,7 +13,7 @@ const GameHand = ({
   spare,
   isPlayerTurn,
   inverted,
-}) => {
+}) {
   const theme = useTheme();
   const showSpare = useMediaQuery(theme.breakpoints.down('sm')) && !isPlayerTurn;
   return (
@@ -46,7 +46,7 @@ const GameHand = ({
       ))}
     </Box>
   );
-};
+}
 const CardPropType = PropTypes.shape({
   card: PropTypes.string.isRequired,
   moves: PropTypes.arrayOf(

@@ -9,7 +9,7 @@ const useStyles = makeStyles({
     right: '0px',
   },
 });
-const GithubRibbon = () => {
+function GithubRibbon() {
   const classes = useStyles();
   return (
     <a
@@ -21,6 +21,6 @@ const GithubRibbon = () => {
       <img alt="Fork me on GitHub" src={githubRibbonImage} />
     </a>
   );
-};
+}
 
 export default GithubRibbon;

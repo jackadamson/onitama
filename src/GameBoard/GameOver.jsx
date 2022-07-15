@@ -36,14 +36,14 @@ const captionsFromStatus = {
   OpponentRematchRequested: 'Opponent requested a rematch',
   RematchRequested: 'Rematch request sent',
 };
-const GameOver = ({
+function GameOver({
   winner,
   reset,
   player,
   connectionStatus,
   minimizedGameOver,
   setMinimizedGameOver,
-}) => {
+}) {
   const classes = useStyles();
   const relativeText = player === winner ? 'You Win!' : 'You Lose!';
   const absoluteText = `${winner} wins!`;
@@ -75,7 +75,7 @@ const GameOver = ({
       <Typography variant="subtitle1">{caption}</Typography>
     </Dialog>
   );
-};
+}
 GameOver.defaultProps = {
   winner: null,
   player: null,

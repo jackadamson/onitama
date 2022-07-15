@@ -18,7 +18,7 @@ const getMoves = (src, card, turn) => {
   return (x, y) => dstSet.has(`${x},${y}`);
 };
 
-const TrainingGame = () => {
+function TrainingGame() {
   const { enqueueSnackbar } = useSnackbar();
   const { difficulty } = useParams();
   const { state, playMove, reset, undo } = useSingleplayer(difficulty);
@@ -90,6 +90,6 @@ const TrainingGame = () => {
       canUndo={canUndo}
     />
   );
-};
+}
 
 export default TrainingGame;

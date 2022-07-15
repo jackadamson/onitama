@@ -50,7 +50,9 @@ const options = {
   },
 };
 
-const Markdown = ({ children }) => <ReactMarkdown options={options}>{children}</ReactMarkdown>;
+function Markdown({ children }) {
+  return <ReactMarkdown options={options}>{children}</ReactMarkdown>;
+}
 Markdown.propTypes = {
   children: PropTypes.string.isRequired,
 };

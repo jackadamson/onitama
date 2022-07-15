@@ -12,7 +12,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 const radToDeg = 180 / Math.PI;
-const LastMove = ({ lastMove, redOriented }) => {
+function LastMove({ lastMove, redOriented }) {
   const classes = useStyles();
   if (!lastMove) {
     return null;
@@ -48,7 +48,7 @@ const LastMove = ({ lastMove, redOriented }) => {
       </g>
     </svg>
   );
-};
+}
 LastMove.defaultProps = {
   lastMove: null,
 };

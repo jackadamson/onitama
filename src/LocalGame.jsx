@@ -17,7 +17,7 @@ const getMoves = (src, card, turn) => {
   return (x, y) => dstSet.has(`${x},${y}`);
 };
 
-const LocalGame = () => {
+function LocalGame() {
   const { enqueueSnackbar } = useSnackbar();
   const { state, playMove, reset } = useLocalGame();
   const [card, setCard] = useState(null);
@@ -83,6 +83,6 @@ const LocalGame = () => {
       discard={discard}
     />
   );
-};
+}
 
 export default LocalGame;

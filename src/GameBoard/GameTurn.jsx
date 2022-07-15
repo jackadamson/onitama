@@ -10,7 +10,7 @@ const useStyles = makeStyles(() => ({
     color: '#2196f3',
   },
 }));
-const GameTurn = ({ turn, player }) => {
+function GameTurn({ turn, player }) {
   const classes = useStyles();
   const relativeName = player === turn ? 'Your Turn' : "Opponent's Turn";
   const absoluteName = `${turn}'s Turn`;
@@ -22,7 +22,7 @@ const GameTurn = ({ turn, player }) => {
       </Typography>
     </Box>
   );
-};
+}
 GameTurn.defaultProps = {
   player: null,
 };

@@ -36,7 +36,7 @@ const titleFromStatus = {
   Disconnected: 'Disconnected from server',
   Errored: 'Game Error',
 };
-const WaitingOverlay = ({ state: { connection, roomId, error }, reconnect }) => {
+function WaitingOverlay({ state: { connection, roomId, error }, reconnect }) {
   const classes = useStyles();
   const ref = useRef();
   const title = titleFromStatus[connection] || connection;
@@ -93,7 +93,7 @@ const WaitingOverlay = ({ state: { connection, roomId, error }, reconnect }) => 
       </DialogActions>
     </Dialog>
   );
-};
+}
 WaitingOverlay.propTypes = {
   state: PropTypes.shape({
     connection: PropTypes.string.isRequired,

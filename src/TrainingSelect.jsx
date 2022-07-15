@@ -3,7 +3,7 @@ import { Box, Button, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
 
-const AiSelect = () => {
+function AiSelect() {
   const classes = useStyles();
   return (
     <Box className={classes.outer}>
@@ -50,6 +50,6 @@ const AiSelect = () => {
       </Button>
     </Box>
   );
-};
+}
 
 export default AiSelect;

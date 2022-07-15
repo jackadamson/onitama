@@ -69,26 +69,28 @@ If a player moves their **king** to the **starting square** of the opponent (the
 
 `;
 
-const Rules = () => (
-  <Box m={2}>
-    <Button component={Link} to="/" variant="outlined">
-      Back
-    </Button>
-    <Box display="flex" alignItems="center" justifyContent="center">
-      <Box maxWidth="720px" width="100%">
-        <Markdown>{rules}</Markdown>
-        <Box display="flex">
-          <Button variant="outlined" color="secondary" component={Link} to="/">
-            Back to Menu
-          </Button>
-          <Box flexGrow={1} />
-          <Button variant="contained" color="primary" component={Link} to="/ai/easy">
-            Play an Easy Game
-          </Button>
+function Rules() {
+  return (
+    <Box m={2}>
+      <Button component={Link} to="/" variant="outlined">
+        Back
+      </Button>
+      <Box display="flex" alignItems="center" justifyContent="center">
+        <Box maxWidth="720px" width="100%">
+          <Markdown>{rules}</Markdown>
+          <Box display="flex">
+            <Button variant="outlined" color="secondary" component={Link} to="/">
+              Back to Menu
+            </Button>
+            <Box flexGrow={1} />
+            <Button variant="contained" color="primary" component={Link} to="/ai/easy">
+              Play an Easy Game
+            </Button>
+          </Box>
         </Box>
       </Box>
     </Box>
-  </Box>
-);
+  );
+}
 
 export default Rules;
