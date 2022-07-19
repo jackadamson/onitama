@@ -230,11 +230,13 @@ impl From<&GameState> for GameView {
 pub enum GameEvent {
     Start {
         against: String,
+        #[serde(default)]
         training: bool,
     },
     End {
         against: String,
         winner: String,
+        #[serde(default)]
         training: bool,
     },
 }
