@@ -55,7 +55,7 @@ function Home() {
           <Box m={1} />
           <Button
             component={Link}
-            to="/r/"
+            to="/t"
             variant="contained"
             color="primary"
             className={classes.button}

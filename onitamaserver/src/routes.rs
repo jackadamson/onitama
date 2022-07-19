@@ -88,11 +88,19 @@ pub async fn event_receive(req: HttpRequest, mut body: web::Payload) -> Result<S
     };
 
     match data {
-        GameEvent::Start { against } => {
-            info!("Game started against {} :: {}", against, &id);
+        GameEvent::Start { against, training } => {
+            let training = match training {
+                true => "training :: ",
+                false => "",
+            };
+            info!("Game started against {} :: {}{}", against, training, &id);
         },
-        GameEvent::End { against, winner } => {
-            info!("Game ended against {} winner was {} :: {}", against, winner, &id);
+        GameEvent::End { against, winner, training } => {
+            let training = match training {
+                true => "training :: ",
+                false => "",
+            };
+            info!("Game ended against {} winner was {} :: {}{}", against, winner, training, &id);
         }
     };
     Ok("test".to_string())

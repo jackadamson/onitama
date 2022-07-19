@@ -19,6 +19,7 @@ pub struct SinglePlayerGame {
     agent: AiAgent,
     last_move: Option<Move>,
     previous_states: Vec<PreviousState>,
+    training_mode: bool,
     on_send_view: js_sys::Function,
     on_send_error: js_sys::Function,
     on_send_event: js_sys::Function,
@@ -39,7 +40,7 @@ pub struct SinglePlayerView {
 impl SinglePlayerGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        difficulty: &str, on_send_view: js_sys::Function, on_send_error: js_sys::Function, request_ai_move: js_sys::Function, on_send_event: js_sys::Function,
+        difficulty: &str, training_mode: bool, on_send_view: js_sys::Function, on_send_error: js_sys::Function, request_ai_move: js_sys::Function, on_send_event: js_sys::Function,
     ) -> SinglePlayerGame {
         let is_red: bool = random();
         let agent = match difficulty {
@@ -63,9 +64,13 @@ impl SinglePlayerGame {
             previous_states: vec![],
             request_ai_move,
             on_send_event,
+            training_mode,
         };
         let against = format!("{:?}", agent);
-        game.send_event(GameEvent::Start { against });
+        game.send_event(GameEvent::Start {
+            training: game.training_mode,
+            against,
+        });
         game.agent_move();
         game.send_current_view();
         return game;
@@ -105,6 +110,7 @@ impl SinglePlayerGame {
                 };
                 let against = format!("{:?}", self.agent);
                 self.send_event(GameEvent::End {
+                    training: self.training_mode,
                     against,
                     winner,
                 })
@@ -203,7 +209,10 @@ impl SinglePlayerGame {
 
     pub fn reset(&mut self) {
         let against = format!("{:?}", self.agent);
-        self.send_event(GameEvent::Start { against });
+        self.send_event(GameEvent::Start {
+            training: self.training_mode,
+            against,
+        });
         self.game.reset();
         self.last_move = None;
         self.send_current_view();

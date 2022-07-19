@@ -4,14 +4,21 @@ import { SinglePlayerGame } from '../onitamalib';
 import logger from '../logger';
 import onEvent from '../events';
 
-const useSingleplayer = (difficulty) => {
+const useSingleplayer = (difficulty, trainingMode) => {
   const [state, setState] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const handlers = useMemo(() => {
     const worker = new Worker(new URL('../ai.worker.js', import.meta.url));
     const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
     const requestAiMove = (req) => worker.postMessage(req);
-    const game = new SinglePlayerGame(difficulty, setState, onError, requestAiMove, onEvent);
+    const game = new SinglePlayerGame(
+      difficulty,
+      trainingMode || false,
+      setState,
+      onError,
+      requestAiMove,
+      onEvent,
+    );
     worker.onmessage = (m) => game.move(m.data, false);
     return {
       playMove: (m) => game.move(m, true),

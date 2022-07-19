@@ -209,6 +209,7 @@ impl MultiplayerGame {
                 None => "unknown",
             }.to_string();
             self.send_event(GameEvent::End {
+                training: false,
                 against: "remote".to_string(),
                 winner,
             })
@@ -224,7 +225,10 @@ impl MultiplayerGame {
                 log::info!("Initializing");
                 self.room_id = Some(room_id);
                 self.player = player;
-                self.send_event(GameEvent::Start { against: "online".to_string()});
+                self.send_event(GameEvent::Start {
+                    training: false,
+                    against: "online".to_string()
+                });
                 self.conn_state = match waiting {
                     true => ConnectionState::Waiting,
                     false => match state.finished() {

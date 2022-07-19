@@ -19,7 +19,10 @@ impl LocalGame {
     pub fn new(on_send_view: js_sys::Function, on_send_error: js_sys::Function,  on_send_event: js_sys::Function) -> LocalGame {
         let game = Game::new();
         let game = LocalGame { game, on_send_view, on_send_error, on_send_event };
-        game.send_event(GameEvent::Start { against: "local".to_string() });
+        game.send_event(GameEvent::Start {
+            training: false,
+            against: "local".to_string(),
+        });
         game.send_current_view();
         return game;
     }
@@ -32,7 +35,11 @@ impl LocalGame {
         match self.game.get_winner() {
             Some(winner) => {
                 let winner = format!("{:?}", winner);
-                self.send_event(GameEvent::End { against: "local".to_string(), winner });
+                self.send_event(GameEvent::End {
+                    training: false,
+                    against: "local".to_string(),
+                    winner,
+                });
             },
             None => {}
         };
@@ -95,7 +102,10 @@ impl LocalGame {
         };
     }
     pub fn reset(&mut self) {
-        self.send_event(GameEvent::Start { against: "local".to_string() });
+        self.send_event(GameEvent::Start {
+            training: false,
+            against: "local".to_string(),
+        });
         self.game.reset();
         self.send_current_view();
     }

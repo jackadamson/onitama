@@ -21,7 +21,7 @@ const getMoves = (src, card, turn) => {
 function TrainingGame() {
   const { enqueueSnackbar } = useSnackbar();
   const { difficulty } = useParams();
-  const { state, playMove, reset, undo } = useSingleplayer(difficulty);
+  const { state, playMove, reset, undo } = useSingleplayer(difficulty, true);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
   const move = useCallback(
