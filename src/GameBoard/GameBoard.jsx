@@ -9,6 +9,7 @@ import GameGrid from './GameGrid';
 import GameHand from './GameHand';
 import GameTurn from './GameTurn';
 import { CardPropType, PointPropType } from './props';
+import GameScore from "./GameScore";
 
 function GameBoard({
   src,
@@ -32,6 +33,8 @@ function GameBoard({
   reset,
   canUndo,
   undo,
+  score,
+  stale,
 }) {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
@@ -119,6 +122,7 @@ function GameBoard({
               inverted={!redOriented}
             />
           </Box>
+          <GameScore score={score} stale={stale} playerIsRed={player === 'Red'} />
         </Box>
         <Box
           display={hideSideSpare ? 'none' : 'flex'}
@@ -179,6 +183,8 @@ GameBoard.defaultProps = {
   connectionStatus: null,
   canUndo: null,
   undo: null,
+  score: null,
+  stale: true,
 };
 GameBoard.propTypes = {
   src: PointPropType,
@@ -205,6 +211,8 @@ GameBoard.propTypes = {
   discard: PropTypes.func.isRequired,
   canUndo: PropTypes.bool,
   undo: PropTypes.func,
+  score: PropTypes.number,
+  stale: PropTypes.bool,
 };
 
 export default GameBoard;

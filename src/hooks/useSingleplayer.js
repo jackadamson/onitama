@@ -6,7 +6,12 @@ import onEvent from '../events';
 
 const useSingleplayer = (difficulty, trainingMode) => {
   const [state, setState] = useState(null);
-  const [moveRankings, setMoveRankings] = useState({});
+  const [moveRankings, setMoveRankings] = useState({
+    stale: true,
+    max: 0,
+    min: 0,
+    ranksByCardSrc: null,
+  });
   const { enqueueSnackbar } = useSnackbar();
   const handlers = useMemo(() => {
     const worker = new Worker(new URL('../ai.worker.js', import.meta.url));
@@ -19,7 +24,7 @@ const useSingleplayer = (difficulty, trainingMode) => {
       }
     };
     const onSetState = (newState) => {
-      setMoveRankings({});
+      setMoveRankings(({ min, max }) => ({ min, max, stale: true, ranksByCardSrc: null }));
       setState(newState);
     };
     const game = new SinglePlayerGame(
@@ -33,15 +38,22 @@ const useSingleplayer = (difficulty, trainingMode) => {
     );
     worker.onmessage = (m) => game.move(m.data, false);
     trainer.onmessage = (m) => {
-      const newMoveRankings = {};
+      const ranksByCardSrc = {};
+      const max = m.data.length > 0 ? Math.max(...m.data.map(([, ranking]) => ranking)) : 0;
+      const min = m.data.length > 0 ? Math.min(...m.data.map(([, ranking]) => ranking)) : 0;
       m.data.forEach(([{ src, dst, card }, ranking]) => {
         const cardSrc = `${card},${src.x},${src.y}`;
-        if (!newMoveRankings[cardSrc]) {
-          newMoveRankings[cardSrc] = {};
+        if (!ranksByCardSrc[cardSrc]) {
+          ranksByCardSrc[cardSrc] = {};
         }
-        newMoveRankings[cardSrc][`${dst.x},${dst.y}`] = ranking;
+        ranksByCardSrc[cardSrc][`${dst.x},${dst.y}`] = ranking;
       });
-      setMoveRankings(newMoveRankings);
+      setMoveRankings({
+        max,
+        min,
+        ranksByCardSrc,
+        stale: false,
+      });
     };
     return {
       playMove: (m) => game.move(m, true),

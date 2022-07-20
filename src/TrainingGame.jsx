@@ -67,10 +67,19 @@ function TrainingGame() {
   const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, canUndo } =
     state;
   const isMoveValid = getMoves(src, card, turn);
+  const { max, min, ranksByCardSrc, stale } = moveRankings;
   const dstMoveRankings =
-    state && player === turn && moveRankings && card && src
-      ? moveRankings[`${card.card},${src.x},${src.y}`]
+    state && player === turn && ranksByCardSrc && card && src
+      ? ranksByCardSrc[`${card.card},${src.x},${src.y}`]
       : null;
+  const unweightedScore = player === 'Red' ? max : -min;
+  // This formula was not chosen carefully, it just seems maybe good enough 🤷
+  const weightedScore =
+    Math.abs(unweightedScore) < 1
+      ? 0
+      : Math.sign(unweightedScore) * Math.min(50, 6 * Math.log(Math.abs(unweightedScore)));
+  const normalized = 50 + weightedScore;
+  console.log({ unweightedScore, normalized, ranksByCardSrc });
   return (
     <GameBoard
       src={src}
@@ -93,6 +102,8 @@ function TrainingGame() {
       dstMoveRankings={dstMoveRankings}
       undo={undo}
       canUndo={canUndo}
+      score={normalized}
+      stale={stale}
     />
   );
 }
