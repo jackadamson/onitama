@@ -24,6 +24,7 @@ pub struct SinglePlayerGame {
     on_send_error: js_sys::Function,
     on_send_event: js_sys::Function,
     request_ai_move: js_sys::Function,
+    request_trainer_ranking: js_sys::Function,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -40,7 +41,7 @@ pub struct SinglePlayerView {
 impl SinglePlayerGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        difficulty: &str, training_mode: bool, on_send_view: js_sys::Function, on_send_error: js_sys::Function, request_ai_move: js_sys::Function, on_send_event: js_sys::Function,
+        difficulty: &str, training_mode: bool, on_send_view: js_sys::Function, on_send_error: js_sys::Function, request_ai_move: js_sys::Function, request_trainer_ranking: js_sys::Function, on_send_event: js_sys::Function,
     ) -> SinglePlayerGame {
         let is_red: bool = random();
         let agent = match difficulty {
@@ -63,6 +64,7 @@ impl SinglePlayerGame {
             last_move: None,
             previous_states: vec![],
             request_ai_move,
+            request_trainer_ranking,
             on_send_event,
             training_mode,
         };
@@ -72,6 +74,7 @@ impl SinglePlayerGame {
             against,
         });
         game.agent_move();
+        game.rank_moves();
         game.send_current_view();
         return game;
     }
@@ -91,6 +94,24 @@ impl SinglePlayerGame {
             Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call request_ai_move: {:?}", err);
+            }
+        };
+    }
+    fn rank_moves(&mut self) {
+        if !self.training_mode {
+            return;
+        }
+        if self.game.get_turn() != Some(self.player) {
+            log::info!("Not players turn (so not ranking moves)");
+            return;
+        }
+        let state = self.game.get_state();
+        let msg = JsValue::from_serde(&state).unwrap();
+        let this = JsValue::null();
+        match self.request_trainer_ranking.call1(&this, &msg) {
+            Ok(_) => {}
+            Err(err) => {
+                log::error!("Failed to call request_trainer_ranking: {:?}", err);
             }
         };
     }
@@ -192,6 +213,7 @@ impl SinglePlayerGame {
             self.previous_states.push(current_state);
         }
         self.agent_move();
+        self.rank_moves();
     }
 
     #[wasm_bindgen(js_name = undo)]
@@ -205,6 +227,7 @@ impl SinglePlayerGame {
         self.game = previous_state.game;
         self.last_move = previous_state.last_move;
         self.send_current_view();
+        self.rank_moves();
     }
 
     pub fn reset(&mut self) {
@@ -217,5 +240,6 @@ impl SinglePlayerGame {
         self.last_move = None;
         self.send_current_view();
         self.agent_move();
+        self.rank_moves();
     }
 }

@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { Box, makeStyles, Paper } from '@material-ui/core';
+import { Box, makeStyles, Paper, Tooltip } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChessPawn, faChessKing } from '@fortawesome/free-solid-svg-icons';
+import { faChessPawn, faChessKing, faSkull, faStar } from '@fortawesome/free-solid-svg-icons';
 import Color from 'color';
 import { PointPropType } from './props';
 
@@ -37,6 +37,10 @@ const useStyles = makeStyles((theme) => ({
   blueBase: {
     backgroundColor: Color(theme.palette.background.paper).mix(Color('#2196f3'), 0.1).hex(),
   },
+  rankMarker: {
+    position: 'absolute',
+    transform: 'translate(-20px, -20px)',
+  },
 }));
 const tilePlayer = {
   BluePawn: 'Blue',
@@ -44,7 +48,30 @@ const tilePlayer = {
   RedPawn: 'Red',
   RedKing: 'Red',
 };
-function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove }) {
+
+function Skull() {
+  const classes = useStyles();
+  return (
+    <Tooltip title="likely lose">
+      <Box className={classes.rankMarker}>
+        <FontAwesomeIcon icon={faSkull} color="#ffffff" size="xs" />
+      </Box>
+    </Tooltip>
+  );
+}
+
+function Star() {
+  const classes = useStyles();
+  return (
+    <Tooltip title="guaranteed win">
+      <Box className={classes.rankMarker}>
+        <FontAwesomeIcon icon={faStar} color="#ffff00" size="xs" bounce />
+      </Box>
+    </Tooltip>
+  );
+}
+
+function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove, ranking }) {
   const classes = useStyles();
   const player = tilePlayer[tile];
   const activePlayer = turn === player;
@@ -78,6 +105,8 @@ function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove }) 
         }
       }}
     >
+      {ranking < -1000000 && <Skull />}
+      {ranking > 1000000 && <Star />}
       {icons[tile]}
     </Paper>
   );
@@ -103,6 +132,7 @@ GameSquare.propTypes = {
     dst: PointPropType.isRequired,
     src: PointPropType.isRequired,
   }),
+  ranking: PropTypes.number.isRequired,
 };
 
 export default GameSquare;

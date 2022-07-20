@@ -157,6 +157,46 @@ pub fn hybrid_hard_montecarlo_agent(state: &GameState, duration: Duration) -> Op
     result
 }
 
+pub fn hybrid_hard_montecarlo_rank_moves(state: &GameState, duration: Duration) -> Option<Vec<(Move, i64)>> {
+    log::debug!("Game State: {:?}", state);
+    let alphabeta_duration = duration / 2;
+    let alphabeta_scored_moves = match alphabeta::moves_scored_deepening(state, alphabeta_duration) {
+        None => {
+            return None;
+        }
+        Some(val) => val,
+    };
+    let board = match state {
+        GameState::Playing { board } => board,
+        GameState::Finished { .. } => {
+            return None;
+        }
+    };
+    let moves: Vec<Move> = alphabeta_scored_moves
+        .iter()
+        .map(|(game_move, _expected_score)| *game_move)
+        .collect();
+    if moves.len() == 1 {
+        log::debug!("One legal move");
+        return Some(alphabeta_scored_moves);
+    }
+    let monte_carlo_duration = duration / 2;
+    let monte_carlo_scored_moves = montecarlo(board, moves, monte_carlo_duration);
+    let result: Vec<(Move, i64)> = alphabeta_scored_moves
+        .into_iter()
+        .zip(monte_carlo_scored_moves.into_iter())
+        .map(|((alpha_move, alpha_score), (monte_move, monte_score))| {
+            if alpha_move != monte_move {
+                panic!("monte move does not match alpha move");
+            }
+            if alpha_score == i64::MIN || alpha_score == i64::MAX {
+                return (alpha_move, alpha_score)
+            }
+            return (alpha_move, (alpha_score / 2) + (monte_score / 2))
+        }).collect();
+    Some(result)
+}
+
 const ITERATIONS_PER_TIME_CHECK: u8 = 50;
 
 fn montecarlo(board: &Board, moves: Vec<Move>, duration: Duration) -> Vec<(Move, i64)> {

@@ -6,7 +6,17 @@ import GameSquare from './GameSquare';
 import { PointPropType } from './props';
 import LastMove from './LastMove';
 
-function GameGrid({ grid, isMoveValid, src, setSrc, turn, move, lastMove, redOriented }) {
+function GameGrid({
+  grid,
+  isMoveValid,
+  src,
+  setSrc,
+  turn,
+  move,
+  lastMove,
+  redOriented,
+  dstMoveRankings,
+}) {
   return (
     <Paper
       component={Box}
@@ -29,6 +39,7 @@ function GameGrid({ grid, isMoveValid, src, setSrc, turn, move, lastMove, redOri
               isValid={isMoveValid(x, y)}
               key={`${x}-${y}`}
               lastMove={lastMove}
+              ranking={(dstMoveRankings[`${x},${y}`] || 0) * (redOriented ? 1 : -1)}
             />
           ))}
         </Box>
@@ -57,6 +68,7 @@ GameGrid.propTypes = {
     dst: PointPropType.isRequired,
     src: PointPropType.isRequired,
   }),
+  dstMoveRankings: PropTypes.objectOf(PropTypes.number).isRequired,
 };
 
 export default GameGrid;

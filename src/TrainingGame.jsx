@@ -21,7 +21,7 @@ const getMoves = (src, card, turn) => {
 function TrainingGame() {
   const { enqueueSnackbar } = useSnackbar();
   const { difficulty } = useParams();
-  const { state, playMove, reset, undo } = useSingleplayer(difficulty, true);
+  const { state, playMove, reset, undo, moveRankings } = useSingleplayer(difficulty, true);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
   const move = useCallback(
@@ -67,6 +67,10 @@ function TrainingGame() {
   const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, canUndo } =
     state;
   const isMoveValid = getMoves(src, card, turn);
+  const dstMoveRankings =
+    state && player === turn && moveRankings && card && src
+      ? moveRankings[`${card.card},${src.x},${src.y}`]
+      : null;
   return (
     <GameBoard
       src={src}
@@ -86,6 +90,7 @@ function TrainingGame() {
       discard={discard}
       player={player}
       lastMove={lastMove}
+      dstMoveRankings={dstMoveRankings}
       undo={undo}
       canUndo={canUndo}
     />

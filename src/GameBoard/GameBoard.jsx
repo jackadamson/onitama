@@ -24,6 +24,7 @@ function GameBoard({
   card,
   canMove,
   lastMove,
+  dstMoveRankings,
   connectionStatus,
   isMoveValid,
   move,
@@ -103,6 +104,7 @@ function GameBoard({
               grid={grid}
               turn={turn}
               lastMove={lastMove}
+              dstMoveRankings={dstMoveRankings || {}}
               redOriented={redOriented}
             />
             <GameHand
@@ -173,6 +175,7 @@ GameBoard.defaultProps = {
   reset: null,
   player: null,
   lastMove: null,
+  dstMoveRankings: null,
   connectionStatus: null,
   canUndo: null,
   undo: null,
@@ -192,6 +195,7 @@ GameBoard.propTypes = {
     dst: PointPropType.isRequired,
     src: PointPropType.isRequired,
   }),
+  dstMoveRankings: PropTypes.objectOf(PropTypes.number),
   connectionStatus: PropTypes.string,
   setCard: PropTypes.func.isRequired,
   card: CardPropType,

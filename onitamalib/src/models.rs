@@ -117,7 +117,7 @@ pub struct Board {
     pub turn: Player,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 #[serde(tag = "type")]
 pub enum Move {
     Move {
