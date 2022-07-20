@@ -58,10 +58,15 @@ async fn main() -> std::io::Result<()> {
             .wrap_fn(|req, srv| {
                 let is_static = req.path().starts_with("/static")
                         || req.path().ends_with(".wasm");
-                let cache_static = match is_static {
-                    true => CacheControl(vec![CacheDirective::MaxAge(86400), CacheDirective::Public, CacheDirective::Extension("immutable".to_string(), None)]).to_string(),
-                    false => CacheControl(vec![
+                let is_serviceworker = req.path() == "/service-worker.js";
+                let cache_static = match (is_static, is_serviceworker) {
+                    (true, _) => CacheControl(vec![CacheDirective::MaxAge(86400), CacheDirective::Public, CacheDirective::Extension("immutable".to_string(), None)]).to_string(),
+                    (false, false) => CacheControl(vec![
                         CacheDirective::Extension("s-maxage".to_owned(), Some("300".to_owned())),
+                    ]).to_string(),
+                    (false, true) => CacheControl(vec![
+                        CacheDirective::Extension("stale-if-error".to_owned(), Some("86400".to_owned())),
+                        CacheDirective::Extension("must-revalidate".to_owned(), None),
                     ]).to_string(),
                 };
                 let fut = srv.call(req);
