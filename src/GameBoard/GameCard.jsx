@@ -22,6 +22,7 @@ const useStyles = makeStyles((theme) => ({
   }),
   selected: {
     borderColor: theme.palette.primary.main,
+    outline: `2px solid ${theme.palette.primary.main}`,
   },
   spare: {
     flexBasis: null,
