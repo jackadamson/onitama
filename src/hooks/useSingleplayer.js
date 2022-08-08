@@ -37,24 +37,26 @@ const useSingleplayer = (difficulty, trainingMode) => {
       onEvent,
     );
     worker.onmessage = (m) => game.move(m.data, false);
-    trainer.onmessage = (m) => {
-      const ranksByCardSrc = {};
-      const max = m.data.length > 0 ? Math.max(...m.data.map(([, ranking]) => ranking)) : 0;
-      const min = m.data.length > 0 ? Math.min(...m.data.map(([, ranking]) => ranking)) : 0;
-      m.data.forEach(([{ src, dst, card }, ranking]) => {
-        const cardSrc = `${card},${src.x},${src.y}`;
-        if (!ranksByCardSrc[cardSrc]) {
-          ranksByCardSrc[cardSrc] = {};
-        }
-        ranksByCardSrc[cardSrc][`${dst.x},${dst.y}`] = ranking;
-      });
-      setMoveRankings({
-        max,
-        min,
-        ranksByCardSrc,
-        stale: false,
-      });
-    };
+    if (trainer) {
+      trainer.onmessage = (m) => {
+        const ranksByCardSrc = {};
+        const max = m.data.length > 0 ? Math.max(...m.data.map(([, ranking]) => ranking)) : 0;
+        const min = m.data.length > 0 ? Math.min(...m.data.map(([, ranking]) => ranking)) : 0;
+        m.data.forEach(([{ src, dst, card }, ranking]) => {
+          const cardSrc = `${card},${src.x},${src.y}`;
+          if (!ranksByCardSrc[cardSrc]) {
+            ranksByCardSrc[cardSrc] = {};
+          }
+          ranksByCardSrc[cardSrc][`${dst.x},${dst.y}`] = ranking;
+        });
+        setMoveRankings({
+          max,
+          min,
+          ranksByCardSrc,
+          stale: false,
+        });
+      };
+    }
     return {
       playMove: (m) => game.move(m, true),
       reset: (m) => game.reset(m),
