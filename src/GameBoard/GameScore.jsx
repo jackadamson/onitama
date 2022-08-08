@@ -11,13 +11,16 @@ function GameScore({ score, stale, playerIsRed }) {
   const outer = playerIsRed ? blue : red;
   const inner = playerIsRed ? red : blue;
   return (
-    <Box maxWidth="0px" height="100%">
+    <Box maxWidth="0px" height="100%" style={{ opacity: stale ? 0.5 : 1 }}>
       <Box height="100%" width="8px" bgcolor={outer} overflow="hidden" borderRadius="4px">
         <Box
           height="100%"
           width="8px"
           bgcolor={inner}
-          style={{ transform: `translateY(${(100 - score).toFixed(0)}%)` }}
+          style={{
+            transform: `translateY(${(100 - score).toFixed(0)}%)`,
+            transition: 'transform 1s',
+          }}
         />
       </Box>
     </Box>

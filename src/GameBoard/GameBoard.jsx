@@ -9,7 +9,7 @@ import GameGrid from './GameGrid';
 import GameHand from './GameHand';
 import GameTurn from './GameTurn';
 import { CardPropType, PointPropType } from './props';
-import GameScore from "./GameScore";
+import GameScore from './GameScore';
 
 function GameBoard({
   src,

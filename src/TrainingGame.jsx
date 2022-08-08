@@ -79,6 +79,7 @@ function TrainingGame() {
       ? 0
       : Math.sign(unweightedScore) * Math.min(50, 6 * Math.log(Math.abs(unweightedScore)));
   const normalized = 50 + weightedScore;
+  // eslint-disable-next-line no-console
   console.log({ unweightedScore, normalized, ranksByCardSrc });
   return (
     <GameBoard
