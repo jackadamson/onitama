@@ -9,8 +9,7 @@ use actix::prelude::*;
 use actix_files::Files;
 use actix_web::{App, HttpServer, web};
 use actix_web::dev::Service;
-use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective};
-use actix_web::http::HeaderValue;
+use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective, HeaderValue};
 
 use crate::rooms::OnitamaServer;
 use crate::routes::{create_room, event_receive, join_room, ServerData};
