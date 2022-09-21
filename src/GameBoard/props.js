@@ -8,4 +8,5 @@ export const PointPropType = PropTypes.shape({
 export const CardPropType = PropTypes.shape({
   card: PropTypes.string.isRequired,
   moves: PropTypes.arrayOf(PointPropType).isRequired,
+  direction: PropTypes.string.isRequired,
 });

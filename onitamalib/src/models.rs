@@ -208,12 +208,14 @@ pub enum GameView {
 pub struct CardDescription {
     pub card: Card,
     pub moves: Vec<Point>,
+    pub direction: CardDirection
 }
 
 impl From<Card> for CardDescription {
     fn from(card: Card) -> Self {
         let moves = card.moves();
-        CardDescription { card, moves }
+        let direction = card.direction();
+        CardDescription { card, moves, direction }
     }
 }
 
