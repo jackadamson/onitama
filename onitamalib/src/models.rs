@@ -79,6 +79,13 @@ impl Point {
     }
 }
 
+#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
+pub enum CardDirection {
+    Right,
+    Left,
+    Balanced,
+}
+
 #[derive(Eq, PartialEq, Copy, Clone, IntoEnumIterator, Debug, Serialize, Deserialize)]
 pub enum Card {
     Tiger,

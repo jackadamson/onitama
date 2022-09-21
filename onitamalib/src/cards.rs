@@ -1,4 +1,4 @@
-use crate::models::{Card, Point};
+use crate::models::{Card, Point, CardDirection};
 
 impl Card {
     pub fn moves(&self) -> Vec<Point> {
@@ -19,7 +19,7 @@ impl Card {
             Card::Boar => vec![Point { x: 0, y: -1 }, Point { x: 1, y: 0 }, Point { x: -1, y: 0 }],
             Card::Eel => vec![Point { x: 1, y: 0 }, Point { x: -1, y: -1 }, Point { x: -1, y: 1 }],
             Card::Cobra => vec![Point { x: -1, y: 0 }, Point { x: 1, y: -1 }, Point { x: 1, y: 1 }],
-            
+
             // Sensei's Path expansion
             Card::Fox => vec![Point { x: 1, y: -1 }, Point { x: 1, y: 0 }, Point { x: 1, y: 1 }],
             Card::Dog => vec![Point { x: -1, y: -1 }, Point { x: -1, y: 0 }, Point { x: -1, y: 1 }],
@@ -39,6 +39,44 @@ impl Card {
             Card::Otter => vec![Point { x: 2, y: 0 }, Point { x: 1, y: 1 }, Point { x: -1, y: -1 }],
             Card::Goat => vec![Point { x: -1, y: 0 }, Point { x: 0, y: 1 }, Point { x: 1, y: -1 }],
             Card::Sheep => vec![Point { x: 1, y: 0 }, Point { x: 0, y: 1 }, Point { x: -1, y: -1 }],
+        }
+    }
+    pub fn direction(&self) -> CardDirection {
+        match self {
+            Card::Tiger => CardDirection::Balanced,
+            Card::Dragon => CardDirection::Balanced,
+            Card::Frog => CardDirection::Left,
+            Card::Rabbit => CardDirection::Right,
+            Card::Crab => CardDirection::Balanced,
+            Card::Elephant => CardDirection::Balanced,
+            Card::Goose => CardDirection::Left,
+            Card::Rooster => CardDirection::Right,
+            Card::Monkey => CardDirection::Balanced,
+            Card::Mantis => CardDirection::Balanced,
+            Card::Horse => CardDirection::Left,
+            Card::Ox => CardDirection::Right,
+            Card::Crane => CardDirection::Balanced,
+            Card::Boar => CardDirection::Balanced,
+            Card::Eel => CardDirection::Left,
+            Card::Cobra => CardDirection::Right,
+            Card::Fox => CardDirection::Right,
+            Card::Dog => CardDirection::Left,
+            Card::Giraffe => CardDirection::Balanced,
+            Card::Panda => CardDirection::Right,
+            Card::Bear => CardDirection::Left,
+            Card::Kirin => CardDirection::Balanced,
+            Card::SeaSnake => CardDirection::Right,
+            Card::Viper => CardDirection::Left,
+            Card::Phoenix => CardDirection::Balanced,
+            Card::Mouse => CardDirection::Right,
+            Card::Rat => CardDirection::Left,
+            Card::Turtle => CardDirection::Balanced,
+            Card::Tanuki => CardDirection::Right,
+            Card::Iguana => CardDirection::Left,
+            Card::Sable => CardDirection::Right,
+            Card::Otter => CardDirection::Left,
+            Card::Goat => CardDirection::Right,
+            Card::Sheep => CardDirection::Right,
         }
     }
     pub fn index(&self) -> u32 {
