@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "cross-env IMAGE_INLINE_SIZE_LIMIT=0 BROWSER=none react-app-rewired start",
-    "start-local": "cross-env REACT_APP_LOCAL_AI=true IMAGE_INLINE_SIZE_LIMIT=0 BROWSER=none react-app-rewired start",
+    "start-local-ai": "cross-env REACT_APP_LOCAL_AI=true IMAGE_INLINE_SIZE_LIMIT=0 BROWSER=none react-app-rewired start",
     "build": "cross-env IMAGE_INLINE_SIZE_LIMIT=0 react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
