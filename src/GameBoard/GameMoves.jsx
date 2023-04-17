@@ -71,6 +71,6 @@ GameMoves.propTypes = {
       y: PropTypes.number.isRequired,
     }),
   ).isRequired,
-  direction: PropTypes.string.isRequired
+  direction: PropTypes.string.isRequired,
 };
 export default React.memo(GameMoves, R.equals);
