@@ -43,7 +43,7 @@ function GameBoard({
       setMinimizedGameOver(false);
     }
   }, [winner, setMinimizedGameOver]);
-  const hideSideSpare = useMediaQuery(theme.breakpoints.down('sm'));
+  const hideSideSpare = useMediaQuery(theme.breakpoints.down('xs'));
   // Whether it's the player's turn, always true if local multiplayer
   const playerTurn = player ? player === turn : true;
   // Whether perspective should have red at bottom of screen
@@ -53,7 +53,11 @@ function GameBoard({
       <Box display="flex" justifyContent="center">
         <GameTurn player={player} turn={turn} />
       </Box>
-      <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'}>
+      <Box
+        display="flex"
+        flexDirection={redOriented ? 'row' : 'row-reverse'}
+        style={{ gap: '16px' }}
+      >
         <Box position="absolute" top="0" left="0">
           <Button component={Link} to="/">
             Home
@@ -67,26 +71,35 @@ function GameBoard({
           minimizedGameOver={minimizedGameOver}
           setMinimizedGameOver={setMinimizedGameOver}
         />
+        {!hideSideSpare && (
+          <Box
+            display={hideSideSpare ? 'none' : 'flex'}
+            flexDirection="column"
+            justifyContent="center"
+            alignItems={redOriented ? 'flex-end' : 'flex-start'}
+            flexGrow={1}
+            flexBasis={0}
+          >
+            {turn === 'Blue' && (
+              <GameCard
+                spare
+                inverted={redOriented}
+                moves={spare.moves}
+                enabled={false}
+                setCard={setCard}
+                name={spare.card}
+                selected={false}
+              />
+            )}
+          </Box>
+        )}
         <Box
-          display={hideSideSpare ? 'none' : 'flex'}
-          flexDirection="column"
+          display="flex"
           justifyContent="center"
           alignItems="center"
-          flexBasis="33%"
+          flexGrow={hideSideSpare ? 1 : 0}
+          flexShrink={0}
         >
-          {turn === 'Blue' && (
-            <GameCard
-              spare
-              inverted={redOriented}
-              moves={spare.moves}
-              enabled={false}
-              setCard={setCard}
-              name={spare.card}
-              selected={false}
-            />
-          )}
-        </Box>
-        <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1}>
           <Box display="flex" flexDirection={redOriented ? 'column' : 'column-reverse'}>
             <GameHand
               setCard={setCard}
@@ -124,25 +137,28 @@ function GameBoard({
           </Box>
           <GameScore score={score} stale={stale} playerIsRed={player === 'Red'} />
         </Box>
-        <Box
-          display={hideSideSpare ? 'none' : 'flex'}
-          flexDirection="column"
-          justifyContent="center"
-          alignItems="center"
-          flexBasis="33%"
-        >
-          {turn === 'Red' && (
-            <GameCard
-              spare
-              inverted={!redOriented}
-              moves={spare.moves}
-              enabled={false}
-              setCard={setCard}
-              name={spare.card}
-              selected={false}
-            />
-          )}
-        </Box>
+        {!hideSideSpare && (
+          <Box
+            display={hideSideSpare ? 'none' : 'flex'}
+            flexDirection="column"
+            justifyContent="center"
+            alignItems={redOriented ? 'flex-start' : 'flex-end'}
+            flexGrow={1}
+            flexBasis={0}
+          >
+            {turn === 'Red' && (
+              <GameCard
+                spare
+                inverted={!redOriented}
+                moves={spare.moves}
+                enabled={false}
+                setCard={setCard}
+                name={spare.card}
+                selected={false}
+              />
+            )}
+          </Box>
+        )}
       </Box>
       {undo && (
         <Box width="100%" display="flex" justifyContent="center" py={2}>

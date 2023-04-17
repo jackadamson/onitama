@@ -15,7 +15,7 @@ function GameHand({
   inverted,
 }) {
   const theme = useTheme();
-  const showSpare = useMediaQuery(theme.breakpoints.down('sm')) && !isPlayerTurn;
+  const showSpare = useMediaQuery(theme.breakpoints.down('xs')) && !isPlayerTurn;
   return (
     <Box display="flex" flexDirection={inverted ? 'row-reverse' : 'row'} style={{ gap: '8px' }}>
       {showSpare && (
