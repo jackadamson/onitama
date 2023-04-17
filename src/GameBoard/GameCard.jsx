@@ -44,6 +44,7 @@ const useStyles = makeStyles((theme) => ({
 
 function GameCard({
   name,
+  direction,
   setCard,
   selected,
   enabled,
@@ -75,7 +76,7 @@ function GameCard({
       onClick={handler}
     >
       <Typography variant="subtitle1">{name}</Typography>
-      <GameMove moves={moves} inverted={inverted} />
+      <GameMove moves={moves} direction={direction} inverted={inverted} />
       {!canMove && enabled && (
         <Typography className={classes.error} variant="caption">
           Discard
@@ -96,6 +97,7 @@ GameCard.propTypes = {
   selected: PropTypes.bool.isRequired,
   enabled: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
+  direction: PropTypes.string.isRequired,
   setCard: PropTypes.func.isRequired,
   moves: PropTypes.arrayOf(
     PropTypes.shape({

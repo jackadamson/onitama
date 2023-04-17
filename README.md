@@ -70,5 +70,5 @@ Requires Rust (nightly) and Node (v14)
 
 To develop single-player without the backend, start the frontend with
 ```bash
-REACT_APP_LOCAL_AI=true yarn start
+yarn start-local-ai
 ```

@@ -15,8 +15,14 @@ const useStyles = makeStyles((theme) => ({
     borderWidth: '1px',
     borderColor: theme.palette.grey['600'],
   },
-  accessible: {
-    backgroundColor: theme.palette.secondary.light,
+  directionBalanced: {
+    backgroundColor: theme.palette.direction.balanced,
+  },
+  directionLeft: {
+    backgroundColor: theme.palette.direction.left,
+  },
+  directionRight: {
+    backgroundColor: theme.palette.direction.right,
   },
   grid: ({ inverted }) => ({
     display: 'flex',
@@ -28,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
   }),
 }));
 
-function GameMoves({ moves, inverted }) {
+function GameMoves({ moves, inverted, direction }) {
   const classes = useStyles({ inverted });
   const moveSet = new Set(moves.map(({ x, y }) => `${x},${y}`));
   const indexes = [-2, -1, 0, 1, 2];
@@ -38,13 +44,16 @@ function GameMoves({ moves, inverted }) {
         <Box className={classes.row} key={y}>
           {indexes.map((x) => {
             const keyed = `${x},${y}`;
+            const accessible = moveSet.has(keyed);
             return (
               <Box
                 key={keyed}
                 className={clsx({
                   [classes.moveCell]: true,
                   [classes.origin]: x === 0 && y === 0,
-                  [classes.accessible]: moveSet.has(keyed),
+                  [classes.directionBalanced]: accessible && direction === 'Balanced',
+                  [classes.directionLeft]: accessible && direction === 'Left',
+                  [classes.directionRight]: accessible && direction === 'Right',
                 })}
               />
             );
@@ -62,5 +71,6 @@ GameMoves.propTypes = {
       y: PropTypes.number.isRequired,
     }),
   ).isRequired,
+  direction: PropTypes.string.isRequired
 };
 export default React.memo(GameMoves, R.equals);

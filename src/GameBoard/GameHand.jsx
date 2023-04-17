@@ -22,6 +22,7 @@ function GameHand({
         <GameCard
           setCard={setCard}
           name={spare.card}
+          direction={spare.direction}
           selected={false}
           moves={spare.moves}
           enabled={enabled}
@@ -31,10 +32,11 @@ function GameHand({
           inverted={!inverted}
         />
       )}
-      {cards.map(({ card: name, moves }) => (
+      {cards.map(({ card: name, moves, direction }) => (
         <GameCard
           setCard={setCard}
           name={name}
+          direction={direction}
           selected={selectedCard?.card === name}
           key={name}
           moves={moves}
@@ -55,6 +57,7 @@ const CardPropType = PropTypes.shape({
       y: PropTypes.number.isRequired,
     }),
   ).isRequired,
+  direction: PropTypes.string.isRequired,
 });
 GameHand.defaultProps = {
   selectedCard: null,
