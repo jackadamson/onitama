@@ -11,9 +11,9 @@ const theme = createTheme({
       main: '#42938c',
     },
     direction: {
-      balanced: '#cbc1a4',
-      left: '#9daee3',
-      right: '#c4746b',
+      balanced: '#d4c065',
+      left: '#65b1d4',
+      right: '#d46579',
     },
     background: {
       paper: '#282c34',
