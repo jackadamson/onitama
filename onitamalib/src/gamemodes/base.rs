@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+use enum_iterator::IntoEnumIterator;
 use crate::models::{CardSet, GameState, Move, Player};
 
 #[derive(Clone)]
@@ -16,7 +18,14 @@ impl Game {
         };
         return game;
     }
-    pub fn new_from_card_sets(card_sets: Vec<CardSet>) -> Game {
+    pub fn new_with_disabled_card_sets(disabled_card_sets: Vec<CardSet>) -> Game {
+        let mut disabled_card_sets_hash = HashSet::with_capacity(disabled_card_sets.len());
+        for card_set in disabled_card_sets {
+            disabled_card_sets_hash.insert(card_set);
+        }
+        let card_sets = CardSet::into_enum_iter()
+            .filter(|set| !disabled_card_sets_hash.contains(set))
+            .collect();
         let game = Game {
             state: GameState::new_from_card_sets(&card_sets),
             card_sets,

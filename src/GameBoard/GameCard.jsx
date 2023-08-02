@@ -87,6 +87,8 @@ function GameCard({
   );
 }
 GameCard.defaultProps = {
+  enabled: false,
+  selected: false,
   spare: false,
   inverted: false,
   canMove: true,
@@ -94,8 +96,8 @@ GameCard.defaultProps = {
   showPlayed: false,
 };
 GameCard.propTypes = {
-  selected: PropTypes.bool.isRequired,
-  enabled: PropTypes.bool.isRequired,
+  enabled: PropTypes.bool,
+  selected: PropTypes.bool,
   name: PropTypes.string.isRequired,
   direction: PropTypes.string.isRequired,
   setCard: PropTypes.func.isRequired,

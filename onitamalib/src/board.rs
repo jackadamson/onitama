@@ -165,6 +165,8 @@ impl Board {
                 for set in card_sets {
                     cards.append(&mut set.cards());
                 }
+                let mut rng = thread_rng();
+                cards.shuffle(&mut rng);
                 Board::new_from_cards(cards)
             }
         }

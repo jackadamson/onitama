@@ -132,7 +132,7 @@ impl fmt::Display for Card {
     }
 }
 
-#[derive(Eq, PartialEq, Copy, Clone, IntoEnumIterator, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Copy, Clone, Hash, IntoEnumIterator, Debug, Serialize, Deserialize)]
 pub enum CardSet {
     Base,
     SenseiPath,

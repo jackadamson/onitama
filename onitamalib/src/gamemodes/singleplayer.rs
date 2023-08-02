@@ -43,7 +43,7 @@ impl SinglePlayerGame {
     pub fn new(
         difficulty: &str,
         training_mode: bool,
-        card_sets: JsValue,
+        disabled_card_sets: JsValue,
         on_send_view: js_sys::Function,
         on_send_error: js_sys::Function,
         request_ai_move: js_sys::Function,
@@ -61,10 +61,10 @@ impl SinglePlayerGame {
             true => Player::Red,
             false => Player::Blue,
         };
-        let game = match serde_wasm_bindgen::from_value::<Vec<CardSet>>(card_sets) {
-            Ok(card_sets) => {
-                log::info!("Playing with card sets: {:?}", &card_sets);
-                Game::new_from_card_sets(card_sets)
+        let game = match serde_wasm_bindgen::from_value::<Vec<CardSet>>(disabled_card_sets) {
+            Ok(disabled_card_sets) => {
+                log::info!("Playing with card sets disabled: {:?}", &disabled_card_sets);
+                Game::new_with_disabled_card_sets(disabled_card_sets)
             }
             Err(e) => {
                 log::error!("Failed to deserialize Card Sets: {:?}", e);
