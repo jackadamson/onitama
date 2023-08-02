@@ -43,6 +43,7 @@ impl Card {
     }
     pub fn direction(&self) -> CardDirection {
         match self {
+            // Base Game
             Card::Tiger => CardDirection::Balanced,
             Card::Dragon => CardDirection::Balanced,
             Card::Frog => CardDirection::Left,
@@ -59,6 +60,7 @@ impl Card {
             Card::Boar => CardDirection::Balanced,
             Card::Eel => CardDirection::Left,
             Card::Cobra => CardDirection::Right,
+            // Sensei's path expansion
             Card::Fox => CardDirection::Right,
             Card::Dog => CardDirection::Left,
             Card::Giraffe => CardDirection::Balanced,
@@ -97,6 +99,7 @@ impl Card {
             Card::Boar => 13,
             Card::Eel => 14,
             Card::Cobra => 15,
+            // Sensei's path expansion
             Card::Fox => 16,
             Card::Dog => 17,
             Card::Giraffe => 18,
@@ -138,6 +141,7 @@ impl From<u32> for Card {
             13 => Card::Boar,
             14 => Card::Eel,
             15 => Card::Cobra,
+            // Sensei's path expansion
             16 => Card::Fox,
             17 => Card::Dog,
             18 => Card::Giraffe,
