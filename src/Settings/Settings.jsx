@@ -7,7 +7,7 @@ import {
   CardHeader,
   IconButton,
   makeStyles,
-  Typography,
+  Typography, useMediaQuery, useTheme,
 } from '@material-ui/core';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import EnabledIcon from '@material-ui/icons/Visibility';
@@ -25,6 +25,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Settings() {
+  const theme = useTheme();
+  const largeScreen = useMediaQuery(theme.breakpoints.up('md'));
+  console.log({largeScreen})
   const styles = useStyles();
   const cardSets = useMemo(() => listCardSets(), []);
   const storedDisabledCardSetIds = useMemo(() => {
@@ -82,7 +85,7 @@ function Settings() {
                   }
                 />
                 <CardContent>
-                  <Marquee speed={25} play={cards.length > 4}>
+                  <Marquee speed={25} play={cards.length > 4 || !largeScreen}>
                     {cards.map((card) => (
                       <Box mx={1} key={card.card}>
                         <GameCard
