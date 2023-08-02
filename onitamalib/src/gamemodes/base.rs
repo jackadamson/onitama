@@ -32,7 +32,7 @@ impl Game {
         }
         // Not enough cards in selected packs, so just use all cards
         if cards_enabled < 5 {
-            return Game::new()
+            return Game::new();
         }
         let game = Game {
             state: GameState::new_from_card_sets(&card_sets),

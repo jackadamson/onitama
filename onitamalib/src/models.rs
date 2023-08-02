@@ -129,7 +129,7 @@ pub enum Card {
     Lobster,
     Steer,
     Hornet,
-    Centipede
+    Centipede,
 }
 
 impl fmt::Display for Card {

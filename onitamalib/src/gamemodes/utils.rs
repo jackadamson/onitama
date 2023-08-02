@@ -1,7 +1,6 @@
-use wasm_bindgen::prelude::*;
-use enum_iterator::IntoEnumIterator;
 use crate::{CardSet, CardSetDescription};
-
+use enum_iterator::IntoEnumIterator;
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = listCardSets)]
 pub fn list_card_sets() -> JsValue {

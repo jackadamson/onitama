@@ -181,10 +181,28 @@ impl Card {
             ],
 
             // Promotional Cards
-            Card::Lobster => vec![Point { x: -1, y: -1 }, Point { x: -1, y: 2 }, Point { x: 1, y: -1 }, Point { x: 1, y: 2 }], 
-            Card::Steer => vec![Point { x: 1, y: 0 }, Point { x: -1, y: 1 }, Point { x: 1, y: 1 }, Point { x: -1, y: 0 }],
-            Card::Hornet => vec![Point { x: -1, y: 2 }, Point { x: 0, y: -1 }, Point { x: 1, y: 0 }],
-            Card::Centipede => vec![Point { x: -1, y: 0 }, Point { x: 0, y: -1 }, Point { x: 2, y: 2 }],
+            Card::Lobster => vec![
+                Point { x: -1, y: -1 },
+                Point { x: -1, y: 2 },
+                Point { x: 1, y: -1 },
+                Point { x: 1, y: 2 },
+            ],
+            Card::Steer => vec![
+                Point { x: 1, y: 0 },
+                Point { x: -1, y: 1 },
+                Point { x: 1, y: 1 },
+                Point { x: -1, y: 0 },
+            ],
+            Card::Hornet => vec![
+                Point { x: -1, y: 2 },
+                Point { x: 0, y: -1 },
+                Point { x: 1, y: 0 },
+            ],
+            Card::Centipede => vec![
+                Point { x: -1, y: 0 },
+                Point { x: 0, y: -1 },
+                Point { x: 2, y: 2 },
+            ],
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -314,7 +332,7 @@ impl From<u32> for Card {
             31 => Card::Otter,
             32 => Card::Goat,
             33 => Card::Sheep,
-            34 => Card::Lobster, 
+            34 => Card::Lobster,
             35 => Card::Steer,
             36 => Card::Hornet,
             37 => Card::Centipede,
@@ -362,16 +380,10 @@ impl CardSet {
                 Card::Sable,
                 Card::Otter,
             ],
-            CardSet::WayOfTheWind => vec![
-                Card::Goat,
-                Card::Sheep,
-            ],
-            CardSet::PromotionalPack => vec![
-                Card::Lobster,
-                Card::Steer,
-                Card::Hornet,
-                Card::Centipede,
-            ],
+            CardSet::WayOfTheWind => vec![Card::Goat, Card::Sheep],
+            CardSet::PromotionalPack => {
+                vec![Card::Lobster, Card::Steer, Card::Hornet, Card::Centipede]
+            }
         }
     }
 }
