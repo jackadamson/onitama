@@ -168,6 +168,7 @@ impl Card {
                 Point { x: 1, y: 1 },
                 Point { x: -1, y: -1 },
             ],
+            // Way of the Wind Expansion
             Card::Goat => vec![
                 Point { x: -1, y: 0 },
                 Point { x: 0, y: 1 },
@@ -178,6 +179,12 @@ impl Card {
                 Point { x: 0, y: 1 },
                 Point { x: -1, y: -1 },
             ],
+
+            // Promotional Cards
+            Card::Lobster => vec![Point { x: -1, y: -1 }, Point { x: -1, y: 2 }, Point { x: 1, y: -1 }, Point { x: 1, y: 2 }], 
+            Card::Steer => vec![Point { x: 1, y: 0 }, Point { x: -1, y: 1 }, Point { x: 1, y: 1 }, Point { x: -1, y: 0 }],
+            Card::Hornet => vec![Point { x: -1, y: 2 }, Point { x: 0, y: -1 }, Point { x: 1, y: 0 }],
+            Card::Centipede => vec![Point { x: -1, y: 0 }, Point { x: 0, y: -1 }, Point { x: 2, y: 2 }],
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -217,7 +224,11 @@ impl Card {
             Card::Sable => CardDirection::Right,
             Card::Otter => CardDirection::Left,
             Card::Goat => CardDirection::Right,
-            Card::Sheep => CardDirection::Right,
+            Card::Sheep => CardDirection::Left,
+            Card::Lobster => CardDirection::Balanced,
+            Card::Steer => CardDirection::Balanced,
+            Card::Hornet => CardDirection::Right,
+            Card::Centipede => CardDirection::Left,
         }
     }
     pub fn index(&self) -> u32 {
@@ -257,6 +268,10 @@ impl Card {
             Card::Otter => 31,
             Card::Goat => 32,
             Card::Sheep => 33,
+            Card::Lobster => 34,
+            Card::Steer => 35,
+            Card::Hornet => 36,
+            Card::Centipede => 37,
         }
     }
 }
@@ -299,6 +314,10 @@ impl From<u32> for Card {
             31 => Card::Otter,
             32 => Card::Goat,
             33 => Card::Sheep,
+            34 => Card::Lobster, 
+            35 => Card::Steer,
+            36 => Card::Hornet,
+            37 => Card::Centipede,
             _ => panic!("invalid index for card"),
         }
     }
