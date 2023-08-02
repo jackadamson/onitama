@@ -27,7 +27,6 @@ const useStyles = makeStyles((theme) => ({
 function Settings() {
   const theme = useTheme();
   const largeScreen = useMediaQuery(theme.breakpoints.up('md'));
-  console.log({largeScreen})
   const styles = useStyles();
   const cardSets = useMemo(() => listCardSets(), []);
   const storedDisabledCardSetIds = useMemo(() => {
