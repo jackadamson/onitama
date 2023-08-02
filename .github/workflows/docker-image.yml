@@ -2,7 +2,6 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ master ]
     tags:
       - v*
 
@@ -39,18 +38,6 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/onitama:${{ github.ref_name || 'master' }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
-
-      - name: Build and push latest
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/onitama:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
-        # Temp fix
-        # https://github.com/docker/build-push-action/issues/252
-        # https://github.com/moby/buildkit/issues/1896
 
       - name: Move cache
         run: |
