@@ -1,13 +1,12 @@
 use std::time::Duration;
 
-use actix::{Actor, Addr, StreamHandler, Handler, SyncContext, SyncArbiter, AsyncContext};
+use actix::{Actor, Addr, AsyncContext, Handler, StreamHandler, SyncArbiter, SyncContext};
 use actix_web_actors::ws;
 use serde_cbor::ser;
 
-use onitamalib::{GameMessage, GameState, Player, AiAgent};
+use onitamalib::{AiAgent, GameMessage, GameState, Player};
 
 use crate::messages::{AgentRequest, AgentResponse};
-
 
 pub struct Agent {
     state: GameState,
@@ -38,16 +37,19 @@ impl Agent {
             None => {
                 error!("No moves available");
                 return Err(AgentException::AgentError);
-            },
+            }
             Some((best_move, best_score)) => (best_move, best_score),
         };
-        info!("Expected score: {}, move = {:?}", expected_score, &game_move);
+        info!(
+            "Expected score: {}, move = {:?}",
+            expected_score, &game_move
+        );
         self.state = match state.try_move(game_move) {
             Ok(state) => state,
             Err(err) => {
                 error!("Agent attempted invalid move: {}", err);
                 return Err(AgentException::AgentError);
-            },
+            }
         };
         let msg = GameMessage::Move { game_move };
         Ok(msg)
@@ -72,27 +74,25 @@ impl Agent {
                     player: Player::Red,
                     waiting: false,
                 })
-            },
+            }
             (state, GameMessage::Move { game_move }) => {
                 let state = match state.try_move(game_move) {
                     Ok(state) => state,
                     Err(err) => {
                         warn!("Invalid Move: {}", err);
                         return Err(AgentException::IllegalMove);
-                    },
+                    }
                 };
                 self.state = state;
                 match state {
-                    GameState::Finished { .. } => {
-                        Ok(GameMessage::RequestRematch)
-                    },
+                    GameState::Finished { .. } => Ok(GameMessage::RequestRematch),
                     state => self.play_move(state),
                 }
-            },
+            }
             (state, msg) => {
                 warn!("Unexpected transition: state={:?}, msg={:?}", state, msg);
                 Err(AgentException::InvalidMessageForState)
-            },
+            }
         }
     }
 }
@@ -116,9 +116,12 @@ impl Handler<AgentRequest> for Agent {
                     Player::Red => "won",
                     Player::Blue => "lost",
                 };
-                info!("Game finished, player {} against {:?}: {}", won, self.ai, self.id);
-            },
-            _ => {},
+                info!(
+                    "Game finished, player {} against {:?}: {}",
+                    won, self.ai, self.id
+                );
+            }
+            _ => {}
         };
         let resp = AgentResponse { resp };
         addr.do_send(resp);
@@ -140,7 +143,10 @@ impl Actor for AgentWs {
     type Context = ws::WebsocketContext<Self>;
     fn started(&mut self, ctx: &mut Self::Context) {
         info!("Agent created");
-        let msg = AgentRequest { msg: GameMessage::Joined, addr: ctx.address() };
+        let msg = AgentRequest {
+            msg: GameMessage::Joined,
+            addr: ctx.address(),
+        };
         self.agent.do_send(msg);
     }
 }
@@ -151,27 +157,30 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for AgentWs {
             Ok(ws::Message::Ping(msg)) => {
                 ctx.pong(&msg);
                 return;
-            },
+            }
             Ok(ws::Message::Binary(data)) => data,
             msg => {
                 warn!("Unexpected message type: {:?}", msg);
                 return;
-            },
+            }
         };
         let msg: GameMessage = match serde_cbor::from_slice(data.as_ref()) {
             Ok(msg) => msg,
             Err(err) => {
                 warn!("Failed to deserialize game message: {}", err);
                 return;
-            },
+            }
         };
-        let msg = AgentRequest { msg, addr: ctx.address() };
+        let msg = AgentRequest {
+            msg,
+            addr: ctx.address(),
+        };
         match self.agent.try_send(msg) {
             Ok(_) => {}
             Err(err) => {
                 error!("Failed to send msg to agent: {:?}", err);
                 ctx.close(None);
-            },
+            }
         };
     }
 }
@@ -186,7 +195,7 @@ impl Handler<AgentResponse> for AgentWs {
                 ctx.text(msg);
                 return;
                 // ctx.close(None);
-            },
+            }
         };
         let msg = ser::to_vec(&msg).expect("failed to serialize message");
         ctx.binary(msg);

@@ -18,6 +18,7 @@ const RemoteGame = React.lazy(() => import('./RemoteGame'));
 const SinglePlayerGame = React.lazy(() => import('./SinglePlayerGame'));
 const TrainingGame = React.lazy(() => import('./TrainingGame'));
 const Rules = React.lazy(() => import('./Rules'));
+const Settings = React.lazy(() => import('./Settings'));
 
 const root = createRoot(document.querySelector('#root'));
 root.render(
@@ -34,6 +35,11 @@ root.render(
           <Route path="/help" exact>
             <Suspense fallback={<Loading />}>
               <Rules />
+            </Suspense>
+          </Route>
+          <Route path="/settings" exact>
+            <Suspense fallback={<Loading />}>
+              <Settings />
             </Suspense>
           </Route>
           <Route path={['/r/:roomId', '/r/']}>

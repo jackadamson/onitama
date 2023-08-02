@@ -1,8 +1,7 @@
-use crate::{montecarlo, GameState};
 use super::utils;
+use crate::{montecarlo, GameState};
 use indicatif::ProgressBar;
 use instant::Duration;
-
 
 #[test]
 fn montecarlo_benchmark() {

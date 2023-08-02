@@ -37,16 +37,18 @@ pub fn hybrid_montecarlo_agent(state: &GameState, duration: Duration) -> Option<
     };
     let moves: Vec<Move> = moves_scored
         .iter()
-        .filter_map(|(game_move, expected_score)| match *expected_score == guaranteed_lose_score {
-            true => {
-                log::debug!("Ruling out move: {:?}", game_move);
-                None
-            }
-            false => {
-                log::debug!("Acceptable score: {:?} - {:?}", expected_score, game_move);
-                Some(*game_move)
-            }
-        })
+        .filter_map(
+            |(game_move, expected_score)| match *expected_score == guaranteed_lose_score {
+                true => {
+                    log::debug!("Ruling out move: {:?}", game_move);
+                    None
+                }
+                false => {
+                    log::debug!("Acceptable score: {:?} - {:?}", expected_score, game_move);
+                    Some(*game_move)
+                }
+            },
+        )
         .collect();
     // If all moves lead to loss, still choose a move
     let moves = match moves.len() > 0 {
@@ -71,10 +73,12 @@ pub fn hybrid_montecarlo_agent(state: &GameState, duration: Duration) -> Option<
     };
     scored_moves
         .into_iter()
-        .reduce(|(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
-            true => (move_a, score_a),
-            false => (move_b, score_b),
-        })
+        .reduce(
+            |(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
+                true => (move_a, score_a),
+                false => (move_b, score_b),
+            },
+        )
 }
 pub fn hybrid_hard_montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
     log::debug!("Game State: {:?}", state);
@@ -113,16 +117,18 @@ pub fn hybrid_hard_montecarlo_agent(state: &GameState, duration: Duration) -> Op
         .unwrap();
     let moves: Vec<Move> = moves_scored
         .iter()
-        .filter_map(|(game_move, expected_score)| match *expected_score == best_move {
-            false => {
-                log::debug!("Ruling out move: {} - {:?}", expected_score, game_move);
-                None
-            }
-            true => {
-                log::debug!("Acceptable score: {:?} - {:?}", expected_score, game_move);
-                Some(*game_move)
-            }
-        })
+        .filter_map(
+            |(game_move, expected_score)| match *expected_score == best_move {
+                false => {
+                    log::debug!("Ruling out move: {} - {:?}", expected_score, game_move);
+                    None
+                }
+                true => {
+                    log::debug!("Acceptable score: {:?} - {:?}", expected_score, game_move);
+                    Some(*game_move)
+                }
+            },
+        )
         .collect();
     // If all moves lead to loss, still choose a move
     let moves = match moves.len() > 0 {
@@ -147,20 +153,26 @@ pub fn hybrid_hard_montecarlo_agent(state: &GameState, duration: Duration) -> Op
     };
     let result = scored_moves
         .into_iter()
-        .reduce(|(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
-            true => (move_a, score_a),
-            false => (move_b, score_b),
-        });
+        .reduce(
+            |(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
+                true => (move_a, score_a),
+                false => (move_b, score_b),
+            },
+        );
     if let Some((_, expected_score)) = &result {
         log::debug!("Expected result: {}", expected_score);
     }
     result
 }
 
-pub fn hybrid_hard_montecarlo_rank_moves(state: &GameState, duration: Duration) -> Option<Vec<(Move, i64)>> {
+pub fn hybrid_hard_montecarlo_rank_moves(
+    state: &GameState,
+    duration: Duration,
+) -> Option<Vec<(Move, i64)>> {
     log::debug!("Game State: {:?}", state);
     let alphabeta_duration = duration / 2;
-    let alphabeta_scored_moves = match alphabeta::moves_scored_deepening(state, alphabeta_duration) {
+    let alphabeta_scored_moves = match alphabeta::moves_scored_deepening(state, alphabeta_duration)
+    {
         None => {
             return None;
         }
@@ -190,10 +202,11 @@ pub fn hybrid_hard_montecarlo_rank_moves(state: &GameState, duration: Duration) 
                 panic!("monte move does not match alpha move");
             }
             if alpha_score == i64::MIN || alpha_score == i64::MAX {
-                return (alpha_move, alpha_score)
+                return (alpha_move, alpha_score);
             }
-            return (alpha_move, (alpha_score / 2) + (monte_score / 2))
-        }).collect();
+            return (alpha_move, (alpha_score / 2) + (monte_score / 2));
+        })
+        .collect();
     Some(result)
 }
 
@@ -220,17 +233,21 @@ fn montecarlo(board: &Board, moves: Vec<Move>, duration: Duration) -> Vec<(Move,
             for (game_move, score) in results.iter() {
                 simulations += 1;
                 let state = board.try_move(*game_move).expect("illegal move");
-                let new_score = score.get() + match simulate(state, &mut rng) {
-                    Some(Player::Red) => 1,
-                    Some(Player::Blue) => -1,
-                    None => 0,
-                };
+                let new_score = score.get()
+                    + match simulate(state, &mut rng) {
+                        Some(Player::Red) => 1,
+                        Some(Player::Blue) => -1,
+                        None => 0,
+                    };
                 score.set(new_score);
             }
         }
     }
     log::info!("Monte-carlo timed out after {} simulations", simulations);
-    return results.into_iter().map(|(game_move, score)| (game_move, score.get())).collect();
+    return results
+        .into_iter()
+        .map(|(game_move, score)| (game_move, score.get()))
+        .collect();
 }
 
 #[cfg(test)]
@@ -255,11 +272,12 @@ pub fn montecarlo_count_simulations(board: &Board, moves: Vec<Move>, duration: D
             for (game_move, score) in results.iter() {
                 simulations += 1;
                 let state = board.try_move(*game_move).expect("illegal move");
-                let new_score = score.get() + match simulate(state, &mut rng) {
-                    Some(Player::Red) => 1,
-                    Some(Player::Blue) => -1,
-                    None => 0,
-                };
+                let new_score = score.get()
+                    + match simulate(state, &mut rng) {
+                        Some(Player::Red) => 1,
+                        Some(Player::Blue) => -1,
+                        None => 0,
+                    };
                 score.set(new_score);
             }
         }
@@ -279,10 +297,14 @@ pub fn pure_montecarlo_agent(state: &GameState, duration: Duration) -> Option<(M
         Player::Red => |a, b| a > b,
         Player::Blue => |a, b| a < b,
     };
-    scored_moves.into_iter().reduce(|(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
-        true => (move_a, score_a),
-        false => (move_b, score_b),
-    })
+    scored_moves
+        .into_iter()
+        .reduce(
+            |(move_a, score_a), (move_b, score_b)| match compare(score_a, score_b) {
+                true => (move_a, score_a),
+                false => (move_b, score_b),
+            },
+        )
 }
 
 // Choose random moves and return the player that one, or None if loop
@@ -296,7 +318,9 @@ fn simulate<R: Rng>(state: GameState, rng: &mut R) -> Option<Player> {
             }
         };
         let game_move = board.random_legal_move(rng);
-        state = state.try_move(game_move).expect("montecarlo played illegal move");
+        state = state
+            .try_move(game_move)
+            .expect("montecarlo played illegal move");
     }
     None
 }

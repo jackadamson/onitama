@@ -1,12 +1,11 @@
-use rand::prelude::*;
 use enum_iterator::IntoEnumIterator;
-
+use rand::prelude::*;
 
 use crate::{Board, Card, GameState, Player, Point};
 
 const SAMPLES: usize = 100;
 pub fn generate_test_states() -> Vec<GameState> {
-    let mut states:  Vec<GameState> = vec![];
+    let mut states: Vec<GameState> = vec![];
     let mut rng = SmallRng::seed_from_u64(0);
     while states.len() < SAMPLES {
         let mut state = GameState::new_rng(&mut rng);
@@ -36,13 +35,11 @@ impl Board {
         let pawn_xs: [i8; 4] = [0, 1, 3, 4];
         Board {
             blue_king: Point { x: 2, y: 0 },
-            blue_pawns: pawn_xs
-                .map(|x| Some(Point { x, y: 0 })),
+            blue_pawns: pawn_xs.map(|x| Some(Point { x, y: 0 })),
 
             blue_hand: [cards.next().unwrap(), cards.next().unwrap()],
             red_king: Point { x: 2, y: 4 },
-            red_pawns: pawn_xs
-                .map(|x| Some(Point { x, y: 4 })),
+            red_pawns: pawn_xs.map(|x| Some(Point { x, y: 4 })),
             red_hand: [cards.next().unwrap(), cards.next().unwrap()],
             spare_card: cards.next().unwrap(),
             turn: Player::Red,

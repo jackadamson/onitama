@@ -1,9 +1,9 @@
 use enum_iterator::IntoEnumIterator;
 use instant::Duration;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::{GameState, Move};
 use crate::agents::{alphabeta, greedy, minimax, montecarlo};
+use crate::{GameState, Move};
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq, Hash, IntoEnumIterator)]
 pub enum AiAgent {

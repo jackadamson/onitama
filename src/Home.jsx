@@ -64,6 +64,16 @@ function Home() {
           </Button>
         </>
       )}
+      <Box m={1} />
+      <Button
+        component={Link}
+        to="/settings"
+        variant="contained"
+        color="secondary"
+        className={classes.button}
+      >
+        Settings
+      </Button>
     </Box>
   );
 }

@@ -1,14 +1,14 @@
 use std::str::FromStr;
 
-use actix::prelude::*;
-use actix_web::{error, Error, HttpRequest, HttpResponse, web};
-use actix_web_actors::ws;
-use futures::StreamExt;
-use uuid::Uuid;
-use onitamalib::GameEvent;
-use serde_cbor::de;
 use crate::rooms::{OnitamaServer, RoomWs};
 use crate::utils::get_identifier;
+use actix::prelude::*;
+use actix_web::{error, web, Error, HttpRequest, HttpResponse};
+use actix_web_actors::ws;
+use futures::StreamExt;
+use onitamalib::GameEvent;
+use serde_cbor::de;
+use uuid::Uuid;
 
 pub async fn join_room(
     req: HttpRequest,
@@ -94,13 +94,20 @@ pub async fn event_receive(req: HttpRequest, mut body: web::Payload) -> Result<S
                 false => "",
             };
             info!("Game started against {} :: {}{}", against, training, &id);
-        },
-        GameEvent::End { against, winner, training } => {
+        }
+        GameEvent::End {
+            against,
+            winner,
+            training,
+        } => {
             let training = match training {
                 true => "training :: ",
                 false => "",
             };
-            info!("Game ended against {} winner was {} :: {}{}", against, winner, training, &id);
+            info!(
+                "Game ended against {} winner was {} :: {}{}",
+                against, winner, training, &id
+            );
         }
     };
     Ok("test".to_string())

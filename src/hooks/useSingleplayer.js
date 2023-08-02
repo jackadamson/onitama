@@ -27,9 +27,12 @@ const useSingleplayer = (difficulty, trainingMode) => {
       setMoveRankings(({ min, max }) => ({ min, max, stale: true, ranksByCardSrc: null }));
       setState(newState);
     };
+    const disabledCardSetsRaw = localStorage.getItem('disabled_card_sets');
+    const disabledCardSets = disabledCardSetsRaw ? JSON.parse(disabledCardSetsRaw) : [];
     const game = new SinglePlayerGame(
       difficulty,
       trainingMode || false,
+      disabledCardSets,
       onSetState,
       onError,
       requestAiMove,

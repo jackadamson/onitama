@@ -2,8 +2,8 @@ use serde_cbor::ser;
 use wasm_bindgen::prelude::*;
 
 use crate::gamemodes::base::Game;
-use crate::{GameEvent, GameView};
 use crate::models::Move;
+use crate::{CardSet, GameEvent, GameView};
 
 #[wasm_bindgen]
 pub struct LocalGame {
@@ -16,9 +16,28 @@ pub struct LocalGame {
 #[wasm_bindgen]
 impl LocalGame {
     #[wasm_bindgen(constructor)]
-    pub fn new(on_send_view: js_sys::Function, on_send_error: js_sys::Function,  on_send_event: js_sys::Function) -> LocalGame {
-        let game = Game::new();
-        let game = LocalGame { game, on_send_view, on_send_error, on_send_event };
+    pub fn new(
+        disabled_card_sets: JsValue,
+        on_send_view: js_sys::Function,
+        on_send_error: js_sys::Function,
+        on_send_event: js_sys::Function,
+    ) -> LocalGame {
+        let game = match serde_wasm_bindgen::from_value::<Vec<CardSet>>(disabled_card_sets) {
+            Ok(disabled_card_sets) => {
+                log::info!("Playing with card sets disabled: {:?}", &disabled_card_sets);
+                Game::new_with_disabled_card_sets(disabled_card_sets)
+            }
+            Err(e) => {
+                log::error!("Failed to deserialize Card Sets: {:?}", e);
+                Game::new()
+            }
+        };
+        let game = LocalGame {
+            game,
+            on_send_view,
+            on_send_error,
+            on_send_event,
+        };
         game.send_event(GameEvent::Start {
             training: false,
             against: "local".to_string(),
@@ -40,7 +59,7 @@ impl LocalGame {
                     against: "local".to_string(),
                     winner,
                 });
-            },
+            }
             None => {}
         };
         Ok(())
@@ -53,20 +72,20 @@ impl LocalGame {
         let view = JsValue::from_serde(&view).unwrap();
         let this = JsValue::null();
         match self.on_send_view.call1(&this, &view) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call on_send_view: {:?}", err);
-            },
+            }
         };
     }
     fn send_error(&self, error: String) {
         let error = JsValue::from(error);
         let this = JsValue::null();
         match self.on_send_error.call1(&this, &error) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call on_send_error: {:?}", err);
-            },
+            }
         };
     }
     fn send_event(&self, event: GameEvent) {
@@ -75,8 +94,8 @@ impl LocalGame {
         let msg = serde_wasm_bindgen::to_value(&msg).unwrap();
         let this = JsValue::null();
         match self.on_send_event.call1(&this, &msg) {
-            Ok(_) => {},
-            Err(_) => {},
+            Ok(_) => {}
+            Err(_) => {}
         };
     }
 }
@@ -95,7 +114,7 @@ impl LocalGame {
         match self.try_move(game_move) {
             Ok(()) => {
                 log::info!("Successfully played move");
-            },
+            }
             Err(err) => {
                 self.send_error(err);
             }

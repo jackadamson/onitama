@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{GameState, Move};
 use crate::models::Player;
+use crate::{GameState, Move};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum GameMessage {
@@ -19,5 +19,5 @@ pub enum GameMessage {
     },
     Error {
         message: String,
-    }
+    },
 }

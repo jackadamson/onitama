@@ -3,9 +3,9 @@ use serde::Serialize;
 use serde_cbor::ser;
 use wasm_bindgen::prelude::*;
 
-use crate::{AiAgent, GameEvent, GameView, MoveRequest, Player};
 use crate::gamemodes::base::Game;
 use crate::models::Move;
+use crate::{AiAgent, CardSet, GameEvent, GameView, MoveRequest, Player};
 
 struct PreviousState {
     game: Game,
@@ -41,7 +41,14 @@ pub struct SinglePlayerView {
 impl SinglePlayerGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        difficulty: &str, training_mode: bool, on_send_view: js_sys::Function, on_send_error: js_sys::Function, request_ai_move: js_sys::Function, request_trainer_ranking: js_sys::Function, on_send_event: js_sys::Function,
+        difficulty: &str,
+        training_mode: bool,
+        disabled_card_sets: JsValue,
+        on_send_view: js_sys::Function,
+        on_send_error: js_sys::Function,
+        request_ai_move: js_sys::Function,
+        request_trainer_ranking: js_sys::Function,
+        on_send_event: js_sys::Function,
     ) -> SinglePlayerGame {
         let is_red: bool = random();
         let agent = match difficulty {
@@ -54,7 +61,16 @@ impl SinglePlayerGame {
             true => Player::Red,
             false => Player::Blue,
         };
-        let game = Game::new();
+        let game = match serde_wasm_bindgen::from_value::<Vec<CardSet>>(disabled_card_sets) {
+            Ok(disabled_card_sets) => {
+                log::info!("Playing with card sets disabled: {:?}", &disabled_card_sets);
+                Game::new_with_disabled_card_sets(disabled_card_sets)
+            }
+            Err(e) => {
+                log::error!("Failed to deserialize Card Sets: {:?}", e);
+                Game::new()
+            }
+        };
         let mut game = SinglePlayerGame {
             game,
             on_send_view,
@@ -87,7 +103,10 @@ impl SinglePlayerGame {
             return;
         }
         let state = self.game.get_state();
-        let msg = MoveRequest { state, agent: self.agent };
+        let msg = MoveRequest {
+            state,
+            agent: self.agent,
+        };
         let msg = JsValue::from_serde(&msg).unwrap();
         let this = JsValue::null();
         match self.request_ai_move.call1(&this, &msg) {
@@ -148,7 +167,7 @@ impl SinglePlayerGame {
             player: self.player,
             game: view,
             last_move: self.last_move,
-            can_undo: !self.previous_states.is_empty()
+            can_undo: !self.previous_states.is_empty(),
         };
         let view = JsValue::from_serde(&view).unwrap();
         let this = JsValue::null();
@@ -191,7 +210,7 @@ impl SinglePlayerGame {
         }
         let current_state = PreviousState {
             game: self.game.clone(),
-            last_move: self.last_move
+            last_move: self.last_move,
         };
         let game_move: Move = match game_move.into_serde() {
             Ok(game_move) => game_move,
@@ -222,7 +241,7 @@ impl SinglePlayerGame {
             Some(state) => state,
             None => {
                 return;
-            },
+            }
         };
         self.game = previous_state.game;
         self.last_move = previous_state.last_move;

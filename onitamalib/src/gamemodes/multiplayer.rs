@@ -1,13 +1,13 @@
 use serde::Serialize;
 use serde_cbor::{de, ser};
-use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 use web_sys::MessageEvent;
 
 use crate::gamemodes::base::Game;
-use crate::{GameEvent, GameView};
 use crate::messages::GameMessage;
 use crate::models::{Move, Player};
+use crate::{GameEvent, GameView};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize)]
 pub enum ConnectionState {
@@ -53,8 +53,7 @@ impl MultiplayerGame {
         let game = GameView::from(&self.game.get_state());
         let view = MultiplayerView {
             game,
-            connection:
-            self.conn_state,
+            connection: self.conn_state,
             room_id: self.room_id.clone(),
             player: self.player,
             error: self.error.clone(),
@@ -66,20 +65,20 @@ impl MultiplayerGame {
         let view = JsValue::from_serde(&view).unwrap();
         let this = JsValue::null();
         match self.on_send_view.call1(&this, &view) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call on_send_view: {:?}", err);
-            },
+            }
         };
     }
     fn send_error(&self, error: String) {
         let error = JsValue::from(error);
         let this = JsValue::null();
         match self.on_send_error.call1(&this, &error) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call on_send_error: {:?}", err);
-            },
+            }
         };
     }
 }
@@ -93,6 +92,7 @@ impl MultiplayerGame {
         on_send_msg: js_sys::Function,
         on_send_event: js_sys::Function,
     ) -> MultiplayerGame {
+        // TODO: Implement choosing DLCs for multiplayer
         let game = Game::new();
         let game = MultiplayerGame {
             room_id: None,
@@ -131,7 +131,7 @@ impl MultiplayerGame {
                 log::info!("Successfully played move");
                 let msg = GameMessage::Move { game_move };
                 self.send_msg(msg);
-            },
+            }
             Err(err) => {
                 self.send_error(err);
             }
@@ -159,10 +159,10 @@ impl MultiplayerGame {
         let msg = serde_wasm_bindgen::to_value(&msg).unwrap();
         let this = JsValue::null();
         match self.on_send_msg.call1(&this, &msg) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 log::error!("Failed to call on_send_msg: {:?}", err);
-            },
+            }
         };
     }
     fn send_event(&self, event: GameEvent) {
@@ -171,8 +171,8 @@ impl MultiplayerGame {
         let msg = serde_wasm_bindgen::to_value(&msg).unwrap();
         let this = JsValue::null();
         match self.on_send_event.call1(&this, &msg) {
-            Ok(_) => {},
-            Err(_) => {},
+            Ok(_) => {}
+            Err(_) => {}
         };
     }
 }
@@ -188,7 +188,7 @@ impl MultiplayerGame {
                 Err(err) => {
                     log::error!("Failed to decode message: {:?}", err);
                     return;
-                },
+                }
             };
             self.handle_game_message(msg);
         } else {
@@ -200,14 +200,13 @@ impl MultiplayerGame {
         if self.game.is_finished() {
             self.conn_state = ConnectionState::Finished;
             let winner = match self.game.get_winner() {
-                Some(player) => {
-                    match player == self.player {
-                        true => "player",
-                        false => "opponent",
-                    }
-                }
+                Some(player) => match player == self.player {
+                    true => "player",
+                    false => "opponent",
+                },
                 None => "unknown",
-            }.to_string();
+            }
+            .to_string();
             self.send_event(GameEvent::End {
                 training: false,
                 against: "remote".to_string(),
@@ -220,14 +219,23 @@ impl MultiplayerGame {
     fn handle_game_message(&mut self, msg: GameMessage) {
         log::info!("Message: {:?}", &msg);
         match (self.conn_state, msg) {
-            (ConnectionState::Connecting | ConnectionState::RematchRequested | ConnectionState::Finished,
-                GameMessage::Initialize { state, room_id, player, waiting }) => {
+            (
+                ConnectionState::Connecting
+                | ConnectionState::RematchRequested
+                | ConnectionState::Finished,
+                GameMessage::Initialize {
+                    state,
+                    room_id,
+                    player,
+                    waiting,
+                },
+            ) => {
                 log::info!("Initializing");
                 self.room_id = Some(room_id);
                 self.player = player;
                 self.send_event(GameEvent::Start {
                     training: false,
-                    against: "online".to_string()
+                    against: "online".to_string(),
                 });
                 self.conn_state = match waiting {
                     true => ConnectionState::Waiting,
@@ -237,15 +245,15 @@ impl MultiplayerGame {
                     },
                 };
                 self.game.set_state(state);
-            },
+            }
             (ConnectionState::Waiting, GameMessage::Joined) => {
                 log::info!("Player joined");
                 self.conn_state = ConnectionState::Running;
-            },
+            }
             (ConnectionState::OpponentDisconnected, GameMessage::Joined) => {
                 log::info!("Player re-joined");
                 self.conn_state = self.resume_state;
-            },
+            }
             (ConnectionState::Running, GameMessage::Move { game_move }) => {
                 log::info!("Received move");
                 if self.is_player_turn() {
@@ -258,23 +266,27 @@ impl MultiplayerGame {
                     Err(err) => {
                         log::error!("Opponent played illegal move: {}", err);
                         self.send_error("Opponent played illegal move".to_string());
-                    },
+                    }
                 }
             }
             (ConnectionState::Finished, GameMessage::RequestRematch) => {
                 self.conn_state = ConnectionState::OpponentRematchRequested;
-            },
+            }
             (_, GameMessage::Disconnected) => {
                 self.resume_state = self.conn_state;
                 self.conn_state = ConnectionState::OpponentDisconnected;
-            },
+            }
             (_, GameMessage::Error { message }) => {
                 self.conn_state = ConnectionState::Errored;
                 self.error = Some(message);
-            },
+            }
             (state, msg) => {
-                log::error!("Illegal state transition state = {:?}, message = {:?}", state, msg)
-            },
+                log::error!(
+                    "Illegal state transition state = {:?}, message = {:?}",
+                    state,
+                    msg
+                )
+            }
         }
         self.send_current_view();
     }

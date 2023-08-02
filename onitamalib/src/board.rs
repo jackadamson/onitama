@@ -1,3 +1,4 @@
+use crate::CardSet;
 use enum_iterator::IntoEnumIterator;
 use rand::prelude::*;
 
@@ -5,13 +6,22 @@ use crate::models::{Board, Card, GameSquare, GameState, Move, Player, Point};
 
 impl Board {
     pub fn try_move(self: &Board, game_move: Move) -> Result<GameState, String> {
-        let (
-            blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn
-        ) = match self {
-            Board { blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn } => {
-                (blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn)
-            }
-        };
+        let (blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn) =
+            match self {
+                Board {
+                    blue_king,
+                    blue_pawns,
+                    blue_hand,
+                    red_king,
+                    red_pawns,
+                    red_hand,
+                    spare_card,
+                    turn,
+                } => (
+                    blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card,
+                    turn,
+                ),
+            };
         let (player_king, opponent_king) = match turn {
             Player::Red => (red_king, blue_king),
             Player::Blue => (blue_king, red_king),
@@ -23,12 +33,10 @@ impl Board {
                 if self.can_move() {
                     return Err(format!("Valid moves exist"));
                 }
-                let player_hand: [Card; 2] = self
-                    .player_hand()
-                    .map(|c| match c == card {
-                        true => *spare_card,
-                        false => c,
-                    });
+                let player_hand: [Card; 2] = self.player_hand().map(|c| match c == card {
+                    true => *spare_card,
+                    false => c,
+                });
                 let (red_hand, blue_hand) = match turn {
                     Player::Red => (player_hand, *blue_hand),
                     Player::Blue => (*red_hand, player_hand),
@@ -43,7 +51,7 @@ impl Board {
                         red_hand,
                         spare_card: card,
                         turn: turn.invert(),
-                    }
+                    },
                 });
             }
         };
@@ -74,25 +82,20 @@ impl Board {
             Player::Blue => Point { x: 2, y: 4 },
         };
         let moving_king = *player_king == src;
-        let player_pawns = self.player_pawns().map(
-            |pawn| match pawn {
-                None => None,
-                Some(pawn) if pawn == src => Some(dst),
-                Some(pawn) => Some(pawn),
-            }
-        );
-        let opponent_pawns = self.opponent_pawns().map(
-            |pawn| match pawn {
-                None => None,
-                Some(pawn) if pawn == dst => None,
-                Some(pawn) => Some(pawn),
-            }
-        );
-        let player_hand: [Card; 2] = self.player_hand()
-            .map(|c| match c == card {
-                true => *spare_card,
-                false => c,
-            });
+        let player_pawns = self.player_pawns().map(|pawn| match pawn {
+            None => None,
+            Some(pawn) if pawn == src => Some(dst),
+            Some(pawn) => Some(pawn),
+        });
+        let opponent_pawns = self.opponent_pawns().map(|pawn| match pawn {
+            None => None,
+            Some(pawn) if pawn == dst => None,
+            Some(pawn) => Some(pawn),
+        });
+        let player_hand: [Card; 2] = self.player_hand().map(|c| match c == card {
+            true => *spare_card,
+            false => c,
+        });
         let player_king = match moving_king {
             true => dst,
             false => *player_king,
@@ -117,42 +120,63 @@ impl Board {
                 red_hand: *red_hand,
                 spare_card: card,
                 turn: Player::Red,
-            }
+            },
         };
         if dst == *opponent_king {
-            return Ok(GameState::Finished { winner: *turn, board });
+            return Ok(GameState::Finished {
+                winner: *turn,
+                board,
+            });
         }
         if moving_king && dst == goal_square {
-            return Ok(GameState::Finished { winner: *turn, board });
+            return Ok(GameState::Finished {
+                winner: *turn,
+                board,
+            });
         }
         return Ok(GameState::Playing { board });
     }
-    pub fn new() -> Board {
-        let mut rng = thread_rng();
-        let mut cards: Vec<Card> = Card::into_enum_iter().collect();
-        cards.shuffle(&mut rng);
+    fn new_from_cards(cards: Vec<Card>) -> Board {
         let mut cards = cards.into_iter();
         let pawn_xs: [i8; 4] = [0, 1, 3, 4];
         Board {
             blue_king: Point { x: 2, y: 0 },
-            blue_pawns: pawn_xs
-                .map(|x| Some(Point { x, y: 0 })),
+            blue_pawns: pawn_xs.map(|x| Some(Point { x, y: 0 })),
 
             blue_hand: [cards.next().unwrap(), cards.next().unwrap()],
             red_king: Point { x: 2, y: 4 },
-            red_pawns: pawn_xs
-                .map(|x| Some(Point { x, y: 4 })),
+            red_pawns: pawn_xs.map(|x| Some(Point { x, y: 4 })),
             red_hand: [cards.next().unwrap(), cards.next().unwrap()],
             spare_card: cards.next().unwrap(),
             turn: Player::Red,
         }
     }
+    pub fn new() -> Board {
+        let mut rng = thread_rng();
+        let mut cards: Vec<Card> = Card::into_enum_iter().collect();
+        cards.shuffle(&mut rng);
+        Board::new_from_cards(cards)
+    }
+    pub fn new_from_card_sets(card_sets: &Vec<CardSet>) -> Board {
+        match card_sets.len() {
+            0 => Board::new(),
+            _ => {
+                let mut cards = Vec::new();
+                for set in card_sets {
+                    cards.append(&mut set.cards());
+                }
+                let mut rng = thread_rng();
+                cards.shuffle(&mut rng);
+                Board::new_from_cards(cards)
+            }
+        }
+    }
     pub fn to_grid(&self) -> [[GameSquare; 5]; 5] {
         let mut grid = [[GameSquare::Empty; 5]; 5];
-        for Point { x, y } in self.blue_pawns.iter().filter_map(|p| *p ) {
+        for Point { x, y } in self.blue_pawns.iter().filter_map(|p| *p) {
             grid[y as usize][x as usize] = GameSquare::BluePawn;
         }
-        for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p ) {
+        for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p) {
             grid[y as usize][x as usize] = GameSquare::RedPawn;
         }
         let Point { x, y } = self.red_king;
@@ -163,7 +187,7 @@ impl Board {
     }
     pub fn can_move(&self) -> bool {
         let player_pieces = self.player_pieces();
-        for src in player_pieces.iter().filter_map(|src| *src ) {
+        for src in player_pieces.iter().filter_map(|src| *src) {
             for card in self.player_hand() {
                 for raw_delta in card.moves() {
                     let delta = match self.turn {
@@ -187,6 +211,11 @@ impl GameState {
             board: Board::new(),
         }
     }
+    pub fn new_from_card_sets(card_sets: &Vec<CardSet>) -> GameState {
+        GameState::Playing {
+            board: Board::new_from_card_sets(card_sets),
+        }
+    }
 }
 
 impl Board {
@@ -203,7 +232,6 @@ impl Board {
         }
     }
 }
-
 
 impl Board {
     pub fn player_pawns(&self) -> &[Option<Point>; 4] {
