@@ -72,7 +72,7 @@ function Home() {
         color="secondary"
         className={classes.button}
       >
-        Settings
+        Settings (NEW)
       </Button>
     </Box>
   );

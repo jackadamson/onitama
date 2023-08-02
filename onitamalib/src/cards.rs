@@ -361,8 +361,16 @@ impl CardSet {
                 Card::Iguana,
                 Card::Sable,
                 Card::Otter,
+            ],
+            CardSet::WayOfTheWind => vec![
                 Card::Goat,
                 Card::Sheep,
+            ],
+            CardSet::PromotionalPack => vec![
+                Card::Lobster,
+                Card::Steer,
+                Card::Hornet,
+                Card::Centipede,
             ],
         }
     }

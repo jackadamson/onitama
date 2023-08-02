@@ -23,9 +23,17 @@ impl Game {
         for card_set in disabled_card_sets {
             disabled_card_sets_hash.insert(card_set);
         }
-        let card_sets = CardSet::into_enum_iter()
+        let card_sets: Vec<CardSet> = CardSet::into_enum_iter()
             .filter(|set| !disabled_card_sets_hash.contains(set))
             .collect();
+        let mut cards_enabled = 0 as usize;
+        for set in &card_sets {
+            cards_enabled += set.cards().len();
+        }
+        // Not enough cards in selected packs, so just use all cards
+        if cards_enabled < 5 {
+            return Game::new()
+        }
         let game = Game {
             state: GameState::new_from_card_sets(&card_sets),
             card_sets,

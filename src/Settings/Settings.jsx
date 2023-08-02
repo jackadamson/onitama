@@ -9,6 +9,7 @@ import {
   makeStyles,
   Typography,
 } from '@material-ui/core';
+import { Alert, AlertTitle } from '@material-ui/lab';
 import EnabledIcon from '@material-ui/icons/Visibility';
 import DisabledIcon from '@material-ui/icons/VisibilityOff';
 
@@ -28,7 +29,7 @@ function Settings() {
   const cardSets = useMemo(() => listCardSets(), []);
   const storedDisabledCardSetIds = useMemo(() => {
     const rawCardSetIds = localStorage.getItem('disabled_card_sets');
-    return rawCardSetIds ? JSON.parse(rawCardSetIds) : cardSets.map(({ id }) => id);
+    return rawCardSetIds ? JSON.parse(rawCardSetIds) : [];
   }, []);
   const [disabledCardSetIds, setDisabledCardSetIds] = useState(storedDisabledCardSetIds);
   const toggleCardSet = (toggledId) => {
@@ -45,6 +46,10 @@ function Settings() {
       localStorage.setItem('disabled_card_sets', JSON.stringify(newDisabledIds));
     }
   };
+  const enabledCardCount = useMemo(() => {
+    const enabledSets = cardSets.filter(({ id }) => !disabledCardSetIds.includes(id));
+    return enabledSets.reduce((accumulator, set) => accumulator + set.cards.length, 0);
+  }, [disabledCardSetIds, cardSets]);
   return (
     <Box m={2}>
       <Box display="flex" alignItems="center" justifyContent="center">
@@ -56,6 +61,12 @@ function Settings() {
             Turn sets of cards on or off (currently only works for Single Player and Local
             Multiplayer)
           </Typography>
+          {enabledCardCount < 5 && (
+            <Alert severity="error">
+              <AlertTitle>Not Enough Cards Selected</AlertTitle>
+              At least 5 cards are required for a game
+            </Alert>
+          )}
           {cardSets.map(({ id, name, cards }) => (
             <Box my={1} key={id}>
               <Card variant="outlined" className={styles.card}>
@@ -71,7 +82,7 @@ function Settings() {
                   }
                 />
                 <CardContent>
-                  <Marquee speed={25}>
+                  <Marquee speed={25} play={cards.length > 4}>
                     {cards.map((card) => (
                       <Box mx={1} key={card.card}>
                         <GameCard
