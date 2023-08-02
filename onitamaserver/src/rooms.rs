@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use actix::{Actor, Addr, StreamHandler, Handler, Context, ActorContext, AsyncContext};
+use actix::{Actor, ActorContext, Addr, AsyncContext, Context, Handler, StreamHandler};
 use actix_web_actors::ws;
 use rand::prelude::*;
 use serde_cbor::ser;
@@ -10,7 +10,9 @@ use uuid::Uuid;
 
 use onitamalib::{GameMessage, GameState, Move, Player};
 
-use crate::messages::{AddressedGameMessage, CloseRoom, CreateRoom, JoinedRoom, JoinRoom, LeftRoom, SocketGameMessage};
+use crate::messages::{
+    AddressedGameMessage, CloseRoom, CreateRoom, JoinRoom, JoinedRoom, LeftRoom, SocketGameMessage,
+};
 
 /// Socket
 ///
@@ -50,11 +52,7 @@ impl Actor for RoomWs {
 }
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for RoomWs {
-    fn handle(
-        &mut self,
-        msg: Result<ws::Message, ws::ProtocolError>,
-        ctx: &mut Self::Context,
-    ) {
+    fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         let data = match msg {
             Ok(ws::Message::Ping(msg)) => {
                 ctx.pong(&msg);
@@ -93,7 +91,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for RoomWs {
                 return;
             }
         };
-        let msg = AddressedGameMessage { sender: ctx.address(), msg };
+        let msg = AddressedGameMessage {
+            sender: ctx.address(),
+            msg,
+        };
         room.do_send(msg);
     }
 }
@@ -102,10 +103,14 @@ impl Handler<JoinedRoom> for RoomWs {
     type Result = ();
     fn handle(&mut self, msg: JoinedRoom, ctx: &mut Self::Context) {
         let msg = match msg {
-            JoinedRoom::Error { message } => {
-                GameMessage::Error { message }
-            }
-            JoinedRoom::Success { addr, room_key, player, state, waiting } => {
+            JoinedRoom::Error { message } => GameMessage::Error { message },
+            JoinedRoom::Success {
+                addr,
+                room_key,
+                player,
+                state,
+                waiting,
+            } => {
                 info!("Joined room {} as {:?}: {}", room_key, player, self.id);
                 self.room = Some(addr);
                 self.room_key = Some(room_key);
@@ -226,8 +231,12 @@ impl Handler<JoinRoom> for OnitamaRoom {
             }
         };
         match player {
-            Player::Red => { self.red = Some(socket.clone()); }
-            Player::Blue => { self.blue = Some(socket.clone()); }
+            Player::Red => {
+                self.red = Some(socket.clone());
+            }
+            Player::Blue => {
+                self.blue = Some(socket.clone());
+            }
         };
         let addr = ctx.address();
         let room_key = self.key;
@@ -266,7 +275,7 @@ impl Handler<LeftRoom> for OnitamaRoom {
                 let addr = ctx.address();
                 let handle = tokio::spawn(delay_exit(addr));
                 self.close_room_handle = Some(handle);
-            },
+            }
             _ => {
                 self.broadcast(GameMessage::Disconnected);
             }
@@ -281,7 +290,7 @@ impl Handler<CloseRoom> for OnitamaRoom {
             (None, None) => {
                 info!("Room Closing: {}", self.key.clone());
                 ctx.stop();
-            },
+            }
             _ => {
                 error!("Almost closed running room ({}), this is a bug", self.key);
             }
@@ -331,18 +340,24 @@ impl OnitamaRoom {
             self.requested_rematch = None;
             let state = GameState::new();
             self.game_state = state;
-            self.send_to_player(Player::Red, GameMessage::Initialize {
-                state,
-                room_id: self.key.to_string(),
-                player: Player::Red,
-                waiting: false,
-            });
-            self.send_to_player(Player::Blue, GameMessage::Initialize {
-                state,
-                room_id: self.key.to_string(),
-                player: Player::Blue,
-                waiting: false,
-            });
+            self.send_to_player(
+                Player::Red,
+                GameMessage::Initialize {
+                    state,
+                    room_id: self.key.to_string(),
+                    player: Player::Red,
+                    waiting: false,
+                },
+            );
+            self.send_to_player(
+                Player::Blue,
+                GameMessage::Initialize {
+                    state,
+                    room_id: self.key.to_string(),
+                    player: Player::Blue,
+                    waiting: false,
+                },
+            );
         }
     }
 }
@@ -355,7 +370,9 @@ impl Handler<AddressedGameMessage> for OnitamaRoom {
             Some(player) => player,
             None => {
                 error!("Received game message from socket that's not in game");
-                let msg = GameMessage::Error { message: "Player not in game".to_string() };
+                let msg = GameMessage::Error {
+                    message: "Player not in game".to_string(),
+                };
                 sender.do_send(SocketGameMessage(msg));
                 return;
             }
@@ -405,7 +422,9 @@ impl Handler<JoinRoom> for OnitamaServer {
         let room = match self.rooms.get(&room_key) {
             None => {
                 warn!("Player attempted to join non-existent room: {}", &room_key);
-                let err_resp = GameMessage::Error { message: "Requested room doesn't exist".to_string() };
+                let err_resp = GameMessage::Error {
+                    message: "Requested room doesn't exist".to_string(),
+                };
                 addr.do_send(SocketGameMessage(err_resp));
                 return;
             }

@@ -1,6 +1,6 @@
-use std::collections::HashSet;
-use enum_iterator::IntoEnumIterator;
 use crate::models::{CardSet, GameState, Move, Player};
+use enum_iterator::IntoEnumIterator;
+use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Game {

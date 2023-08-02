@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex, mpsc};
+use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
 use enum_iterator::IntoEnumIterator;
@@ -39,7 +39,7 @@ impl Match {
                 GameState::Playing { board } => board,
                 GameState::Finished { winner, .. } => {
                     return Some(self.agent_from_player(winner));
-                },
+                }
             };
             let agent = self.agent_from_player(board.turn);
             let (game_move, _) = agent.play_move(&state, TURN_DURATION).unwrap();
@@ -61,27 +61,31 @@ fn main() {
     }
     let pb = ProgressBar::new(matches.len() as u64);
     let matches = Arc::new(Mutex::new(Box::new(matches)));
-    let (tx,rx) = mpsc::channel();
-    let handles: Vec<JoinHandle<()>> = (0..PARALLELISM).map(|idx| {
-        let (matches, tx) = (Arc::clone(&matches), tx.clone());
-        thread::spawn(move || {
-            loop {
-                // println!("{}: Getting lock", idx);
-                let mut c_matches = matches.lock().unwrap();
-                let ai_match = match c_matches.pop() {
-                    None => { break; }
-                    Some(ai_match) => ai_match,
-                };
-                // println!("{}: Got matches", idx);
-                drop(c_matches);
-                // println!("{}: Dropped", idx);
-                let winner = ai_match.winner();
-                // println!("{}: Determined winner", idx);
-                tx.send(winner).unwrap();
-                // println!("{}: Sent", idx);
-            }
+    let (tx, rx) = mpsc::channel();
+    let handles: Vec<JoinHandle<()>> = (0..PARALLELISM)
+        .map(|idx| {
+            let (matches, tx) = (Arc::clone(&matches), tx.clone());
+            thread::spawn(move || {
+                loop {
+                    // println!("{}: Getting lock", idx);
+                    let mut c_matches = matches.lock().unwrap();
+                    let ai_match = match c_matches.pop() {
+                        None => {
+                            break;
+                        }
+                        Some(ai_match) => ai_match,
+                    };
+                    // println!("{}: Got matches", idx);
+                    drop(c_matches);
+                    // println!("{}: Dropped", idx);
+                    let winner = ai_match.winner();
+                    // println!("{}: Determined winner", idx);
+                    tx.send(winner).unwrap();
+                    // println!("{}: Sent", idx);
+                }
+            })
         })
-    }).collect();
+        .collect();
     drop(tx);
     pb.tick();
     let mut wins: HashMap<AiAgent, u64> = HashMap::new();

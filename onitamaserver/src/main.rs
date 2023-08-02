@@ -7,20 +7,19 @@ use std::path;
 
 use actix::prelude::*;
 use actix_files::Files;
-use actix_web::{App, HttpServer, web};
 use actix_web::dev::Service;
-use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective, HeaderValue};
+use actix_web::http::header::{CacheControl, CacheDirective, HeaderValue, CACHE_CONTROL};
+use actix_web::{web, App, HttpServer};
 
 use crate::rooms::OnitamaServer;
 use crate::routes::{create_room, event_receive, join_room, ServerData};
 
-mod rooms;
-mod messages;
-mod routes;
-mod utils;
 #[cfg(feature = "agent")]
 mod agents;
-
+mod messages;
+mod rooms;
+mod routes;
+mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -32,7 +31,11 @@ async fn main() -> std::io::Result<()> {
     if !built_path.exists() {
         built_path = path::Path::new("../build");
     }
-    info!("Does build path exist ({}): {}", built_path.as_os_str().to_string_lossy(), built_path.exists());
+    info!(
+        "Does build path exist ({}): {}",
+        built_path.as_os_str().to_string_lossy(),
+        built_path.exists()
+    );
     info!("Starting server");
     HttpServer::new(move || {
         cfg_if::cfg_if! {
@@ -55,41 +58,46 @@ async fn main() -> std::io::Result<()> {
         let app = App::new()
             // Cache all requests to paths in /static otherwise don't cache
             .wrap_fn(|req, srv| {
-                let is_static = req.path().starts_with("/static")
-                        || req.path().ends_with(".wasm");
+                let is_static = req.path().starts_with("/static") || req.path().ends_with(".wasm");
                 let is_serviceworker = req.path() == "/service-worker.js";
                 let cache_static = match (is_static, is_serviceworker) {
-                    (true, _) => CacheControl(vec![CacheDirective::MaxAge(86400), CacheDirective::Public, CacheDirective::Extension("immutable".to_string(), None)]).to_string(),
-                    (false, false) => CacheControl(vec![
-                        CacheDirective::Extension("s-maxage".to_owned(), Some("300".to_owned())),
-                    ]).to_string(),
+                    (true, _) => CacheControl(vec![
+                        CacheDirective::MaxAge(86400),
+                        CacheDirective::Public,
+                        CacheDirective::Extension("immutable".to_string(), None),
+                    ])
+                    .to_string(),
+                    (false, false) => CacheControl(vec![CacheDirective::Extension(
+                        "s-maxage".to_owned(),
+                        Some("300".to_owned()),
+                    )])
+                    .to_string(),
                     (false, true) => CacheControl(vec![
-                        CacheDirective::Extension("stale-if-error".to_owned(), Some("86400".to_owned())),
+                        CacheDirective::Extension(
+                            "stale-if-error".to_owned(),
+                            Some("86400".to_owned()),
+                        ),
                         CacheDirective::Extension("must-revalidate".to_owned(), None),
-                    ]).to_string(),
+                    ])
+                    .to_string(),
                 };
                 let fut = srv.call(req);
                 async {
                     let mut res = fut.await?;
-                    let cache_control: HeaderValue = HeaderValue::try_from(cache_static).expect("Oops");
-                    res.headers_mut().insert(
-                        CACHE_CONTROL, cache_control,
-                    );
+                    let cache_control: HeaderValue =
+                        HeaderValue::try_from(cache_static).expect("Oops");
+                    res.headers_mut().insert(CACHE_CONTROL, cache_control);
                     Ok(res)
                 }
             })
             .app_data(data.clone())
             .service(factory);
         match built_path.exists() {
-            true => app
-                .service(
-                    Files::new("/", built_path)
-                        .index_file("index.html")
-                ),
+            true => app.service(Files::new("/", built_path).index_file("index.html")),
             false => app,
         }
     })
-        .bind("0.0.0.0:8080")?
-        .run()
-        .await
+    .bind("0.0.0.0:8080")?
+    .run()
+    .await
 }

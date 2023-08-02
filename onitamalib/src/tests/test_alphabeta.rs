@@ -45,5 +45,8 @@ fn alphabeta_benchmark() {
     }
     bar.finish();
     let average_depth: f64 = total_depth as f64 / counted as f64;
-    println!("Average Depth: {} out of {} timeouts", average_depth, counted);
+    println!(
+        "Average Depth: {} out of {} timeouts",
+        average_depth, counted
+    );
 }

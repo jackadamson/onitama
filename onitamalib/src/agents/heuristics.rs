@@ -17,12 +17,18 @@ impl GameState {
     pub fn basic_value(&self) -> i64 {
         let board = match self {
             GameState::Playing { board } => board,
-            GameState::Finished { winner: Player::Blue, .. } => {
+            GameState::Finished {
+                winner: Player::Blue,
+                ..
+            } => {
                 return i64::MIN;
-            },
-            GameState::Finished { winner: Player::Red, .. } => {
+            }
+            GameState::Finished {
+                winner: Player::Red,
+                ..
+            } => {
                 return i64::MAX;
-            },
+            }
         };
         let count_pieces = |acc, piece: &Option<Point>| match piece {
             None => acc,

@@ -2,8 +2,8 @@ extern crate console_error_panic_hook;
 pub use messages::*;
 pub use models::*;
 
-mod cards;
 mod board;
+mod cards;
 mod models;
 
 mod agents;
