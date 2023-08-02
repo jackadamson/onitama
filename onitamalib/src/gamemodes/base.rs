@@ -1,8 +1,9 @@
-use crate::models::{GameState, Move, Player};
+use crate::models::{CardSet, GameState, Move, Player};
 
 #[derive(Clone)]
 pub struct Game {
     state: GameState,
+    card_sets: Vec<CardSet>,
     last_move: Option<Move>,
 }
 
@@ -10,6 +11,15 @@ impl Game {
     pub fn new() -> Game {
         let game = Game {
             state: GameState::new(),
+            card_sets: vec![],
+            last_move: None,
+        };
+        return game;
+    }
+    pub fn new_from_card_sets(card_sets: Vec<CardSet>) -> Game {
+        let game = Game {
+            state: GameState::new_from_card_sets(&card_sets),
+            card_sets,
             last_move: None,
         };
         return game;
@@ -18,7 +28,7 @@ impl Game {
 
 impl Game {
     pub fn reset(&mut self) {
-        self.state = GameState::new();
+        self.state = GameState::new_from_card_sets(&self.card_sets);
         self.last_move = None;
     }
 }
@@ -29,7 +39,7 @@ impl Game {
             GameState::Playing { board } => board,
             GameState::Finished { .. } => {
                 return Err("Game Already Finished".to_string());
-            },
+            }
         };
         self.state = board.try_move(game_move)?;
         self.last_move = Some(game_move);
@@ -48,7 +58,7 @@ impl Game {
     pub fn get_turn(&self) -> Option<Player> {
         match &self.state {
             GameState::Playing { board } => Some(board.turn),
-            GameState::Finished { .. } => None
+            GameState::Finished { .. } => None,
         }
     }
     pub fn is_finished(&self) -> bool {

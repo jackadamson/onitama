@@ -1,44 +1,183 @@
-use crate::models::{Card, Point, CardDirection};
+use crate::models::{Card, CardDirection, CardSet, Point};
 
 impl Card {
     pub fn moves(&self) -> Vec<Point> {
         match self {
             Card::Tiger => vec![Point { x: 0, y: -2 }, Point { x: 0, y: 1 }],
-            Card::Dragon => vec![Point { x: -2, y: -1 }, Point { x: -1, y: 1 }, Point { x: 2, y: -1 }, Point { x: 1, y: 1 }],
-            Card::Frog => vec![Point { x: -2, y: 0 }, Point { x: -1, y: -1 }, Point { x: 1, y: 1 }],
-            Card::Rabbit => vec![Point { x: 1, y: -1 }, Point { x: 2, y: 0 }, Point { x: -1, y: 1 }],
-            Card::Crab => vec![Point { x: 0, y: -1 }, Point { x: -2, y: 0 }, Point { x: 2, y: 0 }],
-            Card::Elephant => vec![Point { x: 1, y: 0 }, Point { x: -1, y: -1 }, Point { x: 1, y: -1 }, Point { x: -1, y: 0 }],
-            Card::Goose => vec![Point { x: -1, y: 0 }, Point { x: -1, y: -1 }, Point { x: 1, y: 0 }, Point { x: 1, y: 1 }],
-            Card::Rooster => vec![Point { x: 1, y: 0 }, Point { x: 1, y: -1 }, Point { x: -1, y: 0 }, Point { x: -1, y: 1 }],
-            Card::Monkey => vec![Point { x: -1, y: -1 }, Point { x: 1, y: -1 }, Point { x: -1, y: 1 }, Point { x: 1, y: 1 }],
-            Card::Mantis => vec![Point { x: -1, y: -1 }, Point { x: 1, y: -1 }, Point { x: 0, y: 1 }],
-            Card::Horse => vec![Point { x: 0, y: -1 }, Point { x: -1, y: 0 }, Point { x: 0, y: 1 }],
-            Card::Ox => vec![Point { x: 0, y: -1 }, Point { x: 1, y: 0 }, Point { x: 0, y: 1 }],
-            Card::Crane => vec![Point { x: 0, y: -1 }, Point { x: 1, y: 1 }, Point { x: -1, y: 1 }],
-            Card::Boar => vec![Point { x: 0, y: -1 }, Point { x: 1, y: 0 }, Point { x: -1, y: 0 }],
-            Card::Eel => vec![Point { x: 1, y: 0 }, Point { x: -1, y: -1 }, Point { x: -1, y: 1 }],
-            Card::Cobra => vec![Point { x: -1, y: 0 }, Point { x: 1, y: -1 }, Point { x: 1, y: 1 }],
+            Card::Dragon => vec![
+                Point { x: -2, y: -1 },
+                Point { x: -1, y: 1 },
+                Point { x: 2, y: -1 },
+                Point { x: 1, y: 1 },
+            ],
+            Card::Frog => vec![
+                Point { x: -2, y: 0 },
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: 1 },
+            ],
+            Card::Rabbit => vec![
+                Point { x: 1, y: -1 },
+                Point { x: 2, y: 0 },
+                Point { x: -1, y: 1 },
+            ],
+            Card::Crab => vec![
+                Point { x: 0, y: -1 },
+                Point { x: -2, y: 0 },
+                Point { x: 2, y: 0 },
+            ],
+            Card::Elephant => vec![
+                Point { x: 1, y: 0 },
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: -1 },
+                Point { x: -1, y: 0 },
+            ],
+            Card::Goose => vec![
+                Point { x: -1, y: 0 },
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: 0 },
+                Point { x: 1, y: 1 },
+            ],
+            Card::Rooster => vec![
+                Point { x: 1, y: 0 },
+                Point { x: 1, y: -1 },
+                Point { x: -1, y: 0 },
+                Point { x: -1, y: 1 },
+            ],
+            Card::Monkey => vec![
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: -1 },
+                Point { x: -1, y: 1 },
+                Point { x: 1, y: 1 },
+            ],
+            Card::Mantis => vec![
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: -1 },
+                Point { x: 0, y: 1 },
+            ],
+            Card::Horse => vec![
+                Point { x: 0, y: -1 },
+                Point { x: -1, y: 0 },
+                Point { x: 0, y: 1 },
+            ],
+            Card::Ox => vec![
+                Point { x: 0, y: -1 },
+                Point { x: 1, y: 0 },
+                Point { x: 0, y: 1 },
+            ],
+            Card::Crane => vec![
+                Point { x: 0, y: -1 },
+                Point { x: 1, y: 1 },
+                Point { x: -1, y: 1 },
+            ],
+            Card::Boar => vec![
+                Point { x: 0, y: -1 },
+                Point { x: 1, y: 0 },
+                Point { x: -1, y: 0 },
+            ],
+            Card::Eel => vec![
+                Point { x: 1, y: 0 },
+                Point { x: -1, y: -1 },
+                Point { x: -1, y: 1 },
+            ],
+            Card::Cobra => vec![
+                Point { x: -1, y: 0 },
+                Point { x: 1, y: -1 },
+                Point { x: 1, y: 1 },
+            ],
 
             // Sensei's Path expansion
-            Card::Fox => vec![Point { x: 1, y: -1 }, Point { x: 1, y: 0 }, Point { x: 1, y: 1 }],
-            Card::Dog => vec![Point { x: -1, y: -1 }, Point { x: -1, y: 0 }, Point { x: -1, y: 1 }],
-            Card::Giraffe => vec![Point { x: -2, y: -1 }, Point { x: 2, y: -1 }, Point { x: 0, y: 1 }],
-            Card::Panda => vec![Point { x: -1, y: 1 }, Point { x: 0, y: -1 }, Point { x: 1, y: -1 }],
-            Card::Bear => vec![Point { x: 1, y: 1 }, Point { x: 0, y: -1 }, Point { x: -1, y: -1 }],
-            Card::Kirin => vec![Point { x: 0, y: 2 }, Point { x: 1, y: -2 }, Point { x: -1, y: -2 }],
-            Card::SeaSnake => vec![Point { x: -1, y: 1 }, Point { x: 0, y: -1 }, Point { x: 2, y: 0 }],
-            Card::Viper => vec![Point { x: 1, y: 1 }, Point { x: 0, y: -1 }, Point { x: -2, y: 0 }],
-            Card::Phoenix => vec![Point { x: -2, y: 0 }, Point { x: -1, y: -1 }, Point { x: 1, y: -1 }, Point { x: 2, y: 0 }],
-            Card::Mouse => vec![Point { x: -1, y: 1 }, Point { x: 0, y: -1 }, Point { x: 1, y: 0 }],
-            Card::Rat => vec![Point { x: 1, y: 1 }, Point { x: 0, y: -1 }, Point { x: -1, y: 0 }],
-            Card::Turtle => vec![Point { x: -2, y: 0 }, Point { x: -1, y: 1 }, Point { x: 1, y: 1 }, Point { x: 2, y: 0 }],
-            Card::Tanuki => vec![Point { x: -1, y: 1 }, Point { x: 0, y: -1 }, Point { x: 2, y: -1 }],
-            Card::Iguana => vec![Point { x: 1, y: 1 }, Point { x: 0, y: -1 }, Point { x: -2, y: -1 }],
-            Card::Sable => vec![Point { x: -2, y: 0 }, Point { x: -1, y: 1 }, Point { x: 1, y: -1 }],
-            Card::Otter => vec![Point { x: 2, y: 0 }, Point { x: 1, y: 1 }, Point { x: -1, y: -1 }],
-            Card::Goat => vec![Point { x: -1, y: 0 }, Point { x: 0, y: 1 }, Point { x: 1, y: -1 }],
-            Card::Sheep => vec![Point { x: 1, y: 0 }, Point { x: 0, y: 1 }, Point { x: -1, y: -1 }],
+            Card::Fox => vec![
+                Point { x: 1, y: -1 },
+                Point { x: 1, y: 0 },
+                Point { x: 1, y: 1 },
+            ],
+            Card::Dog => vec![
+                Point { x: -1, y: -1 },
+                Point { x: -1, y: 0 },
+                Point { x: -1, y: 1 },
+            ],
+            Card::Giraffe => vec![
+                Point { x: -2, y: -1 },
+                Point { x: 2, y: -1 },
+                Point { x: 0, y: 1 },
+            ],
+            Card::Panda => vec![
+                Point { x: -1, y: 1 },
+                Point { x: 0, y: -1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Bear => vec![
+                Point { x: 1, y: 1 },
+                Point { x: 0, y: -1 },
+                Point { x: -1, y: -1 },
+            ],
+            Card::Kirin => vec![
+                Point { x: 0, y: 2 },
+                Point { x: 1, y: -2 },
+                Point { x: -1, y: -2 },
+            ],
+            Card::SeaSnake => vec![
+                Point { x: -1, y: 1 },
+                Point { x: 0, y: -1 },
+                Point { x: 2, y: 0 },
+            ],
+            Card::Viper => vec![
+                Point { x: 1, y: 1 },
+                Point { x: 0, y: -1 },
+                Point { x: -2, y: 0 },
+            ],
+            Card::Phoenix => vec![
+                Point { x: -2, y: 0 },
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: -1 },
+                Point { x: 2, y: 0 },
+            ],
+            Card::Mouse => vec![
+                Point { x: -1, y: 1 },
+                Point { x: 0, y: -1 },
+                Point { x: 1, y: 0 },
+            ],
+            Card::Rat => vec![
+                Point { x: 1, y: 1 },
+                Point { x: 0, y: -1 },
+                Point { x: -1, y: 0 },
+            ],
+            Card::Turtle => vec![
+                Point { x: -2, y: 0 },
+                Point { x: -1, y: 1 },
+                Point { x: 1, y: 1 },
+                Point { x: 2, y: 0 },
+            ],
+            Card::Tanuki => vec![
+                Point { x: -1, y: 1 },
+                Point { x: 0, y: -1 },
+                Point { x: 2, y: -1 },
+            ],
+            Card::Iguana => vec![
+                Point { x: 1, y: 1 },
+                Point { x: 0, y: -1 },
+                Point { x: -2, y: -1 },
+            ],
+            Card::Sable => vec![
+                Point { x: -2, y: 0 },
+                Point { x: -1, y: 1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Otter => vec![
+                Point { x: 2, y: 0 },
+                Point { x: 1, y: 1 },
+                Point { x: -1, y: -1 },
+            ],
+            Card::Goat => vec![
+                Point { x: -1, y: 0 },
+                Point { x: 0, y: 1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Sheep => vec![
+                Point { x: 1, y: 0 },
+                Point { x: 0, y: 1 },
+                Point { x: -1, y: -1 },
+            ],
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -161,6 +300,51 @@ impl From<u32> for Card {
             32 => Card::Goat,
             33 => Card::Sheep,
             _ => panic!("invalid index for card"),
+        }
+    }
+}
+
+impl CardSet {
+    pub fn cards(&self) -> Vec<Card> {
+        match &self {
+            CardSet::Base => vec![
+                Card::Tiger,
+                Card::Dragon,
+                Card::Frog,
+                Card::Rabbit,
+                Card::Crab,
+                Card::Elephant,
+                Card::Goose,
+                Card::Rooster,
+                Card::Monkey,
+                Card::Mantis,
+                Card::Horse,
+                Card::Ox,
+                Card::Crane,
+                Card::Boar,
+                Card::Eel,
+                Card::Cobra,
+            ],
+            CardSet::SenseiPath => vec![
+                Card::Fox,
+                Card::Dog,
+                Card::Giraffe,
+                Card::Panda,
+                Card::Bear,
+                Card::Kirin,
+                Card::SeaSnake,
+                Card::Viper,
+                Card::Phoenix,
+                Card::Mouse,
+                Card::Rat,
+                Card::Turtle,
+                Card::Tanuki,
+                Card::Iguana,
+                Card::Sable,
+                Card::Otter,
+                Card::Goat,
+                Card::Sheep,
+            ],
         }
     }
 }

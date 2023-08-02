@@ -88,6 +88,7 @@ pub enum CardDirection {
 
 #[derive(Eq, PartialEq, Copy, Clone, IntoEnumIterator, Debug, Serialize, Deserialize)]
 pub enum Card {
+    // Base game
     Tiger,
     Dragon,
     Frog,
@@ -104,6 +105,7 @@ pub enum Card {
     Boar,
     Eel,
     Cobra,
+    // Sensei's path expansion
     Fox,
     Dog,
     Giraffe,
@@ -130,6 +132,43 @@ impl fmt::Display for Card {
     }
 }
 
+#[derive(Eq, PartialEq, Copy, Clone, IntoEnumIterator, Debug, Serialize, Deserialize)]
+pub enum CardSet {
+    Base,
+    SenseiPath,
+}
+
+impl ToString for CardSet {
+    fn to_string(&self) -> String {
+        match &self {
+            CardSet::Base => "Base Game".to_string(),
+            CardSet::SenseiPath => "Sensei's Path".to_string(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CardSetDescription {
+    pub id: CardSet,
+    pub name: String,
+    pub cards: Vec<CardDescription>,
+}
+
+impl From<CardSet> for CardSetDescription {
+    fn from(card_set: CardSet) -> Self {
+        let cards: Vec<CardDescription> = card_set
+            .cards()
+            .iter()
+            .map(|&card| CardDescription::from(card))
+            .collect();
+        CardSetDescription {
+            id: card_set,
+            name: card_set.to_string(),
+            cards,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Board {
     pub blue_king: Point,
@@ -145,26 +184,15 @@ pub struct Board {
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 #[serde(tag = "type")]
 pub enum Move {
-    Move {
-        card: Card,
-        src: Point,
-        dst: Point,
-    },
-    Discard {
-        card: Card,
-    },
+    Move { card: Card, src: Point, dst: Point },
+    Discard { card: Card },
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(tag = "status")]
 pub enum GameState {
-    Playing {
-        board: Board,
-    },
-    Finished {
-        board: Board,
-        winner: Player,
-    },
+    Playing { board: Board },
+    Finished { board: Board, winner: Player },
 }
 
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
@@ -208,23 +236,25 @@ pub enum GameView {
 pub struct CardDescription {
     pub card: Card,
     pub moves: Vec<Point>,
-    pub direction: CardDirection
+    pub direction: CardDirection,
 }
 
 impl From<Card> for CardDescription {
     fn from(card: Card) -> Self {
         let moves = card.moves();
         let direction = card.direction();
-        CardDescription { card, moves, direction }
+        CardDescription {
+            card,
+            moves,
+            direction,
+        }
     }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "status")]
 pub enum GameError {
-    Error {
-        message: String,
-    }
+    Error { message: String },
 }
 
 impl From<&GameState> for GameView {

@@ -8,7 +8,10 @@ const useLocalGame = () => {
   const { enqueueSnackbar } = useSnackbar();
   const handlers = useMemo(() => {
     const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
-    const game = new LocalGame(setState, onError, onEvent);
+
+    const cardSetsRaw = localStorage.getItem('card_sets');
+    const cardSets = cardSetsRaw ? JSON.parse(cardSetsRaw) : [];
+    const game = new LocalGame(cardSets, setState, onError, onEvent);
     return {
       playMove: (m) => game.move(m),
       reset: (m) => game.reset(m),
