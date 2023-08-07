@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::gamemodes::base::Game;
 use crate::models::Move;
-use crate::{AiAgent, CardSet, GameEvent, GameView, MoveRequest, Player};
+use crate::{AiAgent, CardSet, GameEvent, GameMeta, GameView, MoveRequest, Player};
 
 struct PreviousState {
     game: Game,
@@ -15,6 +15,7 @@ struct PreviousState {
 #[wasm_bindgen]
 pub struct SinglePlayerGame {
     game: Game,
+    meta: GameMeta,
     player: Player,
     agent: AiAgent,
     last_move: Option<Move>,
@@ -41,6 +42,7 @@ pub struct SinglePlayerView {
 impl SinglePlayerGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
+        meta: JsValue,
         difficulty: &str,
         training_mode: bool,
         disabled_card_sets: JsValue,
@@ -71,8 +73,13 @@ impl SinglePlayerGame {
                 Game::new()
             }
         };
+        let meta = match serde_wasm_bindgen::from_value::<GameMeta>(meta) {
+            Ok(meta) => meta,
+            Err(_) => GameMeta::blank(),
+        };
         let mut game = SinglePlayerGame {
             game,
+            meta,
             on_send_view,
             on_send_error,
             player,
@@ -88,6 +95,7 @@ impl SinglePlayerGame {
         game.send_event(GameEvent::Start {
             training: game.training_mode,
             against,
+            meta: game.meta.clone(),
         });
         game.agent_move();
         game.rank_moves();
@@ -153,6 +161,7 @@ impl SinglePlayerGame {
                     training: self.training_mode,
                     against,
                     winner,
+                    meta: self.meta.clone(),
                 })
             }
         };
@@ -254,6 +263,7 @@ impl SinglePlayerGame {
         self.send_event(GameEvent::Start {
             training: self.training_mode,
             against,
+            meta: self.meta.clone(),
         });
         self.game.reset();
         self.last_move = None;

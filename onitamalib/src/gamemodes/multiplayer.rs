@@ -7,7 +7,7 @@ use web_sys::MessageEvent;
 use crate::gamemodes::base::Game;
 use crate::messages::GameMessage;
 use crate::models::{Move, Player};
-use crate::{GameEvent, GameView};
+use crate::{GameEvent, GameMeta, GameView};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize)]
 pub enum ConnectionState {
@@ -37,6 +37,7 @@ pub struct MultiplayerView {
 #[wasm_bindgen]
 pub struct MultiplayerGame {
     game: Game,
+    meta: GameMeta,
     on_send_msg: js_sys::Function,
     on_send_view: js_sys::Function,
     on_send_error: js_sys::Function,
@@ -87,16 +88,22 @@ impl MultiplayerGame {
 impl MultiplayerGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
+        meta: JsValue,
         on_send_view: js_sys::Function,
         on_send_error: js_sys::Function,
         on_send_msg: js_sys::Function,
         on_send_event: js_sys::Function,
     ) -> MultiplayerGame {
+        let meta = match serde_wasm_bindgen::from_value::<GameMeta>(meta) {
+            Ok(meta) => meta,
+            Err(_) => GameMeta::blank(),
+        };
         // TODO: Implement choosing DLCs for multiplayer
         let game = Game::new();
         let game = MultiplayerGame {
             room_id: None,
             game,
+            meta,
             player: Player::Red, // Start Red, changes once playing
             on_send_msg,
             on_send_view,
@@ -211,6 +218,7 @@ impl MultiplayerGame {
                 training: false,
                 against: "remote".to_string(),
                 winner,
+                meta: self.meta.clone(),
             })
         }
         self.send_current_view();
@@ -236,6 +244,7 @@ impl MultiplayerGame {
                 self.send_event(GameEvent::Start {
                     training: false,
                     against: "online".to_string(),
+                    meta: self.meta.clone(),
                 });
                 self.conn_state = match waiting {
                     true => ConnectionState::Waiting,

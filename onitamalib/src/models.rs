@@ -293,18 +293,39 @@ impl From<&GameState> for GameView {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct GameMeta {
+    #[serde(default)]
+    pub build: String,
+    #[serde(default)]
+    pub uid: String,
+}
+
+impl GameMeta {
+    pub fn blank() -> GameMeta {
+        return GameMeta {
+            build: "".to_string(),
+            uid: "".to_string(),
+        };
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum GameEvent {
     Start {
         against: String,
         #[serde(default)]
         training: bool,
+        #[serde(flatten)]
+        meta: GameMeta,
     },
     End {
         against: String,
         winner: String,
         #[serde(default)]
         training: bool,
+        #[serde(flatten)]
+        meta: GameMeta,
     },
 }
 

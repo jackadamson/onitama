@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useSnackbar } from 'notistack';
 import { LocalGame } from '../onitamalib';
 import onEvent from '../events';
+import getMeta from '../meta';
 
 const useLocalGame = () => {
   const [state, setState] = useState(null);
@@ -11,7 +12,7 @@ const useLocalGame = () => {
 
     const disabledCardSetsRaw = localStorage.getItem('disabled_card_sets');
     const disabledCardSets = disabledCardSetsRaw ? JSON.parse(disabledCardSetsRaw) : [];
-    const game = new LocalGame(disabledCardSets, setState, onError, onEvent);
+    const game = new LocalGame(getMeta(), disabledCardSets, setState, onError, onEvent);
     return {
       playMove: (m) => game.move(m),
       reset: (m) => game.reset(m),

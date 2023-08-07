@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::rooms::{OnitamaServer, RoomWs};
-use crate::utils::get_identifier;
+use crate::utils::{get_identifier, get_useragent, get_ip};
 use actix::prelude::*;
 use actix_web::{error, web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
@@ -43,6 +43,7 @@ pub async fn create_room(
 }
 
 pub struct ServerData {
+    pub logger: slog::Logger,
     pub server_addr: Addr<OnitamaServer>,
 }
 
@@ -72,8 +73,11 @@ cfg_if::cfg_if! {
     }
 }
 
-pub async fn event_receive(req: HttpRequest, mut body: web::Payload) -> Result<String, Error> {
-    let id = get_identifier(&req);
+pub async fn event_receive(
+    req: HttpRequest,
+    mut body: web::Payload,
+    server_data: web::Data<ServerData>,
+) -> Result<String, Error> {
     let mut bytes = web::BytesMut::new();
     while let Some(item) = body.next().await {
         let item = item?;
@@ -82,31 +86,44 @@ pub async fn event_receive(req: HttpRequest, mut body: web::Payload) -> Result<S
     let data: GameEvent = match de::from_slice(bytes.as_ref()) {
         Ok(data) => data,
         Err(err) => {
-            warn!("Failed to deserialize event: {:?}", &err);
+            slog::warn!(
+                server_data.logger,
+                "Failed to deserialize event: {:?}",
+                &err
+            );
             return Ok("ok".to_string());
         }
     };
 
     match data {
-        GameEvent::Start { against, training } => {
-            let training = match training {
-                true => "training :: ",
-                false => "",
-            };
-            info!("Game started against {} :: {}{}", against, training, &id);
+        GameEvent::Start {
+            against,
+            training,
+            meta,
+        } => {
+            slog::info!(server_data.logger,
+                "Game started against {}", against;
+                "uid" => meta.uid,
+                "training" => training,
+                "build" => meta.build,
+                "user_agent" => get_useragent(&req),
+                "ip" => get_ip(&req),
+            );
         }
         GameEvent::End {
             against,
             winner,
             training,
+            meta,
         } => {
-            let training = match training {
-                true => "training :: ",
-                false => "",
-            };
-            info!(
-                "Game ended against {} winner was {} :: {}{}",
-                against, winner, training, &id
+            slog::info!(
+                server_data.logger,
+                "Game ended against {} winner was {}", against, winner;
+                "uid" => meta.uid,
+                "training" => training,
+                "build" => meta.build,
+                "user_agent" => get_useragent(&req),
+                "ip" => get_ip(&req),
             );
         }
     };

@@ -1,3 +1,4 @@
+ARG BUILD_VERSION=unknown
 FROM rust:1.53 as client-builder
 
 # Until feature(array_map) makes it to stable, requires nightly toolchain
@@ -17,9 +18,10 @@ RUN fnm exec yarn install --frozen-lockfile
 
 COPY ./ /src/
 
-# Build react app including wasm library
+# build react app including wasm library
 ENV GENERATE_SOURCEMAP=false
 ENV REACT_APP_LOCAL_AI=true
+ENV REACT_APP_BUILD_VERSION=${BUILD_VERSION}
 RUN fnm exec yarn run build --production
 
 FROM rust:1.53 as server-builder
@@ -37,7 +39,7 @@ COPY Cargo.toml Cargo.lock /src/
 COPY onitamalib /src/onitamalib
 COPY onitamaserver /src/onitamaserver
 
-# Build onitamaserver binary
+# build onitamaserver binary
 RUN cargo build --target x86_64-unknown-linux-musl --release --bin onitamaserver
 
 FROM scratch

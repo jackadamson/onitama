@@ -1,15 +1,19 @@
 #[macro_use]
 extern crate log;
 extern crate pretty_env_logger;
+extern crate slog;
+extern crate slog_json;
 
 use std::convert::TryFrom;
 use std::path;
+use std::sync::Mutex;
 
 use actix::prelude::*;
 use actix_files::Files;
 use actix_web::dev::Service;
 use actix_web::http::header::{CacheControl, CacheDirective, HeaderValue, CACHE_CONTROL};
 use actix_web::{web, App, HttpServer};
+use slog::{o, Drain};
 
 use crate::rooms::OnitamaServer;
 use crate::routes::{create_room, event_receive, join_room, ServerData};
@@ -25,7 +29,12 @@ mod utils;
 async fn main() -> std::io::Result<()> {
     pretty_env_logger::init();
     let server_addr = OnitamaServer::new().start();
-    let data = ServerData { server_addr };
+    let drain = Mutex::new(slog_json::Json::default(std::io::stdout())).fuse();
+    let logger = slog::Logger::root(drain, o!());
+    let data = ServerData {
+        server_addr,
+        logger,
+    };
     let data = web::Data::new(data);
     let mut built_path = path::Path::new("./build");
     if !built_path.exists() {

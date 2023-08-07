@@ -3,6 +3,7 @@ import { useSnackbar } from 'notistack';
 import { SinglePlayerGame } from '../onitamalib';
 import logger from '../logger';
 import onEvent from '../events';
+import getMeta from '../meta';
 
 const useSingleplayer = (difficulty, trainingMode) => {
   const [state, setState] = useState(null);
@@ -30,6 +31,7 @@ const useSingleplayer = (difficulty, trainingMode) => {
     const disabledCardSetsRaw = localStorage.getItem('disabled_card_sets');
     const disabledCardSets = disabledCardSetsRaw ? JSON.parse(disabledCardSetsRaw) : [];
     const game = new SinglePlayerGame(
+      getMeta(),
       difficulty,
       trainingMode || false,
       disabledCardSets,

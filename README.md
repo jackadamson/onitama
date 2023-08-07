@@ -47,9 +47,9 @@ Run the container
 docker run -dp 80:8080 --name onitama --rm ghcr.io/jackadamson/onitama:latest
 ```
 
-### Build Locally
+### build Locally
 
-Build the container
+build the container
 ```bash
 docker build -t onitama .
 ```

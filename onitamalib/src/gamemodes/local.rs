@@ -3,11 +3,12 @@ use wasm_bindgen::prelude::*;
 
 use crate::gamemodes::base::Game;
 use crate::models::Move;
-use crate::{CardSet, GameEvent, GameView};
+use crate::{CardSet, GameEvent, GameMeta, GameView};
 
 #[wasm_bindgen]
 pub struct LocalGame {
     game: Game,
+    meta: GameMeta,
     on_send_view: js_sys::Function,
     on_send_error: js_sys::Function,
     on_send_event: js_sys::Function,
@@ -17,6 +18,7 @@ pub struct LocalGame {
 impl LocalGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
+        meta: JsValue,
         disabled_card_sets: JsValue,
         on_send_view: js_sys::Function,
         on_send_error: js_sys::Function,
@@ -32,8 +34,13 @@ impl LocalGame {
                 Game::new()
             }
         };
+        let meta = match serde_wasm_bindgen::from_value::<GameMeta>(meta) {
+            Ok(meta) => meta,
+            Err(_) => GameMeta::blank(),
+        };
         let game = LocalGame {
             game,
+            meta,
             on_send_view,
             on_send_error,
             on_send_event,
@@ -41,6 +48,7 @@ impl LocalGame {
         game.send_event(GameEvent::Start {
             training: false,
             against: "local".to_string(),
+            meta: game.meta.clone(),
         });
         game.send_current_view();
         return game;
@@ -58,6 +66,7 @@ impl LocalGame {
                     training: false,
                     against: "local".to_string(),
                     winner,
+                    meta: self.meta.clone(),
                 });
             }
             None => {}
@@ -124,6 +133,7 @@ impl LocalGame {
         self.send_event(GameEvent::Start {
             training: false,
             against: "local".to_string(),
+            meta: self.meta.clone(),
         });
         self.game.reset();
         self.send_current_view();

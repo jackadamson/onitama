@@ -7,7 +7,9 @@ import {
   CardHeader,
   IconButton,
   makeStyles,
-  Typography, useMediaQuery, useTheme,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from '@material-ui/core';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import EnabledIcon from '@material-ui/icons/Visibility';
