@@ -120,13 +120,14 @@ pub async fn event_receive(
         } => {
             slog::info!(
                 server_data.logger,
-                "Game ended against {} winner was {}", &against, winner;
+                "Game ended against {} winner was {}", &against, &winner;
                 "opponent" => &against,
                 "event" => "ended",
                 "uid" => meta.uid,
                 "training" => training,
                 "build" => meta.build,
                 "user_agent" => get_useragent(&req),
+                "winner" => &winner,
                 "ip" => get_ip(&req),
             );
         }
