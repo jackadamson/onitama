@@ -103,6 +103,7 @@ pub async fn event_receive(
         } => {
             slog::info!(server_data.logger,
                 "Game started against {}", against;
+                "event" => "started",
                 "uid" => meta.uid,
                 "training" => training,
                 "build" => meta.build,
@@ -119,6 +120,7 @@ pub async fn event_receive(
             slog::info!(
                 server_data.logger,
                 "Game ended against {} winner was {}", against, winner;
+                "event" => "ended",
                 "uid" => meta.uid,
                 "training" => training,
                 "build" => meta.build,
