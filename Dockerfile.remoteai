@@ -1,4 +1,4 @@
-ARG BUILD_VERSION=unknown
+ARG BUILD_VERSION
 FROM rust:1.53 as client-builder
 
 # Until feature(array_map) makes it to stable, requires nightly toolchain
