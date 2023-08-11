@@ -6,8 +6,10 @@ import { MultiplayerGame } from '../onitamalib';
 import logger from '../logger';
 import onEvent from '../events';
 import getMeta from '../meta';
+import { useAppUpdater } from '../updateManager';
 
 const useMultiplayer = (roomId, isAi) => {
+  const checkUpdate = useAppUpdater();
   const [state, setState] = useState(null);
   const [handlers, setHandlers] = useState({});
   const { enqueueSnackbar } = useSnackbar();
@@ -22,7 +24,10 @@ const useMultiplayer = (roomId, isAi) => {
     const setStateMounted = (val) => {
       if (mounted) setState(val);
     };
-    const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
+    const onError = (err) => {
+      enqueueSnackbar(err, { variant: 'error', persist: false });
+      checkUpdate();
+    };
     const roomUrl = `${WEBSOCKET_BASE}${isAi ? 'ai/' : ''}${roomId || ''}`;
     const sock = new WebSocket(roomUrl);
     const keepAlive = setInterval(() => {
@@ -61,7 +66,7 @@ const useMultiplayer = (roomId, isAi) => {
     if (stateRoomId && !roomId) {
       history.replace(`/r/${stateRoomId}`);
     }
-  }, [history, roomId, stateRoomId]);
+  }, [history, roomId, stateRoomId, checkUpdate]);
   logger.log(state);
   return { state, reconnect, ...handlers };
 };

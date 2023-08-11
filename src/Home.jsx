@@ -3,9 +3,11 @@ import { Box, Button, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
 import GithubRibbon from './GithubRibbon';
+import { useAppUpdater } from './updateManager';
 
 function Home() {
   const classes = useStyles();
+  useAppUpdater();
   return (
     <Box className={classes.outer}>
       <GithubRibbon />
