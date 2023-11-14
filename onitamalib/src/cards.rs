@@ -203,6 +203,18 @@ impl Card {
                 Point { x: 0, y: -1 },
                 Point { x: 2, y: 2 },
             ],
+            Card::Cat => vec![
+                Point { x: -1, y: 0 },
+                Point { x: 0, y: -1 },
+                Point { x: 0, y: 2 },
+                Point { x: 2, y: 0 },
+            ],
+            Card::Serow => vec![
+                Point { x: -2 y: 0 },
+                Point { x: 0, y: -1 },
+                Point { x: 0, y: 2 },
+                Point { x: 1, y: 0 },
+            ],
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -247,6 +259,8 @@ impl Card {
             Card::Steer => CardDirection::Balanced,
             Card::Hornet => CardDirection::Right,
             Card::Centipede => CardDirection::Left,
+            Card::Cat => CardDirection::Right,
+            Card::Serow => CardDirection::Left,
         }
     }
     pub fn index(&self) -> u32 {
@@ -290,6 +304,8 @@ impl Card {
             Card::Steer => 35,
             Card::Hornet => 36,
             Card::Centipede => 37,
+            Card::Cat => 38,
+            Card::Serow => 39,
         }
     }
 }
@@ -336,6 +352,8 @@ impl From<u32> for Card {
             35 => Card::Steer,
             36 => Card::Hornet,
             37 => Card::Centipede,
+            38 => Card::Cat,
+            39 => Card::Serow,
             _ => panic!("invalid index for card"),
         }
     }
@@ -381,8 +399,14 @@ impl CardSet {
                 Card::Otter,
             ],
             CardSet::WayOfTheWind => vec![Card::Goat, Card::Sheep],
-            CardSet::PromotionalPack => {
-                vec![Card::Lobster, Card::Steer, Card::Hornet, Card::Centipede]
+            CardSet::PromotionalPack => vec![
+                Card::Lobster, 
+                Card::Steer, 
+                Card::Hornet, 
+                Card::Centipede, 
+                Card::Cat, 
+                Card::Serow
+            ],
             }
         }
     }
