@@ -405,7 +405,7 @@ impl CardSet {
                 Card::Hornet, 
                 Card::Centipede, 
                 Card::Cat, 
-                Card::Serow
+                Card::Serow,
             ],
             
         }
