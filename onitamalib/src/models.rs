@@ -130,6 +130,8 @@ pub enum Card {
     Steer,
     Hornet,
     Centipede,
+    Cat,
+    Serow,
 }
 
 impl fmt::Display for Card {
