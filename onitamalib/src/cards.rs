@@ -407,7 +407,7 @@ impl CardSet {
                 Card::Cat, 
                 Card::Serow
             ],
-            }
+            
         }
     }
 }
