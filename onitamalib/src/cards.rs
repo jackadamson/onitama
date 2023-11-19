@@ -210,7 +210,7 @@ impl Card {
                 Point { x: 2, y: 0 },
             ],
             Card::Serow => vec![
-                Point { x: -2 y: 0 },
+                Point { x: -2, y: 0 },
                 Point { x: 0, y: -1 },
                 Point { x: 0, y: 2 },
                 Point { x: 1, y: 0 },
