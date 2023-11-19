@@ -194,7 +194,7 @@ impl Card {
                 Point { x: -1, y: 0 },
             ],
             Card::Hornet => vec![
-                Point { x: -1, y: 2 },
+                Point { x: -2, y: 2 },
                 Point { x: 0, y: -1 },
                 Point { x: 1, y: 0 },
             ],
