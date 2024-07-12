@@ -5,7 +5,7 @@ extern crate slog;
 extern crate slog_json;
 
 use std::convert::TryFrom;
-use std::path;
+use std::{env, path};
 use std::sync::Mutex;
 
 use actix::prelude::*;
@@ -45,6 +45,10 @@ async fn main() -> std::io::Result<()> {
         built_path.as_os_str().to_string_lossy(),
         built_path.exists()
     );
+    let host = match env::var("PORT") {
+        Ok(port) => format!("0.0.0.0:{}", port),
+        Err(_) => "0.0.0.0:8080".to_string(),
+    };
     info!("Starting server");
     HttpServer::new(move || {
         cfg_if::cfg_if! {
@@ -106,7 +110,7 @@ async fn main() -> std::io::Result<()> {
             false => app,
         }
     })
-    .bind("0.0.0.0:8080")?
+    .bind(host)?
     .run()
     .await
 }
