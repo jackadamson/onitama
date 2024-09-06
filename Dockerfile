@@ -46,7 +46,7 @@ FROM scratch
 
 COPY --from=server-builder /src/target/x86_64-unknown-linux-musl/release/onitamaserver /
 COPY --from=client-builder /src/build /build
-USER 1000
 ENV RUST_LOG=info
-EXPOSE 8080
+ENV PORT=80
+EXPOSE 80
 CMD ["/onitamaserver"]
