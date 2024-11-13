@@ -105,7 +105,7 @@ pub enum Card {
     Boar,
     Eel,
     Cobra,
-    // Sensei's path expansion
+    // Sensei's Path
     Fox,
     Dog,
     Giraffe,
@@ -122,16 +122,18 @@ pub enum Card {
     Iguana,
     Sable,
     Otter,
-    // Way of the Wind Expansion
+    // Promotional Cards
     Goat,
     Sheep,
-    // Promotional Cards
     Lobster,
     Steer,
     Hornet,
     Centipede,
     Cat,
     Serow,
+    Nessie,
+    Butterfly,
+    Moth,
 }
 
 impl fmt::Display for Card {
@@ -144,7 +146,6 @@ impl fmt::Display for Card {
 pub enum CardSet {
     Base,
     SenseiPath,
-    WayOfTheWind,
     PromotionalPack,
 }
 
@@ -152,8 +153,7 @@ impl ToString for CardSet {
     fn to_string(&self) -> String {
         match &self {
             CardSet::Base => "Base Game".to_string(),
-            CardSet::SenseiPath => "Sensei's Path Expansion".to_string(),
-            CardSet::WayOfTheWind => "Way of the Wind Expansion".to_string(),
+            CardSet::SenseiPath => "Sensei's Path".to_string(),
             CardSet::PromotionalPack => "Promotional Cards".to_string(),
         }
     }

@@ -3,7 +3,10 @@ use crate::models::{Card, CardDirection, CardSet, Point};
 impl Card {
     pub fn moves(&self) -> Vec<Point> {
         match self {
-            Card::Tiger => vec![Point { x: 0, y: -2 }, Point { x: 0, y: 1 }],
+            Card::Tiger => vec![
+                Point { x: 0, y: -2 }, 
+                Point { x: 0, y: 1 }
+            ],
             Card::Dragon => vec![
                 Point { x: -2, y: -1 },
                 Point { x: -1, y: 1 },
@@ -85,7 +88,7 @@ impl Card {
                 Point { x: 1, y: 1 },
             ],
 
-            // Sensei's Path expansion
+            // Sensei's Path
             Card::Fox => vec![
                 Point { x: 1, y: -1 },
                 Point { x: 1, y: 0 },
@@ -168,7 +171,7 @@ impl Card {
                 Point { x: 1, y: 1 },
                 Point { x: -1, y: -1 },
             ],
-            // Way of the Wind Expansion
+            // Promotional Cards
             Card::Goat => vec![
                 Point { x: -1, y: 0 },
                 Point { x: 0, y: 1 },
@@ -179,8 +182,6 @@ impl Card {
                 Point { x: 0, y: 1 },
                 Point { x: -1, y: -1 },
             ],
-
-            // Promotional Cards
             Card::Lobster => vec![
                 Point { x: -1, y: -1 },
                 Point { x: -1, y: 2 },
@@ -215,6 +216,22 @@ impl Card {
                 Point { x: 0, y: 2 },
                 Point { x: 1, y: 0 },
             ],
+            Card::Nessie => vec![
+                Point { x: -2, y: -1 },
+                Point { x: 2, y: 0 },
+                Point { x: -1, y: 1 },
+                Point { x: 1, y: 1 },
+            ],
+            Card::Butterfly => vec![
+                Point { x: -2, y: -1 },
+                Point { x: 2, y: -1 },
+                Point { x: 0, y: 1 },
+            ],
+            Card::Moth => vec![
+                Point { x: -2, y: 1 },
+                Point { x: 2, y: 1 },
+                Point { x: 0, y: -1 },
+            ],
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -236,7 +253,7 @@ impl Card {
             Card::Boar => CardDirection::Balanced,
             Card::Eel => CardDirection::Left,
             Card::Cobra => CardDirection::Right,
-            // Sensei's path expansion
+            // Sensei's Path
             Card::Fox => CardDirection::Right,
             Card::Dog => CardDirection::Left,
             Card::Giraffe => CardDirection::Balanced,
@@ -253,6 +270,7 @@ impl Card {
             Card::Iguana => CardDirection::Left,
             Card::Sable => CardDirection::Right,
             Card::Otter => CardDirection::Left,
+            // Promotional Cards
             Card::Goat => CardDirection::Right,
             Card::Sheep => CardDirection::Left,
             Card::Lobster => CardDirection::Balanced,
@@ -261,6 +279,9 @@ impl Card {
             Card::Centipede => CardDirection::Left,
             Card::Cat => CardDirection::Right,
             Card::Serow => CardDirection::Left,
+            Card::Nessie => CardDirection::Balanced,
+            Card::Butterfly => CardDirection::Balanced,
+            Card::Moth => CardDirection::Balanced,
         }
     }
     pub fn index(&self) -> u32 {
@@ -281,7 +302,7 @@ impl Card {
             Card::Boar => 13,
             Card::Eel => 14,
             Card::Cobra => 15,
-            // Sensei's path expansion
+            // Sensei's Path
             Card::Fox => 16,
             Card::Dog => 17,
             Card::Giraffe => 18,
@@ -298,6 +319,7 @@ impl Card {
             Card::Iguana => 29,
             Card::Sable => 30,
             Card::Otter => 31,
+            // Promotional Cards
             Card::Goat => 32,
             Card::Sheep => 33,
             Card::Lobster => 34,
@@ -306,6 +328,9 @@ impl Card {
             Card::Centipede => 37,
             Card::Cat => 38,
             Card::Serow => 39,
+            Card::Nessie => 40,
+            Card::Butterfly => 41,
+            Card::Moth => 42,
         }
     }
 }
@@ -329,7 +354,7 @@ impl From<u32> for Card {
             13 => Card::Boar,
             14 => Card::Eel,
             15 => Card::Cobra,
-            // Sensei's path expansion
+            // Sensei's Path
             16 => Card::Fox,
             17 => Card::Dog,
             18 => Card::Giraffe,
@@ -346,6 +371,7 @@ impl From<u32> for Card {
             29 => Card::Iguana,
             30 => Card::Sable,
             31 => Card::Otter,
+            // Promotional Cards
             32 => Card::Goat,
             33 => Card::Sheep,
             34 => Card::Lobster,
@@ -354,6 +380,9 @@ impl From<u32> for Card {
             37 => Card::Centipede,
             38 => Card::Cat,
             39 => Card::Serow,
+            40 => Card::Nessie,
+            41 => Card::Butterfly,
+            42 => Card::Moth,
             _ => panic!("invalid index for card"),
         }
     }
@@ -363,49 +392,53 @@ impl CardSet {
     pub fn cards(&self) -> Vec<Card> {
         match &self {
             CardSet::Base => vec![
-                Card::Tiger,
-                Card::Dragon,
-                Card::Frog,
-                Card::Rabbit,
+                Card::Boar,
                 Card::Crab,
                 Card::Elephant,
-                Card::Goose,
-                Card::Rooster,
+                Card::Dragon,
                 Card::Monkey,
-                Card::Mantis,
-                Card::Horse,
-                Card::Ox,
+                Card::Tiger,
                 Card::Crane,
-                Card::Boar,
+                Card::Mantis,
                 Card::Eel,
                 Card::Cobra,
+                Card::Frog,
+                Card::Rabbit,
+                Card::Goose,
+                Card::Rooster,
+                Card::Horse,
+                Card::Ox,
             ],
             CardSet::SenseiPath => vec![
-                Card::Fox,
-                Card::Dog,
                 Card::Giraffe,
-                Card::Panda,
-                Card::Bear,
                 Card::Kirin,
-                Card::SeaSnake,
-                Card::Viper,
                 Card::Phoenix,
-                Card::Mouse,
-                Card::Rat,
                 Card::Turtle,
-                Card::Tanuki,
+                Card::Bear,
+                Card::Panda,
+                Card::Dog,
+                Card::Fox,
                 Card::Iguana,
-                Card::Sable,
+                Card::Tanuki,
+                Card::Rat,
+                Card::Mouse,
                 Card::Otter,
+                Card::Sable,
+                Card::Viper,
+                Card::SeaSnake,
             ],
-            CardSet::WayOfTheWind => vec![Card::Goat, Card::Sheep],
             CardSet::PromotionalPack => vec![
+                Card::Sheep,
+                Card::Goat,
                 Card::Lobster, 
                 Card::Steer, 
-                Card::Hornet, 
                 Card::Centipede, 
-                Card::Cat, 
+                Card::Hornet, 
                 Card::Serow,
+                Card::Cat, 
+                Card::Nessie,
+                Card::Butterfly,
+                Card::Moth,
             ],
             
         }
