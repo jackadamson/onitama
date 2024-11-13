@@ -222,6 +222,16 @@ impl Card {
                 Point { x: -1, y: 1 },
                 Point { x: 1, y: 1 },
             ],
+            Card::Butterfly => vec![
+                Point { x: -2, y: -1 },
+                Point { x: 2, y: -1 },
+                Point { x: 0, y: 1 },
+            ],
+            Card::Moth => vec![
+                Point { x: -2, y: 1 },
+                Point { x: 2, y: 1 },
+                Point { x: 0, y: -1 },
+            ],
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -270,6 +280,8 @@ impl Card {
             Card::Cat => CardDirection::Right,
             Card::Serow => CardDirection::Left,
             Card::Nessie => CardDirection::Balanced,
+            Card::Butterfly => CardDirection::Balanced,
+            Card::Moth => CardDirection::Balanced,
         }
     }
     pub fn index(&self) -> u32 {
@@ -317,6 +329,8 @@ impl Card {
             Card::Cat => 38,
             Card::Serow => 39,
             Card::Nessie => 40,
+            Card::Butterfly => 41,
+            Card::Moth => 42,
         }
     }
 }
@@ -367,6 +381,8 @@ impl From<u32> for Card {
             38 => Card::Cat,
             39 => Card::Serow,
             40 => Card::Nessie,
+            41 => Card::Butterfly,
+            42 => Card::Moth,
             _ => panic!("invalid index for card"),
         }
     }
@@ -421,6 +437,8 @@ impl CardSet {
                 Card::Serow,
                 Card::Cat, 
                 Card::Nessie,
+                Card::Butterfly,
+                Card::Moth,
             ],
             
         }

@@ -132,6 +132,8 @@ pub enum Card {
     Cat,
     Serow,
     Nessie,
+    Butterfly,
+    Moth,
 }
 
 impl fmt::Display for Card {
