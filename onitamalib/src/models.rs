@@ -134,6 +134,15 @@ pub enum Card {
     Nessie,
     Butterfly,
     Moth,
+    // Wind Spirit Cards
+    Bat,
+    Eagle,
+    Hawk,
+    Lion,
+    Octopus,
+    Rhinoceros,
+    Scorpion,
+    Spider,
 }
 
 impl fmt::Display for Card {
@@ -147,6 +156,7 @@ pub enum CardSet {
     Base,
     SenseiPath,
     PromotionalPack,
+    WayOfTheWind,
 }
 
 impl ToString for CardSet {
@@ -155,6 +165,7 @@ impl ToString for CardSet {
             CardSet::Base => "Base Game".to_string(),
             CardSet::SenseiPath => "Sensei's Path".to_string(),
             CardSet::PromotionalPack => "Promotional Cards".to_string(),
+            CardSet::WayOfTheWind => "Way of the Wind".to_string(),
         }
     }
 }

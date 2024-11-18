@@ -232,6 +232,40 @@ impl Card {
                 Point { x: 2, y: 1 },
                 Point { x: 0, y: -1 },
             ],
+            // Wind Spirit Cards
+            Card::Bat => vec![
+                Point { x: 0, y: 1 },
+                Point { x: 0, y: -1 },
+            ],
+            Card::Eagle => vec![
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Hawk => vec![
+                Point { x: -1, y: -1 },
+                Point { x: -1, y: 1 },
+            ],
+            Card::Lion => vec![
+                Point { x: -1, y: 1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Octopus => vec![
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: 1 },
+            ],
+            Card::Rhinoceros => vec![
+                Point { x: -1, y: -1 },
+                Point { x: 0, y: 1 },
+            ],
+            Card::Scorpion => vec![
+                Point { x: 1, y: 1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Spider => vec![
+                Point { x: 1, y: -1 },
+                Point { x: 0, y: 1 },
+            ],
+
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -282,6 +316,15 @@ impl Card {
             Card::Nessie => CardDirection::Balanced,
             Card::Butterfly => CardDirection::Balanced,
             Card::Moth => CardDirection::Balanced,
+            // Wind Spirit Cards
+            Card::Bat => CardDirection::Balanced,
+            Card::Eagle => CardDirection::Balanced,
+            Card::Hawk => CardDirection::Left,
+            Card::Lion => CardDirection::Right,
+            Card::Octopus => CardDirection::Left,
+            Card::Rhinoceros => CardDirection::Left,
+            Card::Scorpion => CardDirection::Right,
+            Card::Spider => CardDirection::Right,
         }
     }
     pub fn index(&self) -> u32 {
@@ -331,6 +374,15 @@ impl Card {
             Card::Nessie => 40,
             Card::Butterfly => 41,
             Card::Moth => 42,
+            // Wind Spirit Cards
+            Card::Bat => 43,
+            Card::Eagle => 44,
+            Card::Hawk => 45,
+            Card::Lion => 46,
+            Card::Octopus => 47,
+            Card::Rhinoceros => 48,
+            Card::Scorpion => 49,
+            Card::Spider => 50,
         }
     }
 }
@@ -383,6 +435,15 @@ impl From<u32> for Card {
             40 => Card::Nessie,
             41 => Card::Butterfly,
             42 => Card::Moth,
+            // Wind Spirit Cards
+            43 => Card::Bat,
+            44 => Card::Eagle,
+            45 => Card::Hawk,
+            46 => Card::Lion,
+            47 => Card::Octopus,
+            48 => Card::Rhinoceros,
+            49 => Card::Scorpion,
+            50 => Card::Spider,
             _ => panic!("invalid index for card"),
         }
     }
@@ -440,7 +501,16 @@ impl CardSet {
                 Card::Butterfly,
                 Card::Moth,
             ],
-            
+            CardSet::WayOfTheWind => vec![
+                Card::Bat,
+                Card::Eagle,
+                Card::Hawk,
+                Card::Lion,
+                Card::Octopus,
+                Card::Rhinoceros,
+                Card::Scorpion,
+                Card::Spider,
+            ]
         }
     }
 }
