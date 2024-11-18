@@ -1,4 +1,4 @@
-FROM rust:1.71 as client-builder
+FROM rust:1.71 AS client-builder
 ARG BUILD_VERSION
 
 # Until feature(array_map) makes it to stable, requires nightly toolchain
@@ -21,10 +21,10 @@ COPY ./ /src/
 # build react app including wasm library
 ENV GENERATE_SOURCEMAP=false
 ENV REACT_APP_LOCAL_AI=true
-ENV REACT_APP_BUILD_VERSION ${BUILD_VERSION}
+ENV REACT_APP_BUILD_VERSION=${BUILD_VERSION}
 RUN fnm exec yarn run build --production
 
-FROM rust:1.71 as server-builder
+FROM rust:1.71 AS server-builder
 
 # Until feature(array_map) makes it to stable, requires nightly toolchain
 RUN rustup default nightly
