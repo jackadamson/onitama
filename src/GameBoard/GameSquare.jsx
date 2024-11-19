@@ -3,12 +3,13 @@ import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { Box, makeStyles, Paper, Tooltip } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChessPawn, faChessKing, faSkull, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faChessPawn, faChessKing, faChessQueen, faSkull, faStar } from '@fortawesome/free-solid-svg-icons';
 import Color from 'color';
 import { PointPropType } from './props';
 
 const icons = {
   Empty: null,
+  WindSpirit: <FontAwesomeIcon icon={faChessQueen} color="#B5B4B4" size="3x" />,
   BluePawn: <FontAwesomeIcon icon={faChessPawn} color="#2196f3" size="3x" />,
   BlueKing: <FontAwesomeIcon icon={faChessKing} color="#2196f3" size="3x" />,
   RedPawn: <FontAwesomeIcon icon={faChessPawn} color="#f44336" size="3x" />,

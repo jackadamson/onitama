@@ -194,6 +194,7 @@ impl From<CardSet> for CardSetDescription {
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Board {
+    pub wind_spirit: Point,
     pub blue_king: Point,
     pub blue_pawns: [Option<Point>; 4],
     pub blue_hand: [Card; 2],
@@ -220,6 +221,7 @@ pub enum GameState {
 
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum GameSquare {
+    WindSpirit,
     RedKing,
     RedPawn,
     BlueKing,

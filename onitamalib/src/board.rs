@@ -6,9 +6,10 @@ use crate::models::{Board, Card, GameSquare, GameState, Move, Player, Point};
 
 impl Board {
     pub fn try_move(self: &Board, game_move: Move) -> Result<GameState, String> {
-        let (blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn) =
+        let (wind_spirit, blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card, turn) =
             match self {
                 Board {
+                    wind_spirit,
                     blue_king,
                     blue_pawns,
                     blue_hand,
@@ -18,7 +19,7 @@ impl Board {
                     spare_card,
                     turn,
                 } => (
-                    blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card,
+                    wind_spirit, blue_king, blue_pawns, blue_hand, red_king, red_pawns, red_hand, spare_card,
                     turn,
                 ),
             };
@@ -43,6 +44,7 @@ impl Board {
                 };
                 return Ok(GameState::Playing {
                     board: Board {
+                        wind_spirit: *wind_spirit,
                         blue_king: *blue_king,
                         blue_pawns: *blue_pawns,
                         blue_hand,
@@ -55,6 +57,7 @@ impl Board {
                 });
             }
         };
+
         if !self.player_hand().contains(&card) {
             return Err("Card not in hand".to_string());
         }
@@ -102,6 +105,7 @@ impl Board {
         };
         let board = match self.turn {
             Player::Red => Board {
+                wind_spirit: *wind_spirit,
                 blue_king: *blue_king,
                 blue_pawns: opponent_pawns,
                 blue_hand: *blue_hand,
@@ -112,6 +116,7 @@ impl Board {
                 turn: Player::Blue,
             },
             Player::Blue => Board {
+                wind_spirit: *wind_spirit,
                 blue_king: player_king,
                 blue_pawns: player_pawns,
                 blue_hand: player_hand,
@@ -140,6 +145,7 @@ impl Board {
         let mut cards = cards.into_iter();
         let pawn_xs: [i8; 4] = [0, 1, 3, 4];
         Board {
+            wind_spirit: Point {x: 2, y: 2 },
             blue_king: Point { x: 2, y: 0 },
             blue_pawns: pawn_xs.map(|x| Some(Point { x, y: 0 })),
 
@@ -179,6 +185,8 @@ impl Board {
         for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p) {
             grid[y as usize][x as usize] = GameSquare::RedPawn;
         }
+        let Point { x, y } = self.wind_spirit;
+        grid[y as usize][x as usize] = GameSquare::WindSpirit;
         let Point { x, y } = self.red_king;
         grid[y as usize][x as usize] = GameSquare::RedKing;
         let Point { x, y } = self.blue_king;
@@ -249,6 +257,15 @@ impl Board {
 }
 
 impl Board {
+    pub fn wind_spirit(&self) -> &Point {
+        match self.turn {
+            Player::Red => &self.wind_spirit,
+            Player::Blue => &Point {x: 0, y: 0},
+        }
+    }
+}
+
+impl Board {
     pub fn player_king(&self) -> &Point {
         match self.turn {
             Player::Red => &self.red_king,
@@ -264,16 +281,18 @@ impl Board {
 }
 
 impl Board {
-    pub fn player_pieces(&self) -> [Option<Point>; 5] {
-        let mut pieces: [Option<Point>; 5] = [None; 5];
-        pieces[1..].copy_from_slice(&*self.player_pawns());
+    pub fn player_pieces(&self) -> [Option<Point>; 6] {
+        let mut pieces: [Option<Point>; 6] = [None; 6];
         pieces[0] = Some(*self.player_king());
+        pieces[1] = Some(*self.wind_spirit());
+        pieces[2..].copy_from_slice(&*self.player_pawns());
         return pieces;
     }
-    pub fn opponent_pieces(&self) -> [Option<Point>; 5] {
-        let mut pieces: [Option<Point>; 5] = [None; 5];
-        pieces[1..].copy_from_slice(&*self.opponent_pawns());
+    pub fn opponent_pieces(&self) -> [Option<Point>; 6] {
+        let mut pieces: [Option<Point>; 6] = [None; 6];
         pieces[0] = Some(*self.opponent_king());
+        pieces[1] = Some(*self.wind_spirit());
+        pieces[2..].copy_from_slice(&*self.opponent_pawns());
         return pieces;
     }
 }
