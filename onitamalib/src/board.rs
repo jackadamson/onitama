@@ -57,7 +57,6 @@ impl Board {
                 });
             }
         };
-
         if !self.player_hand().contains(&card) {
             return Err("Card not in hand".to_string());
         }
@@ -70,6 +69,8 @@ impl Board {
         if dst.out_of_bounds() {
             return Err("Destination is out of bounds".to_string());
         }
+
+
         let raw_delta = dst - src;
         let delta = match turn {
             Player::Red => raw_delta,
@@ -80,19 +81,30 @@ impl Board {
             log::info!("Attempted {:?} with card {:?}", &delta, &card);
             return Err("Move not valid for card".to_string());
         }
+
         let goal_square = match turn {
             Player::Red => Point { x: 2, y: 0 },
             Player::Blue => Point { x: 2, y: 4 },
         };
         let moving_king = *player_king == src;
+        let move_wind_spirit = *wind_spirit == src;
         let player_pawns = self.player_pawns().map(|pawn| match pawn {
             None => None,
             Some(pawn) if pawn == src => Some(dst),
+            // If WindSpirit moves to a player's pawn, swap positions
+            Some(pawn) if pawn == dst && move_wind_spirit => Some(src), 
             Some(pawn) => Some(pawn),
         });
         let opponent_pawns = self.opponent_pawns().map(|pawn| match pawn {
             None => None,
-            Some(pawn) if pawn == dst => None,
+            Some(pawn) if pawn == dst => {
+                // If WindSpirit moves to an opponent pawn, swap positions
+                if move_wind_spirit {
+                    Some(src) // The pawn moves to WindSpirit's original position
+                } else {
+                    None // Otherwise, opponent pawn is captured
+                }
+            }
             Some(pawn) => Some(pawn),
         });
         let player_hand: [Card; 2] = self.player_hand().map(|c| match c == card {
@@ -103,9 +115,20 @@ impl Board {
             true => dst,
             false => *player_king,
         };
+        // Prevent WindSpirit from moving to a square occupied by a king
+        if src == *wind_spirit && (dst == *red_king || dst == *blue_king) {
+            return Err("Cannot move Wind Spirit into a square occupied by a King!".to_string());
+        }
+
+        let wind_spirit = match move_wind_spirit {
+            true => dst,
+            false => *wind_spirit,
+        };
+
+ 
         let board = match self.turn {
             Player::Red => Board {
-                wind_spirit: *wind_spirit,
+                wind_spirit: wind_spirit,
                 blue_king: *blue_king,
                 blue_pawns: opponent_pawns,
                 blue_hand: *blue_hand,
@@ -116,7 +139,7 @@ impl Board {
                 turn: Player::Blue,
             },
             Player::Blue => Board {
-                wind_spirit: *wind_spirit,
+                wind_spirit: wind_spirit,
                 blue_king: player_king,
                 blue_pawns: player_pawns,
                 blue_hand: player_hand,
@@ -185,12 +208,12 @@ impl Board {
         for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p) {
             grid[y as usize][x as usize] = GameSquare::RedPawn;
         }
-        let Point { x, y } = self.wind_spirit;
-        grid[y as usize][x as usize] = GameSquare::WindSpirit;
         let Point { x, y } = self.red_king;
         grid[y as usize][x as usize] = GameSquare::RedKing;
         let Point { x, y } = self.blue_king;
         grid[y as usize][x as usize] = GameSquare::BlueKing;
+        let Point { x, y } = self.wind_spirit;
+        grid[y as usize][x as usize] = GameSquare::WindSpirit;
         return grid;
     }
     pub fn can_move(&self) -> bool {
@@ -260,7 +283,7 @@ impl Board {
     pub fn wind_spirit(&self) -> &Point {
         match self.turn {
             Player::Red => &self.wind_spirit,
-            Player::Blue => &Point {x: 0, y: 0},
+            Player::Blue => &self.wind_spirit,
         }
     }
 }
@@ -288,11 +311,10 @@ impl Board {
         pieces[2..].copy_from_slice(&*self.player_pawns());
         return pieces;
     }
-    pub fn opponent_pieces(&self) -> [Option<Point>; 6] {
-        let mut pieces: [Option<Point>; 6] = [None; 6];
+    pub fn opponent_pieces(&self) -> [Option<Point>; 5] {
+        let mut pieces: [Option<Point>; 5] = [None; 5];
         pieces[0] = Some(*self.opponent_king());
-        pieces[1] = Some(*self.wind_spirit());
-        pieces[2..].copy_from_slice(&*self.opponent_pawns());
+        pieces[1..].copy_from_slice(&*self.opponent_pawns());
         return pieces;
     }
 }
