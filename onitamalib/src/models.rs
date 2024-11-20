@@ -134,7 +134,7 @@ pub enum Card {
     Nessie,
     Butterfly,
     Moth,
-    // Wind Spirit Cards
+    // Way of the Wind
     Bat,
     Eagle,
     Hawk,

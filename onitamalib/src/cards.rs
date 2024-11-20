@@ -232,7 +232,7 @@ impl Card {
                 Point { x: 2, y: 1 },
                 Point { x: 0, y: -1 },
             ],
-            // Wind Spirit Cards
+            // Way of the Wind
             Card::Bat => vec![
                 Point { x: 0, y: 1 },
                 Point { x: 0, y: -1 },
@@ -316,7 +316,7 @@ impl Card {
             Card::Nessie => CardDirection::Balanced,
             Card::Butterfly => CardDirection::Balanced,
             Card::Moth => CardDirection::Balanced,
-            // Wind Spirit Cards
+            // Way of the Wind
             Card::Bat => CardDirection::Balanced,
             Card::Eagle => CardDirection::Balanced,
             Card::Hawk => CardDirection::Left,
@@ -374,7 +374,7 @@ impl Card {
             Card::Nessie => 40,
             Card::Butterfly => 41,
             Card::Moth => 42,
-            // Wind Spirit Cards
+            // Way of the Wind
             Card::Bat => 43,
             Card::Eagle => 44,
             Card::Hawk => 45,
@@ -435,7 +435,7 @@ impl From<u32> for Card {
             40 => Card::Nessie,
             41 => Card::Butterfly,
             42 => Card::Moth,
-            // Wind Spirit Cards
+            // Way of the Wind
             43 => Card::Bat,
             44 => Card::Eagle,
             45 => Card::Hawk,
