@@ -115,9 +115,9 @@ impl Board {
             true => dst,
             false => *player_king,
         };
-        // Prevent WindSpirit from moving to a square occupied by a king
+        // Prevent Wind Spirit from moving to a square occupied by a Master
         if src == *wind_spirit && (dst == *red_king || dst == *blue_king) {
-            return Err("Cannot move Wind Spirit into a square occupied by a King!".to_string());
+            return Err("Wind Spirit cannot move onto a Master!".to_string());
         }
 
         let wind_spirit = match move_wind_spirit {
