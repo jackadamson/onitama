@@ -215,8 +215,17 @@ impl Board {
     }
 
     pub fn new_from_card_sets(card_sets: &Vec<CardSet>) -> Board {
-        let include_wind_spirit = card_sets.contains(&CardSet::WayOfTheWind);
+        let mut rng = thread_rng();
 
+        let include_wind_spirit = if card_sets.contains(&CardSet::WayOfTheWind) {
+//            if force_wind_spirit {
+//                true
+//            } else {
+                rng.gen_bool(0.25) // Include Wind Spirit 25%
+//            }
+        } else {
+            false
+        };
         let mut cards = Vec::new();
         for set in card_sets {
             cards.extend(set.cards());

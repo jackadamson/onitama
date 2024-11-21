@@ -14,6 +14,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Switch,
+  FormControlLabel,
 } from '@material-ui/core';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import EnabledIcon from '@material-ui/icons/Visibility';
@@ -73,13 +75,25 @@ function Settings() {
   } else {
     initialNumberOfWowCards = 2;
   }
-
   const [numberOfWowCards, setNumberOfWowCards] = useState(initialNumberOfWowCards);
 
-  // Update local storage when numberOfWowCards changes
+  // Load Force Wind Spirit Inclusion from local storage or default to false
+  const storedForceWindSpiritInclusion = localStorage.getItem('force_wind_spirit_inclusion');
+  const initialForceWindSpiritInclusion =
+    storedForceWindSpiritInclusion !== null ? storedForceWindSpiritInclusion === 'true' : false;
+
+  const [forceWindSpiritInclusion, setForceWindSpiritInclusion] = useState(
+    initialForceWindSpiritInclusion,
+  );
+
+  // Update local storage when numberOfWowCards or forceWindSpiritInclusion changes
   useEffect(() => {
     localStorage.setItem('number_of_wow_cards', numberOfWowCards);
   }, [numberOfWowCards]);
+
+  useEffect(() => {
+    localStorage.setItem('force_wind_spirit_inclusion', forceWindSpiritInclusion);
+  }, [forceWindSpiritInclusion]);
 
   // Determine which card sets are enabled
   const enabledCardSetIds = useMemo(
@@ -179,6 +193,18 @@ function Settings() {
                   ))}
                 </Select>
               </FormControl>
+              <Box mt={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={forceWindSpiritInclusion}
+                      onChange={(event) => setForceWindSpiritInclusion(event.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Force Wind Spirit Inclusion"
+                />
+              </Box>
             </Box>
           )}
           <Box display="flex" mt={3}>
