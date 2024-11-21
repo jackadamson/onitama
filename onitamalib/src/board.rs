@@ -228,6 +228,10 @@ impl Board {
         };
         let mut cards = Vec::new();
         for set in card_sets {
+            // Only add "Way of the Wind" cards if Wind Spirit is included
+            if *set == CardSet::WayOfTheWind && !include_wind_spirit {
+                continue; // Skip cards from "Way of the Wind" set if Wind Spirit is not included
+            }
             cards.extend(set.cards());
         }
         let mut rng = thread_rng();
