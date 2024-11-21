@@ -1,5 +1,3 @@
-// move_gen.rs
-
 use crate::models::{Board, Move, Player};
 use rand::prelude::*;
 

@@ -65,6 +65,10 @@ impl Board {
             None => false,
         };
 
+        if move_wind_spirit && CardSet::WayOfTheWind.cards().contains(&card) {
+            return Err("Wind Spirit cannot use a Way of the Wind card to move".to_string());
+        }
+                
         if dst.out_of_bounds() {
             return Err("Destination is out of bounds".to_string());
         }
