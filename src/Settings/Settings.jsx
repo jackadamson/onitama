@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -10,6 +10,10 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@material-ui/core';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import EnabledIcon from '@material-ui/icons/Visibility';
@@ -31,29 +35,85 @@ function Settings() {
   const largeScreen = useMediaQuery(theme.breakpoints.up('md'));
   const styles = useStyles();
   const cardSets = useMemo(() => listCardSets(), []);
+  const validSetIds = useMemo(() => cardSets.map(({ id }) => id), [cardSets]);
+
+  // Load disabled card sets from local storage or default to ['WayOfTheWind']
   const storedDisabledCardSetIds = useMemo(() => {
     const rawCardSetIds = localStorage.getItem('disabled_card_sets');
-    return rawCardSetIds ? JSON.parse(rawCardSetIds) : [];
+    if (rawCardSetIds) {
+      return JSON.parse(rawCardSetIds);
+    }
+    return ['WayOfTheWind'];
   }, []);
   const [disabledCardSetIds, setDisabledCardSetIds] = useState(storedDisabledCardSetIds);
+
+  // Function to toggle card sets on or off
   const toggleCardSet = (toggledId) => {
-    // as well as toggling, remove any invalid set ids and ensure they are in order
-    const validSetIds = cardSets.map(({ id }) => id);
-    const addingCard = !disabledCardSetIds.includes(toggledId);
+    const addingCard = disabledCardSetIds.includes(toggledId);
     const newDisabledIds = addingCard
-      ? validSetIds.filter((id) => disabledCardSetIds.includes(id) || id === toggledId)
-      : validSetIds.filter((id) => disabledCardSetIds.includes(id) && id !== toggledId);
+      ? disabledCardSetIds.filter((id) => id !== toggledId)
+      : [...disabledCardSetIds, toggledId];
     setDisabledCardSetIds(newDisabledIds);
-    if (newDisabledIds.length === validSetIds.length || newDisabledIds.length === 0) {
+
+    // Update local storage
+    if (newDisabledIds.length === 0 || newDisabledIds.length === validSetIds.length) {
       localStorage.removeItem('disabled_card_sets');
     } else {
       localStorage.setItem('disabled_card_sets', JSON.stringify(newDisabledIds));
     }
   };
-  const enabledCardCount = useMemo(() => {
-    const enabledSets = cardSets.filter(({ id }) => !disabledCardSetIds.includes(id));
-    return enabledSets.reduce((accumulator, set) => accumulator + set.cards.length, 0);
-  }, [disabledCardSetIds, cardSets]);
+
+  // Load number_of_wow_cards from local storage or default to 2
+  const storedNumberOfWowCards = localStorage.getItem('number_of_wow_cards');
+  let initialNumberOfWowCards;
+  if (storedNumberOfWowCards === 'Random') {
+    initialNumberOfWowCards = 'Random';
+  } else if (storedNumberOfWowCards) {
+    initialNumberOfWowCards = parseInt(storedNumberOfWowCards, 10);
+  } else {
+    initialNumberOfWowCards = 2;
+  }
+
+  const [numberOfWowCards, setNumberOfWowCards] = useState(initialNumberOfWowCards);
+
+  // Update local storage when numberOfWowCards changes
+  useEffect(() => {
+    localStorage.setItem('number_of_wow_cards', numberOfWowCards);
+  }, [numberOfWowCards]);
+
+  // Determine which card sets are enabled
+  const enabledCardSetIds = useMemo(
+    () => validSetIds.filter((id) => !disabledCardSetIds.includes(id)),
+    [validSetIds, disabledCardSetIds],
+  );
+
+  const wayOfTheWindEnabled = enabledCardSetIds.includes('WayOfTheWind');
+  const otherEnabledCardSets = cardSets.filter(
+    ({ id }) => !disabledCardSetIds.includes(id) && id !== 'WayOfTheWind',
+  );
+  const totalEnabledCardCount = enabledCardSetIds.reduce((accumulator, id) => {
+    const cardSet = cardSets.find((setItem) => setItem.id === id);
+    return accumulator + (cardSet ? cardSet.cards.length : 0);
+  }, 0);
+
+  // Determine error message based on current settings
+  let errorMessage = null;
+  if (totalEnabledCardCount < 5) {
+    errorMessage = (
+      <Alert severity="error">
+        <AlertTitle>Not Enough Cards Selected</AlertTitle>
+        At least 5 cards are required for a game
+      </Alert>
+    );
+  } else if (wayOfTheWindEnabled && otherEnabledCardSets.length === 0) {
+    errorMessage = (
+      <Alert severity="error">
+        <AlertTitle>Not Enough Cards Selected</AlertTitle>
+        At least one other set is required to play Way of the Wind
+      </Alert>
+    );
+  }
+
   return (
     <Box m={2}>
       <Box display="flex" alignItems="center" justifyContent="center">
@@ -65,12 +125,7 @@ function Settings() {
             Turn sets of cards on or off (currently only works for Single Player and Local
             Multiplayer)
           </Typography>
-          {enabledCardCount < 5 && (
-            <Alert severity="error">
-              <AlertTitle>Not Enough Cards Selected</AlertTitle>
-              At least 5 cards are required for a game
-            </Alert>
-          )}
+          {errorMessage}
           {cardSets.map(({ id, name, cards }) => (
             <Box my={1} key={id}>
               <Card variant="outlined" className={styles.card}>
@@ -104,6 +159,28 @@ function Settings() {
               </Card>
             </Box>
           ))}
+          {wayOfTheWindEnabled && (
+            <Box my={2}>
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel id="number-of-wow-cards-label">
+                  Number of Way of the Wind Cards
+                </InputLabel>
+                <Select
+                  labelId="number-of-wow-cards-label"
+                  value={numberOfWowCards}
+                  onChange={(event) => setNumberOfWowCards(event.target.value)}
+                  label="Number of Way of the Wind Cards"
+                >
+                  <MenuItem value="Random">Random</MenuItem>
+                  {[0, 1, 2, 3, 4, 5].map((num) => (
+                    <MenuItem key={num} value={num}>
+                      {num}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
           <Box display="flex" mt={3}>
             <Button variant="outlined" color="secondary" component={Link} to="/">
               Back to Menu
