@@ -60,7 +60,6 @@ impl Board {
             return Err("No piece at source".to_string());
         }
 
-        // Determine if the moving piece is the Wind Spirit
         let move_wind_spirit = match wind_spirit {
             Some(wind_spirit_pos) => *wind_spirit_pos == src,
             None => false,
@@ -77,7 +76,6 @@ impl Board {
         };
         let moves = card.moves();
         if !moves.contains(&delta) {
-            log::info!("Attempted {:?} with card {:?}", &delta, &card);
             return Err("Move not valid for card".to_string());
         }
 
@@ -91,7 +89,6 @@ impl Board {
         };
         let moving_king = *player_king == src;
 
-        // Update player's pawns
         let mut player_pawns = self.player_pawns();
         for pawn in player_pawns.iter_mut() {
             match pawn {
@@ -99,7 +96,6 @@ impl Board {
                 Some(pawn_pos) if *pawn_pos == src => {
                     *pawn_pos = dst;
                 }
-                // If Wind Spirit moves to a player's pawn, swap positions
                 Some(pawn_pos) if *pawn_pos == dst && move_wind_spirit => {
                     *pawn_pos = src;
                 }
@@ -107,7 +103,6 @@ impl Board {
             }
         }
 
-        // Update opponent's pawns
         let mut opponent_pawns = self.opponent_pawns();
         for pawn in opponent_pawns.iter_mut() {
             match pawn {
@@ -128,18 +123,12 @@ impl Board {
             if *c1 == card { *spare_card } else { *c1 },
             if *c2 == card { *spare_card } else { *c2 },
         ];
-        let player_king = if moving_king {
-            dst
-        } else {
-            *player_king
-        };
+        let player_king = if moving_king { dst } else { *player_king };
 
-        // Prevent Wind Spirit from moving onto a Master
         if move_wind_spirit && (dst == *red_king || dst == *blue_king) {
             return Err("Wind Spirit cannot move onto a Master!".to_string());
         }
 
-        // Update Wind Spirit position if it moved
         let wind_spirit = if move_wind_spirit {
             Some(dst)
         } else {
@@ -170,13 +159,7 @@ impl Board {
                 turn: Player::Red,
             },
         };
-        if dst == *opponent_king {
-            return Ok(GameState::Finished {
-                winner: *turn,
-                board,
-            });
-        }
-        if moving_king && dst == goal_square {
+        if dst == *opponent_king || (moving_king && dst == goal_square) {
             return Ok(GameState::Finished {
                 winner: *turn,
                 board,
@@ -185,9 +168,92 @@ impl Board {
         Ok(GameState::Playing { board })
     }
 
-    fn new_from_cards_and_wind_spirit(cards: Vec<Card>, include_wind_spirit: bool) -> Board {
-        let mut cards = cards.into_iter();
-        let pawn_xs: [i8; 4] = [0, 1, 3, 4];
+    pub fn new_from_card_sets(card_sets: &Vec<CardSet>) -> Board {
+        let mut rng = thread_rng();
+
+        // Determine if the Wind Spirit should be included
+        let include_wind_spirit = card_sets.contains(&CardSet::WayOfTheWind) && rng.gen_bool(0.25);
+
+        let mut way_of_the_wind_cards = Vec::new();
+        let mut other_cards = Vec::new();
+
+        // Separate "Way of the Wind" cards from other cards
+        for set in card_sets {
+            if *set == CardSet::WayOfTheWind {
+                way_of_the_wind_cards.extend(set.cards());
+            } else {
+                other_cards.extend(set.cards());
+            }
+        }
+
+        // If Wind Spirit is not included, use only other cards
+        if !include_wind_spirit {
+            other_cards.shuffle(&mut rng);
+            return Board::new_from_cards_and_wind_spirit(other_cards, include_wind_spirit);
+        }
+
+        // Determine the number of "Way of the Wind" cards to use
+        let num_wind_cards = {
+            let chance = rng.gen_range(0.0..1.0);
+            if chance < 0.10 {
+                0
+            } else if chance < 0.25 {
+                1
+            } else if chance < 0.60 {
+                2
+            } else if chance < 0.75 {
+                3
+            } else if chance < 0.90 {
+                4
+            } else {
+                5
+            }
+        };
+
+        way_of_the_wind_cards.shuffle(&mut rng);
+        other_cards.shuffle(&mut rng);
+
+        // Declare the player hands and spare card without initializing them
+        let player_hand_red: [Card; 2];
+        let player_hand_blue: [Card; 2];
+        let spare_card: Card;
+
+        // Assign cards based on the determined number of "Way of the Wind" cards
+        match num_wind_cards {
+            0 => {
+                player_hand_red = [other_cards.pop().unwrap(), other_cards.pop().unwrap()];
+                player_hand_blue = [other_cards.pop().unwrap(), other_cards.pop().unwrap()];
+                spare_card = other_cards.pop().unwrap();
+            }
+            1 => {
+                player_hand_red = [other_cards.pop().unwrap(), other_cards.pop().unwrap()];
+                player_hand_blue = [other_cards.pop().unwrap(), other_cards.pop().unwrap()];
+                spare_card = way_of_the_wind_cards.pop().unwrap();
+            }
+            2 => {
+                player_hand_red = [way_of_the_wind_cards.pop().unwrap(), other_cards.pop().unwrap()];
+                player_hand_blue = [way_of_the_wind_cards.pop().unwrap(), other_cards.pop().unwrap()];
+                spare_card = other_cards.pop().unwrap();
+            }
+            3 => {
+                player_hand_red = [way_of_the_wind_cards.pop().unwrap(), other_cards.pop().unwrap()];
+                player_hand_blue = [way_of_the_wind_cards.pop().unwrap(), other_cards.pop().unwrap()];
+                spare_card = way_of_the_wind_cards.pop().unwrap();
+            }
+            4 => {
+                player_hand_red = [way_of_the_wind_cards.pop().unwrap(), way_of_the_wind_cards.pop().unwrap()];
+                player_hand_blue = [way_of_the_wind_cards.pop().unwrap(), way_of_the_wind_cards.pop().unwrap()];
+                spare_card = other_cards.pop().unwrap();
+            }
+            5 => {
+                player_hand_red = [way_of_the_wind_cards.pop().unwrap(), way_of_the_wind_cards.pop().unwrap()];
+                player_hand_blue = [way_of_the_wind_cards.pop().unwrap(), way_of_the_wind_cards.pop().unwrap()];
+                spare_card = way_of_the_wind_cards.pop().unwrap();
+            }
+            _ => unreachable!(),
+        }
+
+        // Create the board with the selected cards
         Board {
             wind_spirit: if include_wind_spirit {
                 Some(Point { x: 2, y: 2 })
@@ -195,67 +261,75 @@ impl Board {
                 None
             },
             blue_king: Point { x: 2, y: 0 },
-            blue_pawns: pawn_xs.map(|x| Some(Point { x, y: 0 })),
-            blue_hand: [cards.next().unwrap(), cards.next().unwrap()],
+            blue_pawns: [Some(Point { x: 0, y: 0 }), Some(Point { x: 1, y: 0 }), Some(Point { x: 3, y: 0 }), Some(Point { x: 4, y: 0 })],
+            blue_hand: player_hand_blue,
             red_king: Point { x: 2, y: 4 },
-            red_pawns: pawn_xs.map(|x| Some(Point { x, y: 4 })),
-            red_hand: [cards.next().unwrap(), cards.next().unwrap()],
-            spare_card: cards.next().unwrap(),
+            red_pawns: [Some(Point { x: 0, y: 4 }), Some(Point { x: 1, y: 4 }), Some(Point { x: 3, y: 4 }), Some(Point { x: 4, y: 4 })],
+            red_hand: player_hand_red,
+            spare_card,
             turn: Player::Red,
         }
     }
 
-    pub fn new() -> Board {
-        let mut rng = thread_rng();
-        let mut cards: Vec<Card> = Card::into_enum_iter().collect();
-        cards.shuffle(&mut rng);
-
-        // Start a new game without the Wind Spirit
-        Board::new_from_cards_and_wind_spirit(cards, false)
+    pub fn player_hand(&self) -> &[Card; 2] {
+        match self.turn {
+            Player::Red => &self.red_hand,
+            Player::Blue => &self.blue_hand,
+        }
     }
 
-    pub fn new_from_card_sets(card_sets: &Vec<CardSet>) -> Board {
-        let mut rng = thread_rng();
-
-        let include_wind_spirit = if card_sets.contains(&CardSet::WayOfTheWind) {
-//            if force_wind_spirit {
-//                true
-//            } else {
-                rng.gen_bool(0.25) // Include Wind Spirit 25%
-//            }
-        } else {
-            false
-        };
-        let mut cards = Vec::new();
-        for set in card_sets {
-            // Only add "Way of the Wind" cards if Wind Spirit is included
-            if *set == CardSet::WayOfTheWind && !include_wind_spirit {
-                continue; // Skip cards from "Way of the Wind" set if Wind Spirit is not included
-            }
-            cards.extend(set.cards());
+    pub fn opponent_hand(&self) -> &[Card; 2] {
+        match self.turn.invert() {
+            Player::Red => &self.red_hand,
+            Player::Blue => &self.blue_hand,
         }
-        let mut rng = thread_rng();
-        cards.shuffle(&mut rng);
-
-        Board::new_from_cards_and_wind_spirit(cards, include_wind_spirit)
     }
 
-    pub fn to_grid(&self) -> [[GameSquare; 5]; 5] {
-        let mut grid = [[GameSquare::Empty; 5]; 5];
-        for Point { x, y } in self.blue_pawns.iter().filter_map(|p| *p) {
-            grid[y as usize][x as usize] = GameSquare::BluePawn;
+    pub fn player_pawns(&self) -> [Option<Point>; 4] {
+        match self.turn {
+            Player::Red => self.red_pawns,
+            Player::Blue => self.blue_pawns,
         }
-        for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p) {
-            grid[y as usize][x as usize] = GameSquare::RedPawn;
+    }
+
+    pub fn opponent_pawns(&self) -> [Option<Point>; 4] {
+        match self.turn.invert() {
+            Player::Red => self.red_pawns,
+            Player::Blue => self.blue_pawns,
         }
-        let Point { x, y } = self.red_king;
-        grid[y as usize][x as usize] = GameSquare::RedKing;
-        let Point { x, y } = self.blue_king;
-        grid[y as usize][x as usize] = GameSquare::BlueKing;
-        if let Some(Point { x, y }) = self.wind_spirit {
-            grid[y as usize][x as usize] = GameSquare::WindSpirit;
+    }
+
+    pub fn player_king(&self) -> &Point {
+        match self.turn {
+            Player::Red => &self.red_king,
+            Player::Blue => &self.blue_king,
         }
-        grid
+    }
+
+    pub fn opponent_king(&self) -> &Point {
+        match self.turn.invert() {
+            Player::Red => &self.red_king,
+            Player::Blue => &self.blue_king,
+        }
+    }
+
+    pub fn player_pieces(&self) -> Vec<Option<Point>> {
+        let mut pieces = vec![Some(*self.player_king())];
+        pieces.extend(self.player_pawns().iter().copied());
+        if let Some(wind_spirit_pos) = self.wind_spirit {
+            pieces.push(Some(wind_spirit_pos));
+        }
+        pieces
+    }
+
+    pub fn opponent_pieces(&self) -> Vec<Option<Point>> {
+        let mut pieces = vec![Some(*self.opponent_king())];
+        pieces.extend(self.opponent_pawns().iter().copied());
+        pieces
+    }
+
+    pub fn wind_spirit(&self) -> Option<Point> {
+        self.wind_spirit
     }
 
     pub fn can_move(&self) -> bool {
@@ -276,6 +350,52 @@ impl Board {
         }
         false
     }
+
+    pub fn to_grid(&self) -> [[GameSquare; 5]; 5] {
+        let mut grid = [[GameSquare::Empty; 5]; 5];
+        for Point { x, y } in self.blue_pawns.iter().filter_map(|p| *p) {
+            grid[y as usize][x as usize] = GameSquare::BluePawn;
+        }
+        for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p) {
+            grid[y as usize][x as usize] = GameSquare::RedPawn;
+        }
+        let Point { x, y } = self.red_king;
+        grid[y as usize][x as usize] = GameSquare::RedKing;
+        let Point { x, y } = self.blue_king;
+        grid[y as usize][x as usize] = GameSquare::BlueKing;
+        if let Some(Point { x, y }) = self.wind_spirit {
+            grid[y as usize][x as usize] = GameSquare::WindSpirit;
+        }
+        grid
+    }
+
+    fn new_from_cards_and_wind_spirit(cards: Vec<Card>, include_wind_spirit: bool) -> Board {
+        let mut cards = cards.into_iter();
+        let pawn_xs: [i8; 4] = [0, 1, 3, 4];
+        Board {
+            wind_spirit: if include_wind_spirit {
+                Some(Point { x: 2, y: 2 })
+            } else {
+                None
+            },
+            blue_king: Point { x: 2, y: 0 },
+            blue_pawns: pawn_xs.map(|x| Some(Point { x, y: 0 })),
+            blue_hand: [cards.next().unwrap(), cards.next().unwrap()],
+            red_king: Point { x: 2, y: 4 },
+            red_pawns: pawn_xs.map(|x| Some(Point { x, y: 4 })), 
+            red_hand: [cards.next().unwrap(), cards.next().unwrap()],
+            spare_card: cards.next().unwrap(),
+            turn: Player::Red,
+        }
+    }
+
+    pub fn new() -> Board {
+        let mut rng = thread_rng();
+        let mut cards: Vec<Card> = Card::into_enum_iter().collect();
+        cards.shuffle(&mut rng);
+
+        Board::new_from_cards_and_wind_spirit(cards, false)
+    }
 }
 
 impl GameState {
@@ -284,85 +404,17 @@ impl GameState {
             board: Board::new(),
         }
     }
+
     pub fn new_from_card_sets(card_sets: &Vec<CardSet>) -> GameState {
         GameState::Playing {
             board: Board::new_from_card_sets(card_sets),
         }
     }
-}
 
-impl Board {
-    pub fn player_hand(&self) -> &[Card; 2] {
-        match self.turn {
-            Player::Red => &self.red_hand,
-            Player::Blue => &self.blue_hand,
-        }
-    }
-    pub fn opponent_hand(&self) -> &[Card; 2] {
-        match self.turn.invert() {
-            Player::Red => &self.red_hand,
-            Player::Blue => &self.blue_hand,
-        }
-    }
-}
-
-impl Board {
-    pub fn player_pawns(&self) -> [Option<Point>; 4] {
-        match self.turn {
-            Player::Red => self.red_pawns,
-            Player::Blue => self.blue_pawns,
-        }
-    }
-    pub fn opponent_pawns(&self) -> [Option<Point>; 4] {
-        match self.turn.invert() {
-            Player::Red => self.red_pawns,
-            Player::Blue => self.blue_pawns,
-        }
-    }
-}
-
-impl Board {
-    pub fn wind_spirit(&self) -> Option<Point> {
-        self.wind_spirit
-    }
-}
-
-impl Board {
-    pub fn player_king(&self) -> &Point {
-        match self.turn {
-            Player::Red => &self.red_king,
-            Player::Blue => &self.blue_king,
-        }
-    }
-    pub fn opponent_king(&self) -> &Point {
-        match self.turn.invert() {
-            Player::Red => &self.red_king,
-            Player::Blue => &self.blue_king,
-        }
-    }
-}
-
-impl Board {
-    pub fn player_pieces(&self) -> Vec<Option<Point>> {
-        let mut pieces = vec![Some(*self.player_king())];
-        pieces.extend(self.player_pawns().iter().copied());
-        // Include Wind Spirit if it's present
-        if let Some(wind_spirit_pos) = self.wind_spirit {
-            pieces.push(Some(wind_spirit_pos));
-        }
-        pieces
-    }
-    pub fn opponent_pieces(&self) -> Vec<Option<Point>> {
-        let mut pieces = vec![Some(*self.opponent_king())];
-        pieces.extend(self.opponent_pawns().iter().copied());
-        pieces
-    }
-}
-
-impl GameState {
     pub fn finished(&self) -> bool {
         matches!(self, GameState::Finished { .. })
     }
+
     pub fn try_move(&self, game_move: Move) -> Result<GameState, String> {
         match self {
             GameState::Playing { board } => board.try_move(game_move),
