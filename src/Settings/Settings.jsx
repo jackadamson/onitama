@@ -105,11 +105,11 @@ function Settings() {
         At least 5 cards are required for a game
       </Alert>
     );
-  } else if (wayOfTheWindEnabled && otherEnabledCardSets.length === 0) {
+  } else if (wayOfTheWindEnabled && otherEnabledCardSets.length === 0 && numberOfWowCards !== 5) {
     errorMessage = (
       <Alert severity="error">
         <AlertTitle>Not Enough Cards Selected</AlertTitle>
-        At least one other set is required to play Way of the Wind
+        At least one other set is required to play Way of the Wind with less than 5 cards
       </Alert>
     );
   }
