@@ -170,6 +170,39 @@ impl Card {
                 Point { x: 2, y: 0 },
                 Point { x: 1, y: 1 },
                 Point { x: -1, y: -1 },
+            ],            
+            // Way of the Wind
+            Card::Bat => vec![
+                Point { x: 0, y: 1 },
+                Point { x: 0, y: -1 },
+            ],
+            Card::Eagle => vec![
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Hawk => vec![
+                Point { x: -1, y: -1 },
+                Point { x: -1, y: 1 },
+            ],
+            Card::Lion => vec![
+                Point { x: -1, y: 1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Octopus => vec![
+                Point { x: -1, y: -1 },
+                Point { x: 1, y: 1 },
+            ],
+            Card::Rhinoceros => vec![
+                Point { x: -1, y: -1 },
+                Point { x: 0, y: 1 },
+            ],
+            Card::Scorpion => vec![
+                Point { x: 1, y: 1 },
+                Point { x: 1, y: -1 },
+            ],
+            Card::Spider => vec![
+                Point { x: 1, y: -1 },
+                Point { x: 0, y: 1 },
             ],
             // Promotional Cards
             Card::Goat => vec![
@@ -232,40 +265,56 @@ impl Card {
                 Point { x: 2, y: 1 },
                 Point { x: 0, y: -1 },
             ],
-            // Way of the Wind
-            Card::Bat => vec![
-                Point { x: 0, y: 1 },
-                Point { x: 0, y: -1 },
-            ],
-            Card::Eagle => vec![
-                Point { x: -1, y: -1 },
-                Point { x: 1, y: -1 },
-            ],
-            Card::Hawk => vec![
-                Point { x: -1, y: -1 },
-                Point { x: -1, y: 1 },
-            ],
-            Card::Lion => vec![
-                Point { x: -1, y: 1 },
-                Point { x: 1, y: -1 },
-            ],
-            Card::Octopus => vec![
-                Point { x: -1, y: -1 },
-                Point { x: 1, y: 1 },
-            ],
-            Card::Rhinoceros => vec![
-                Point { x: -1, y: -1 },
-                Point { x: 0, y: 1 },
-            ],
-            Card::Scorpion => vec![
-                Point { x: 1, y: 1 },
-                Point { x: 1, y: -1 },
-            ],
-            Card::Spider => vec![
-                Point { x: 1, y: -1 },
-                Point { x: 0, y: 1 },
-            ],
-
+            Card::Okija => {
+                if is_king {
+                    vec![
+                        Point { x: -2, y: -2 },
+                        Point { x: 2, y: -2 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: 0, y: -1 },
+                    ]
+                }
+            },
+            Card::Mejika => {
+                if is_king {
+                    vec![
+                        Point { x: 0, y: -1 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -2, y: -1 },
+                        Point { x: 2, y: -1 },
+                    ]
+                }
+            },
+            Card::Kumo => {
+                if is_king {
+                    vec![
+                        Point { x: -2, y: 0 },
+                        Point { x: 2, y: 0 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 1, y: -1 },
+                    ]
+                }
+            },
+            Card::Sasori => {
+                if is_king {
+                    vec![
+                        Point { x: -1, y: -2 },
+                        Point { x: 1, y: -2 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -2, y: 0 },
+                        Point { x: 2, y: 0 },
+                    ]
+                }
+            },
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -303,7 +352,16 @@ impl Card {
             Card::Tanuki => CardDirection::Right,
             Card::Iguana => CardDirection::Left,
             Card::Sable => CardDirection::Right,
-            Card::Otter => CardDirection::Left,
+            Card::Otter => CardDirection::Left,            
+            // Way of the Wind
+            Card::Bat => CardDirection::Balanced,
+            Card::Eagle => CardDirection::Balanced,
+            Card::Hawk => CardDirection::Left,
+            Card::Lion => CardDirection::Right,
+            Card::Octopus => CardDirection::Left,
+            Card::Rhinoceros => CardDirection::Left,
+            Card::Scorpion => CardDirection::Right,
+            Card::Spider => CardDirection::Right,
             // Promotional Cards
             Card::Goat => CardDirection::Right,
             Card::Sheep => CardDirection::Left,
@@ -316,15 +374,11 @@ impl Card {
             Card::Nessie => CardDirection::Balanced,
             Card::Butterfly => CardDirection::Balanced,
             Card::Moth => CardDirection::Balanced,
-            // Way of the Wind
-            Card::Bat => CardDirection::Balanced,
-            Card::Eagle => CardDirection::Balanced,
-            Card::Hawk => CardDirection::Left,
-            Card::Lion => CardDirection::Right,
-            Card::Octopus => CardDirection::Left,
-            Card::Rhinoceros => CardDirection::Left,
-            Card::Scorpion => CardDirection::Right,
-            Card::Spider => CardDirection::Right,
+            Card::Okija => CardDirection::Balanced,
+            Card::Mejika => CardDirection::Balanced,
+            Card::Kumo => CardDirection::Balanced,
+            Card::Sasori => CardDirection::Balanced,
+
         }
     }
     pub fn index(&self) -> u32 {
@@ -362,27 +416,31 @@ impl Card {
             Card::Iguana => 29,
             Card::Sable => 30,
             Card::Otter => 31,
-            // Promotional Cards
-            Card::Goat => 32,
-            Card::Sheep => 33,
-            Card::Lobster => 34,
-            Card::Steer => 35,
-            Card::Hornet => 36,
-            Card::Centipede => 37,
-            Card::Cat => 38,
-            Card::Serow => 39,
-            Card::Nessie => 40,
-            Card::Butterfly => 41,
-            Card::Moth => 42,
             // Way of the Wind
-            Card::Bat => 43,
-            Card::Eagle => 44,
-            Card::Hawk => 45,
-            Card::Lion => 46,
-            Card::Octopus => 47,
-            Card::Rhinoceros => 48,
-            Card::Scorpion => 49,
-            Card::Spider => 50,
+            Card::Bat => 32,
+            Card::Eagle => 33,
+            Card::Hawk => 34,
+            Card::Lion => 35,
+            Card::Octopus => 36,
+            Card::Rhinoceros => 37,
+            Card::Scorpion => 38,
+            Card::Spider => 39,
+            // Promotional Cards
+            Card::Goat => 40,
+            Card::Sheep => 41,
+            Card::Lobster => 42,
+            Card::Steer => 43,
+            Card::Hornet => 44,
+            Card::Centipede => 45,
+            Card::Cat => 46,
+            Card::Serow => 47,
+            Card::Nessie => 48,
+            Card::Butterfly => 49,
+            Card::Moth => 50,
+            Card::Okija => 51,
+            Card::Mejika => 52,
+            Card::Kumo => 53,
+            Card::Sasori => 54,
         }
     }
 }
@@ -422,28 +480,33 @@ impl From<u32> for Card {
             28 => Card::Tanuki,
             29 => Card::Iguana,
             30 => Card::Sable,
-            31 => Card::Otter,
-            // Promotional Cards
-            32 => Card::Goat,
-            33 => Card::Sheep,
-            34 => Card::Lobster,
-            35 => Card::Steer,
-            36 => Card::Hornet,
-            37 => Card::Centipede,
-            38 => Card::Cat,
-            39 => Card::Serow,
-            40 => Card::Nessie,
-            41 => Card::Butterfly,
-            42 => Card::Moth,
+            31 => Card::Otter, 
             // Way of the Wind
-            43 => Card::Bat,
-            44 => Card::Eagle,
-            45 => Card::Hawk,
-            46 => Card::Lion,
-            47 => Card::Octopus,
-            48 => Card::Rhinoceros,
-            49 => Card::Scorpion,
-            50 => Card::Spider,
+            32 => Card::Bat,
+            33 => Card::Eagle,
+            34 => Card::Hawk,
+            35 => Card::Lion,
+            36 => Card::Octopus,
+            37 => Card::Rhinoceros,
+            38 => Card::Scorpion,
+            39 => Card::Spider,
+            // Promotional Cards
+            40 => Card::Goat,
+            41 => Card::Sheep,
+            42 => Card::Lobster,
+            43 => Card::Steer,
+            44 => Card::Hornet,
+            45 => Card::Centipede,
+            46 => Card::Cat,
+            47 => Card::Serow,
+            48 => Card::Nessie,
+            49 => Card::Butterfly,
+            50 => Card::Moth,
+            51 => Card::Okija,
+            52 => Card::Mejika,
+            53 => Card::Kumo,
+            54 => Card::Sasori,
+            
             _ => panic!("invalid index for card"),
         }
     }
@@ -487,6 +550,16 @@ impl CardSet {
                 Card::Sable,
                 Card::Viper,
                 Card::SeaSnake,
+            ],            
+            CardSet::WayOfTheWind => vec![
+                Card::Bat,
+                Card::Eagle,
+                Card::Hawk,
+                Card::Lion,
+                Card::Octopus,
+                Card::Rhinoceros,
+                Card::Scorpion,
+                Card::Spider,
             ],
             CardSet::PromotionalPack => vec![
                 Card::Sheep,
@@ -500,17 +573,12 @@ impl CardSet {
                 Card::Nessie,
                 Card::Butterfly,
                 Card::Moth,
+                Card::Okija,
+                Card::Mejika,
+                Card::Kumo,
+                Card::Sasori,  
             ],
-            CardSet::WayOfTheWind => vec![
-                Card::Bat,
-                Card::Eagle,
-                Card::Hawk,
-                Card::Lion,
-                Card::Octopus,
-                Card::Rhinoceros,
-                Card::Scorpion,
-                Card::Spider,
-            ]
+
         }
     }
 }

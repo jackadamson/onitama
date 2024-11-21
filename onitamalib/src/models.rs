@@ -121,7 +121,16 @@ pub enum Card {
     Tanuki,
     Iguana,
     Sable,
-    Otter,
+    Otter,    
+    // Way of the Wind
+    Bat,
+    Eagle,
+    Hawk,
+    Lion,
+    Octopus,
+    Rhinoceros,
+    Scorpion,
+    Spider,
     // Promotional Cards
     Goat,
     Sheep,
@@ -134,15 +143,10 @@ pub enum Card {
     Nessie,
     Butterfly,
     Moth,
-    // Way of the Wind
-    Bat,
-    Eagle,
-    Hawk,
-    Lion,
-    Octopus,
-    Rhinoceros,
-    Scorpion,
-    Spider,
+    Okija,
+    Mejika,
+    Kumo,
+    Sasori,
 }
 
 impl fmt::Display for Card {
