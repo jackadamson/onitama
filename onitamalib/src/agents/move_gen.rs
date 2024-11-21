@@ -1,4 +1,4 @@
-use crate::models::{Board, Move, Player};
+use crate::models::{Board, Move, Player, CardSet};
 use rand::prelude::*;
 
 impl Board {
@@ -21,6 +21,10 @@ impl Board {
                     };
                     let dst = src + offset;
                     if dst.in_bounds() && !pieces.contains(&Some(dst)) {
+                        // Filter out moves where Wind Spirit uses a Way of the Wind card
+                        if is_wind_spirit && CardSet::WayOfTheWind.cards().contains(&card) {
+                            continue; // Skip this illegal move
+                        }
                         // Prevent Wind Spirit from moving onto a King
                         if is_wind_spirit && opponent_kings.contains(&dst) {
                             continue; // Skip this move
