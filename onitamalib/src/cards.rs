@@ -175,7 +175,10 @@ impl Card {
             Card::Bat => {
                 if is_spirit {
                     vec![
-                        //Add Spirit Move
+                        Point { x: -2, y: -1 },
+                        Point { x: -1, y: -1 },
+                        Point { x: 1, y: -1 },
+                        Point { x: 2, y: -1 },
                     ]
                 } else {
                     vec![
@@ -187,7 +190,8 @@ impl Card {
             Card::Eagle => {
                 if is_spirit {
                     vec![
-                        //Add Spirit Move
+                        Point { x: -2, y: -2 },
+                        Point { x: 2, y: -2 },
                     ]
                 } else {
                     vec![
@@ -199,7 +203,10 @@ impl Card {
             Card::Hawk => {
                 if is_spirit {
                     vec![
-                        //Add Spirit Move
+                        Point { x: -2, y: 0 },
+                        Point { x: -2, y: -1 },
+                        Point { x: 2, y: -1 },
+                        Point { x: 2, y: 0 },
                     ]
                 } else {
                     vec![
@@ -211,7 +218,8 @@ impl Card {
             Card::Lion => {
                 if is_spirit {
                     vec![
-                        //Add Spirit Move
+                        Point { x: 0, y: -1 },
+                        Point { x: 0, y: -2 },
                     ]
                 } else {
                     vec![
@@ -223,7 +231,12 @@ impl Card {
             Card::Octopus => {
                 if is_spirit {
                     vec![
-                        //Add Spirit Move
+                        Point { x: -1, y: 0 },
+                        Point { x: -1, y: 1 },
+                        Point { x: 0, y: -1 },
+                        Point { x: 0, y: 1 },    
+                        Point { x: 1, y: 0 },
+                        Point { x: 1, y: 1 },  
                     ]
                 } else {
                     vec![
@@ -235,7 +248,11 @@ impl Card {
             Card::Rhinoceros => {
                 if is_spirit {
                     vec![
-                        //Add Spirit Move
+                        Point { x: -2, y: 0 },
+                        Point { x: -1, y: -1 },
+                        Point { x: 0, y: -1 },
+                        Point { x: 1, y: -1 },    
+                        Point { x: -2, y: 0 },
                     ]
                 } else {
                     vec![
@@ -247,7 +264,10 @@ impl Card {
             Card::Scorpion => {
                 if is_spirit {
                     vec![
-                        //Add Spirit Move
+                        Point { x: -2, y: -1 },
+                        Point { x: -1, y: -2 },
+                        Point { x: 1, y: -2 },
+                        Point { x: 2, y: -1 },    
                     ]
                 } else {
                     vec![
@@ -259,7 +279,10 @@ impl Card {
             Card::Spider => {
                 if is_spirit {
                     vec![
-                        //Add Spirit Move
+                        Point { x: -1, y: -1 },
+                        Point { x: 0, y: -1 },
+                        Point { x: 0, y: 1 },
+                        Point { x: 1, y: -1 },    
                     ]
                 } else {
                     vec![
