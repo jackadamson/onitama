@@ -78,7 +78,8 @@ impl Board {
             Player::Red => raw_delta,
             Player::Blue => -raw_delta,
         };
-        let moves = card.moves();
+        let is_king = *player_king == src;
+        let moves = card.moves(is_king);
         if !moves.contains(&delta) {
             return Err("Move not valid for card".to_string());
         }
@@ -340,7 +341,8 @@ impl Board {
         let player_pieces = self.player_pieces();
         for src in player_pieces.iter().filter_map(|&src| src) {
             for &card in self.player_hand() {
-                for &raw_delta in card.moves().iter() {
+                let is_king = *self.player_king() == src;
+                for &raw_delta in card.moves(is_king).iter() {
                     let delta = match self.turn {
                         Player::Red => raw_delta,
                         Player::Blue => -raw_delta,

@@ -1,7 +1,7 @@
 use crate::models::{Card, CardDirection, CardSet, Point};
 
 impl Card {
-    pub fn moves(&self) -> Vec<Point> {
+    pub fn moves(&self, is_king:bool) -> Vec<Point> {
         match self {
             Card::Tiger => vec![
                 Point { x: 0, y: -2 }, 

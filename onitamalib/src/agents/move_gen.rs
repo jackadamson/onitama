@@ -13,7 +13,8 @@ impl Board {
         for src in pieces.iter().filter_map(|p| *p) {
             let is_wind_spirit = Some(src) == wind_spirit_pos;
             for &card in self.player_hand() {
-                for &raw_delta in card.moves().iter() {
+                let is_king = src == *self.player_king();
+                for &raw_delta in card.moves(is_king).iter() {
                     let offset = match self.turn {
                         Player::Red => raw_delta,
                         Player::Blue => -raw_delta,
