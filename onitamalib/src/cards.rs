@@ -1,7 +1,7 @@
 use crate::models::{Card, CardDirection, CardSet, Point};
 
 impl Card {
-    pub fn moves(&self, is_king:bool) -> Vec<Point> {
+    pub fn moves(&self, is_king:bool, is_spirit:bool) -> Vec<Point> {
         match self {
             Card::Tiger => vec![
                 Point { x: 0, y: -2 }, 
@@ -172,38 +172,102 @@ impl Card {
                 Point { x: -1, y: -1 },
             ],            
             // Way of the Wind
-            Card::Bat => vec![
-                Point { x: 0, y: 1 },
-                Point { x: 0, y: -1 },
-            ],
-            Card::Eagle => vec![
-                Point { x: -1, y: -1 },
-                Point { x: 1, y: -1 },
-            ],
-            Card::Hawk => vec![
-                Point { x: -1, y: -1 },
-                Point { x: -1, y: 1 },
-            ],
-            Card::Lion => vec![
-                Point { x: -1, y: 1 },
-                Point { x: 1, y: -1 },
-            ],
-            Card::Octopus => vec![
-                Point { x: -1, y: -1 },
-                Point { x: 1, y: 1 },
-            ],
-            Card::Rhinoceros => vec![
-                Point { x: -1, y: -1 },
-                Point { x: 0, y: 1 },
-            ],
-            Card::Scorpion => vec![
-                Point { x: 1, y: 1 },
-                Point { x: 1, y: -1 },
-            ],
-            Card::Spider => vec![
-                Point { x: 1, y: -1 },
-                Point { x: 0, y: 1 },
-            ],
+            Card::Bat => {
+                if is_spirit {
+                    vec![
+                        //Add Spirit Move
+                    ]
+                } else {
+                    vec![
+                        Point { x: 0, y: 1 },
+                        Point { x: 0, y: -1 },
+                    ]    
+                }
+            },
+            Card::Eagle => {
+                if is_spirit {
+                    vec![
+                        //Add Spirit Move
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 1, y: -1 },
+                    ]    
+                }
+            },
+            Card::Hawk => {
+                if is_spirit {
+                    vec![
+                        //Add Spirit Move
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: -1, y: 1 },
+                    ]    
+                }
+            },
+            Card::Lion => {
+                if is_spirit {
+                    vec![
+                        //Add Spirit Move
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: 1 },
+                        Point { x: 1, y: -1 },
+                    ]    
+                }
+            },
+            Card::Octopus => {
+                if is_spirit {
+                    vec![
+                        //Add Spirit Move
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 1, y: 1 },
+                    ]    
+                }
+            },
+            Card::Rhinoceros => {
+                if is_spirit {
+                    vec![
+                        //Add Spirit Move
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 0, y: 1 },
+                    ]    
+                }
+            },
+            Card::Scorpion => {
+                if is_spirit {
+                    vec![
+                        //Add Spirit Move
+                    ]
+                } else {
+                    vec![
+                        Point { x: 1, y: 1 },
+                        Point { x: 1, y: -1 },
+                    ]    
+                }
+            },
+            Card::Spider => {
+                if is_spirit {
+                    vec![
+                        //Add Spirit Move
+                    ]
+                } else {
+                    vec![
+                        Point { x: 1, y: -1 },
+                        Point { x: 0, y: 1 },
+                    ]    
+                }
+            },
             // Promotional Cards
             Card::Goat => vec![
                 Point { x: -1, y: 0 },

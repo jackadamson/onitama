@@ -271,7 +271,8 @@ pub struct CardDescription {
 impl From<Card> for CardDescription {
     fn from(card: Card) -> Self {
         let is_king = false;
-        let moves = card.moves(is_king);
+        let is_spirit = false;
+        let moves = card.moves(is_king, is_spirit);
         let direction = card.direction();
         CardDescription {
             card,
