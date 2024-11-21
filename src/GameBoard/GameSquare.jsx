@@ -111,10 +111,15 @@ function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove, ra
         [classes.lastMove]: moved && !isValid,
       })}
       onClick={() => {
-        if (activePlayer) {
-          setSrc({ x, y });
-        } else {
+        if (selected) {
+          // Deselect the piece if it's already selected
+          setSrc(null);
+        } else if (src) {
+          // If a source is selected, attempt to move to the clicked square
           move({ x, y });
+        } else if (activePlayer) {
+          // If no source is selected and the clicked square is an active player's piece, select it
+          setSrc({ x, y });
         }
       }}
     >

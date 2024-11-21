@@ -59,9 +59,13 @@ impl Board {
         if !player_pieces.contains(&Some(src)) {
             return Err("No piece at source".to_string());
         }
-        if player_pieces.contains(&Some(dst)) {
-            return Err("Destination occupied by your piece".to_string());
-        }
+
+        // Determine if the moving piece is the Wind Spirit
+        let move_wind_spirit = match wind_spirit {
+            Some(wind_spirit_pos) => *wind_spirit_pos == src,
+            None => false,
+        };
+
         if dst.out_of_bounds() {
             return Err("Destination is out of bounds".to_string());
         }
@@ -77,17 +81,15 @@ impl Board {
             return Err("Move not valid for card".to_string());
         }
 
+        if player_pieces.contains(&Some(dst)) && !(move_wind_spirit && self.player_pawns().contains(&Some(dst))) {
+            return Err("Destination occupied by your piece".to_string());
+        }
+
         let goal_square = match turn {
             Player::Red => Point { x: 2, y: 0 },
             Player::Blue => Point { x: 2, y: 4 },
         };
         let moving_king = *player_king == src;
-
-        // Determine if the moving piece is the Wind Spirit
-        let move_wind_spirit = match wind_spirit {
-            Some(wind_spirit_pos) => *wind_spirit_pos == src,
-            None => false,
-        };
 
         // Update player's pawns
         let mut player_pawns = self.player_pawns();
