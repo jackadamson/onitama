@@ -262,6 +262,7 @@ pub enum GameView {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct CardDescription {
     pub card: Card,
     pub moves: Vec<Point>,
