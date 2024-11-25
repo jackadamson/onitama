@@ -265,18 +265,19 @@ pub enum GameView {
 pub struct CardDescription {
     pub card: Card,
     pub moves: Vec<Point>,
+    pub king_moves: Vec<Point>, 
     pub direction: CardDirection,
 }
 
 impl From<Card> for CardDescription {
     fn from(card: Card) -> Self {
-        let is_king = false;
-        let is_spirit = false;
-        let moves = card.moves(is_king, is_spirit);
+        let moves = card.moves(false, false);
+        let king_moves = card.moves(true, false); 
         let direction = card.direction();
         CardDescription {
             card,
             moves,
+            king_moves, 
             direction,
         }
     }
