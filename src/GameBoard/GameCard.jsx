@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles, Paper, Typography } from '@material-ui/core';
 import clsx from 'clsx';
-import GameMove from './GameMoves';
+import GameMoves from './GameMoves';
 
 const useStyles = makeStyles((theme) => ({
   card: ({ enabled, spare, inverted }) => ({
@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: spare ? '100%' : '50%',
     height: '142px',
     alignItems: 'center',
-    padding: theme.spacing(1, 0),
+    padding: theme.spacing(0.5, 0), // Reduced padding inside the card
     cursor: enabled ? 'pointer' : 'default',
     color: enabled ? theme.palette.common.white : theme.palette.action.disabled,
     backgroundColor: enabled ? theme.palette.background.paper : '#1a1d21',
@@ -40,6 +40,18 @@ const useStyles = makeStyles((theme) => ({
   played: {
     borderColor: theme.palette.secondary.dark,
   },
+  orLabel: {
+    margin: '2px 0', // Minimal margin around the "OR" label
+    fontSize: '0.7rem',
+    fontWeight: 'bold',
+    color: theme.palette.text.secondary,
+  },
+  movesContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4px', // Tightened gap between grids and label
+  },
 }));
 
 function GameCard({
@@ -49,6 +61,7 @@ function GameCard({
   selected,
   enabled,
   moves,
+  kingMoves,
   spare,
   canMove,
   discard,
@@ -56,13 +69,16 @@ function GameCard({
   showPlayed,
 }) {
   const classes = useStyles({ enabled, spare, inverted });
+  const isKingMoveCard = kingMoves && kingMoves.length > 0;
+
   const handler = () => {
     if (enabled && !canMove) {
       discard(name);
     } else if (enabled) {
-      setCard({ card: name, moves, direction });
+      setCard({ card: name, moves, direction, kingMoves });
     }
   };
+
   return (
     <Paper
       className={clsx({
@@ -75,8 +91,21 @@ function GameCard({
       })}
       onClick={handler}
     >
-      <Typography variant="subtitle1">{name}</Typography>
-      <GameMove moves={moves} direction={direction} inverted={inverted} />
+      <Typography variant="subtitle1" style={{ fontSize: isKingMoveCard ? '0.75rem' : '1rem' }}>
+        {name}
+      </Typography>
+      {isKingMoveCard ? (
+        <div className={classes.movesContainer}>
+          {/* Normal Moves Grid for KingMove cards */}
+          <GameMoves moves={moves} direction={direction} inverted={inverted} isKingMoves />
+          <Typography className={classes.orLabel}>OR</Typography>
+          {/* King Moves Grid for KingMove cards */}
+          <GameMoves moves={kingMoves} direction={direction} inverted={inverted} isKingMoves />
+        </div>
+      ) : (
+        // Regular Cards Grid
+        <GameMoves moves={moves} direction={direction} inverted={inverted} />
+      )}
       {!canMove && enabled && (
         <Typography className={classes.error} variant="caption">
           Discard
@@ -86,6 +115,7 @@ function GameCard({
     </Paper>
   );
 }
+
 GameCard.defaultProps = {
   enabled: false,
   selected: false,
@@ -94,7 +124,9 @@ GameCard.defaultProps = {
   canMove: true,
   discard: () => {},
   showPlayed: false,
+  kingMoves: [],
 };
+
 GameCard.propTypes = {
   enabled: PropTypes.bool,
   selected: PropTypes.bool,
@@ -107,6 +139,12 @@ GameCard.propTypes = {
       y: PropTypes.number.isRequired,
     }),
   ).isRequired,
+  kingMoves: PropTypes.arrayOf(
+    PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    }),
+  ),
   spare: PropTypes.bool,
   canMove: PropTypes.bool,
   discard: PropTypes.func,

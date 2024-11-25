@@ -25,6 +25,7 @@ import { Link } from 'react-router-dom';
 import Marquee from 'react-fast-marquee';
 import { listCardSets } from '../onitamalib';
 import GameCard from '../GameBoard/GameCard';
+import KING_MOVE_CARDS from '../constants/SpecialCards';
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -39,7 +40,6 @@ function Settings() {
   const cardSets = useMemo(() => listCardSets(), []);
   const validSetIds = useMemo(() => cardSets.map(({ id }) => id), [cardSets]);
 
-  // Load disabled card sets from local storage or default to ['WayOfTheWind']
   const storedDisabledCardSetIds = useMemo(() => {
     const rawCardSetIds = localStorage.getItem('disabled_card_sets');
     if (rawCardSetIds) {
@@ -49,7 +49,6 @@ function Settings() {
   }, []);
   const [disabledCardSetIds, setDisabledCardSetIds] = useState(storedDisabledCardSetIds);
 
-  // Function to toggle card sets on or off
   const toggleCardSet = (toggledId) => {
     const addingCard = disabledCardSetIds.includes(toggledId);
     const newDisabledIds = addingCard
@@ -57,7 +56,6 @@ function Settings() {
       : [...disabledCardSetIds, toggledId];
     setDisabledCardSetIds(newDisabledIds);
 
-    // Update local storage
     if (newDisabledIds.length === 0 || newDisabledIds.length === validSetIds.length) {
       localStorage.removeItem('disabled_card_sets');
     } else {
@@ -65,7 +63,6 @@ function Settings() {
     }
   };
 
-  // Load number_of_wow_cards from local storage or default to 2
   const storedNumberOfWowCards = localStorage.getItem('number_of_wow_cards');
   let initialNumberOfWowCards;
   if (storedNumberOfWowCards === 'Random') {
@@ -77,7 +74,6 @@ function Settings() {
   }
   const [numberOfWowCards, setNumberOfWowCards] = useState(initialNumberOfWowCards);
 
-  // Load Force Wind Spirit Inclusion from local storage or default to false
   const storedForceWindSpiritInclusion = localStorage.getItem('force_wind_spirit_inclusion');
   const initialForceWindSpiritInclusion =
     storedForceWindSpiritInclusion !== null ? storedForceWindSpiritInclusion === 'true' : false;
@@ -86,7 +82,6 @@ function Settings() {
     initialForceWindSpiritInclusion,
   );
 
-  // Update local storage when numberOfWowCards or forceWindSpiritInclusion changes
   useEffect(() => {
     localStorage.setItem('number_of_wow_cards', numberOfWowCards);
   }, [numberOfWowCards]);
@@ -95,7 +90,6 @@ function Settings() {
     localStorage.setItem('force_wind_spirit_inclusion', forceWindSpiritInclusion);
   }, [forceWindSpiritInclusion]);
 
-  // Determine which card sets are enabled
   const enabledCardSetIds = useMemo(
     () => validSetIds.filter((id) => !disabledCardSetIds.includes(id)),
     [validSetIds, disabledCardSetIds],
@@ -110,7 +104,6 @@ function Settings() {
     return accumulator + (cardSet ? cardSet.cards.length : 0);
   }, 0);
 
-  // Determine error message based on current settings
   let errorMessage = null;
   if (totalEnabledCardCount < 5) {
     errorMessage = (
@@ -160,6 +153,7 @@ function Settings() {
                       <Box mx={1} key={card.card}>
                         <GameCard
                           moves={card.moves}
+                          kingMoves={KING_MOVE_CARDS.includes(card.card) ? card.king_moves || [] : []}
                           name={card.card}
                           setCard={() => {}}
                           direction={card.direction}

@@ -9,8 +9,8 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.primary.light,
   },
   moveCell: {
-    width: '16px',
-    height: '16px',
+    width: ({ isKingMoves }) => (isKingMoves ? '12px' : '16px'),
+    height: ({ isKingMoves }) => (isKingMoves ? '12px' : '16px'),
     borderStyle: 'solid',
     borderWidth: '1px',
     borderColor: theme.palette.grey['600'],
@@ -34,15 +34,15 @@ const useStyles = makeStyles((theme) => ({
   }),
 }));
 
-function GameMoves({ moves, inverted, direction }) {
-  const classes = useStyles({ inverted });
+function GameMoves({ moves, inverted, direction, isKingMoves }) {
+  const classes = useStyles({ inverted, isKingMoves });
   const moveSet = new Set(moves.map(({ x, y }) => `${x},${y}`));
-  const indexes = [-2, -1, 0, 1, 2];
+  const indexes = isKingMoves ? [-2, -1, 0] : [-2, -1, 0, 1, 2];
   return (
     <Box className={classes.grid}>
       {indexes.map((y) => (
         <Box className={classes.row} key={y}>
-          {indexes.map((x) => {
+          {[-2, -1, 0, 1, 2].map((x) => {
             const keyed = `${x},${y}`;
             const accessible = moveSet.has(keyed);
             return (
@@ -63,6 +63,11 @@ function GameMoves({ moves, inverted, direction }) {
     </Box>
   );
 }
+
+GameMoves.defaultProps = {
+  isKingMoves: false,
+};
+
 GameMoves.propTypes = {
   inverted: PropTypes.bool.isRequired,
   moves: PropTypes.arrayOf(
@@ -72,5 +77,7 @@ GameMoves.propTypes = {
     }),
   ).isRequired,
   direction: PropTypes.string.isRequired,
+  isKingMoves: PropTypes.bool,
 };
+
 export default React.memo(GameMoves, R.equals);
