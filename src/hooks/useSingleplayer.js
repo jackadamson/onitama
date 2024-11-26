@@ -69,7 +69,6 @@ const useSingleplayer = (difficulty, trainingMode) => {
     };
   }, [setState, enqueueSnackbar, difficulty, trainingMode]);
   logger.log(state);
-  console.log('State being returned from useSingleplayer:', state);
   return { state, moveRankings, ...handlers };
 };
 

@@ -10,6 +10,7 @@ import GameHand from './GameHand';
 import GameTurn from './GameTurn';
 import { CardPropType, PointPropType } from './props';
 import GameScore from './GameScore';
+import KING_MOVE_CARDS from '../constants/SpecialCards';
 
 function GameBoard({
   src,
@@ -79,6 +80,7 @@ function GameBoard({
               spare
               inverted={redOriented}
               moves={spare.moves}
+              kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -137,6 +139,7 @@ function GameBoard({
               spare
               inverted={!redOriented}
               moves={spare.moves}
+              kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
               enabled={false}
               setCard={setCard}
               name={spare.card}
