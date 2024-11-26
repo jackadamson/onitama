@@ -100,7 +100,7 @@ function GameCard({
           <GameMoves moves={moves} direction={direction} inverted={inverted} isKingMoves />
           <Typography className={classes.orLabel}>OR</Typography>
           {/* King Moves Grid for KingMove cards */}
-          <GameMoves moves={kingMoves} direction={direction} inverted={inverted} isKingMoves />
+          <GameMoves moves={kingMoves} direction={direction} inverted={inverted} isKingMoves isSecondGrid />
         </div>
       ) : (
         // Regular Cards Grid
