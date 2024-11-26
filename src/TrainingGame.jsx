@@ -4,19 +4,7 @@ import { useParams } from 'react-router';
 import useSingleplayer from './hooks/useSingleplayer';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
-
-const getMoves = (src, card, turn) => {
-  if (!src || !card) {
-    return () => false;
-  }
-  const { moves } = card;
-  const strMoves =
-    turn === 'Red'
-      ? moves.map(({ x, y }) => `${src.x + x},${src.y + y}`)
-      : moves.map(({ x, y }) => `${src.x - x},${src.y - y}`);
-  const dstSet = new Set(strMoves);
-  return (x, y) => dstSet.has(`${x},${y}`);
-};
+import getMoves from './utils/moveUtils';
 
 function TrainingGame() {
   const { enqueueSnackbar } = useSnackbar();
@@ -24,6 +12,7 @@ function TrainingGame() {
   const { state, playMove, reset, undo, moveRankings } = useSingleplayer(difficulty, true);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
+
   const move = useCallback(
     (dst) => {
       if (!card || !src) {
@@ -44,6 +33,7 @@ function TrainingGame() {
     },
     [playMove, src, card, enqueueSnackbar],
   );
+
   const discard = useCallback(
     (discardCard) => {
       if (!playMove) {
@@ -61,26 +51,37 @@ function TrainingGame() {
     },
     [playMove, enqueueSnackbar],
   );
+
   if (!state) {
     return <Loading />;
   }
+
   const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, canUndo } =
     state;
-  const isMoveValid = getMoves(src, card, turn);
+
+  // Determine if a king is selected
+  const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
+
+  // Use the centralized getMoves function
+  const isMoveValid = getMoves(src, card, turn, isKingSelected);
+
   const { max, min, ranksByCardSrc, stale } = moveRankings;
   const dstMoveRankings =
     state && player === turn && ranksByCardSrc && card && src
       ? ranksByCardSrc[`${card.card},${src.x},${src.y}`]
       : null;
   const unweightedScore = player === 'Red' ? max : -min;
-  // This formula was not chosen carefully, it just seems maybe good enough 🤷
+
+  // This formula was not chosen carefully; it just seems maybe good enough 🤷
   const weightedScore =
     Math.abs(unweightedScore) < 1
       ? 0
       : Math.sign(unweightedScore) * Math.min(50, 6 * Math.log(Math.abs(unweightedScore)));
   const normalized = 50 + weightedScore;
+
   // eslint-disable-next-line no-console
   console.log({ unweightedScore, normalized, ranksByCardSrc });
+
   return (
     <GameBoard
       src={src}

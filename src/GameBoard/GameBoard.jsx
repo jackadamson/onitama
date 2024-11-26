@@ -11,6 +11,7 @@ import GameTurn from './GameTurn';
 import { CardPropType, PointPropType } from './props';
 import GameScore from './GameScore';
 import KING_MOVE_CARDS from '../constants/SpecialCards';
+import getMoves from '../utils/moveUtils';
 
 function GameBoard({
   src,
@@ -39,16 +40,27 @@ function GameBoard({
 }) {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
+
   useEffect(() => {
     if (!winner) {
       setMinimizedGameOver(false);
     }
-  }, [winner, setMinimizedGameOver]);
+  }, [winner]);
+
   const hideSideSpare = useMediaQuery(theme.breakpoints.down('sm'));
+
   // Whether it's the player's turn, always true if local multiplayer
   const playerTurn = player ? player === turn : true;
+
   // Whether perspective should have red at bottom of screen
   const redOriented = player !== 'Blue';
+
+  // Determine if a king is selected
+  const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
+
+  // Updated isMoveValid logic using centralized getMoves
+  const isValidMove = getMoves(src, card, turn, isKingSelected);
+
   return (
     <Box height="100vh" display="flex" flexDirection="column">
       <Box display="flex" justifyContent="center">
@@ -103,7 +115,10 @@ function GameBoard({
               inverted={redOriented}
             />
             <GameGrid
-              isMoveValid={isMoveValid}
+              isMoveValid={(x, y) => {
+                const isValid = isValidMove(x, y);
+                return isValid;
+              }}
               move={move}
               src={src}
               setSrc={setSrc}
@@ -177,6 +192,7 @@ function GameBoard({
     </Box>
   );
 }
+
 GameBoard.defaultProps = {
   card: null,
   src: null,
@@ -191,6 +207,7 @@ GameBoard.defaultProps = {
   score: null,
   stale: true,
 };
+
 GameBoard.propTypes = {
   src: PointPropType,
   setSrc: PropTypes.func.isRequired,

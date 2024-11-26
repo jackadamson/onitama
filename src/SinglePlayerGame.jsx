@@ -4,19 +4,7 @@ import { useParams } from 'react-router';
 import useSingleplayer from './hooks/useSingleplayer';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
-
-const getMoves = (src, card, turn) => {
-  if (!src || !card) {
-    return () => false;
-  }
-  const { moves } = card;
-  const strMoves =
-    turn === 'Red'
-      ? moves.map(({ x, y }) => `${src.x + x},${src.y + y}`)
-      : moves.map(({ x, y }) => `${src.x - x},${src.y - y}`);
-  const dstSet = new Set(strMoves);
-  return (x, y) => dstSet.has(`${x},${y}`);
-};
+import getMoves from './utils/moveUtils';
 
 function SinglePlayerGame() {
   const { enqueueSnackbar } = useSnackbar();
@@ -24,6 +12,7 @@ function SinglePlayerGame() {
   const { state, playMove, reset } = useSingleplayer(difficulty);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
+
   const move = useCallback(
     (dst) => {
       if (!card || !src) {
@@ -44,6 +33,7 @@ function SinglePlayerGame() {
     },
     [playMove, src, card, enqueueSnackbar],
   );
+
   const discard = useCallback(
     (discardCard) => {
       if (!playMove) {
@@ -61,11 +51,15 @@ function SinglePlayerGame() {
     },
     [playMove, enqueueSnackbar],
   );
+
   if (!state) {
     return <Loading />;
   }
+
   const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove } = state;
-  const isMoveValid = getMoves(src, card, turn);
+  const isKingSelected = src?.type === 'King';
+  const isMoveValid = getMoves(src, card, turn, isKingSelected);
+
   return (
     <GameBoard
       src={src}

@@ -6,19 +6,7 @@ import Loading from './Loading';
 import GameBoard from './GameBoard';
 import useMultiplayer from './hooks/useMultiplayer';
 import WaitingOverlay from './WaitingOverlay';
-
-const getMoves = (src, card, turn) => {
-  if (!src || !card) {
-    return () => false;
-  }
-  const { moves } = card;
-  const strMoves =
-    turn === 'Red'
-      ? moves.map(({ x, y }) => `${src.x + x},${src.y + y}`)
-      : moves.map(({ x, y }) => `${src.x - x},${src.y - y}`);
-  const dstSet = new Set(strMoves);
-  return (x, y) => dstSet.has(`${x},${y}`);
-};
+import getMoves from './utils/moveUtils';
 
 function RemoteGame({ isAi }) {
   const { roomId = null } = useParams();
@@ -26,6 +14,7 @@ function RemoteGame({ isAi }) {
   const { playMove, state, reset, reconnect } = useMultiplayer(roomId, isAi);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
+
   const move = useCallback(
     (dst) => {
       if (!card || !src) {
@@ -46,6 +35,7 @@ function RemoteGame({ isAi }) {
     },
     [playMove, src, card, enqueueSnackbar],
   );
+
   const discard = useCallback(
     (discardCard) => {
       if (!playMove) {
@@ -63,13 +53,20 @@ function RemoteGame({ isAi }) {
     },
     [playMove, enqueueSnackbar],
   );
+
   if (!state) {
     return <Loading />;
   }
-  // Host always creates game
+
   const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, connection } =
     state;
-  const isMoveValid = getMoves(src, card, turn);
+
+  // Determine if a king is selected
+  const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
+
+  // Use the centralized getMoves function
+  const isMoveValid = getMoves(src, card, turn, isKingSelected);
+
   return (
     <>
       <WaitingOverlay state={state} reconnect={reconnect} />
@@ -96,10 +93,13 @@ function RemoteGame({ isAi }) {
     </>
   );
 }
+
 RemoteGame.defaultProps = {
   isAi: false,
 };
+
 RemoteGame.propTypes = {
   isAi: PropTypes.bool,
 };
+
 export default RemoteGame;

@@ -3,25 +3,14 @@ import { useSnackbar } from 'notistack';
 import useLocalGame from './hooks/useLocalGame';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
-
-const getMoves = (src, card, turn) => {
-  if (!src || !card) {
-    return () => false;
-  }
-  const { moves } = card;
-  const strMoves =
-    turn === 'Red'
-      ? moves.map(({ x, y }) => `${src.x + x},${src.y + y}`)
-      : moves.map(({ x, y }) => `${src.x - x},${src.y - y}`);
-  const dstSet = new Set(strMoves);
-  return (x, y) => dstSet.has(`${x},${y}`);
-};
+import getMoves from './utils/moveUtils';
 
 function LocalGame() {
   const { enqueueSnackbar } = useSnackbar();
   const { state, playMove, reset } = useLocalGame();
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
+
   const move = useCallback(
     (dst) => {
       if (!card || !src) {
@@ -42,6 +31,7 @@ function LocalGame() {
     },
     [playMove, src, card, enqueueSnackbar],
   );
+
   const discard = useCallback(
     (discardCard) => {
       if (!playMove) {
@@ -59,11 +49,19 @@ function LocalGame() {
     },
     [playMove, enqueueSnackbar],
   );
+
   if (!state) {
     return <Loading />;
   }
+
   const { blueCards, redCards, spare, turn, grid, canMove, winner } = state;
-  const isMoveValid = getMoves(src, card, turn);
+
+  // Determine if a king is selected
+  const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
+
+  // Use the centralized getMoves function
+  const isMoveValid = getMoves(src, card, turn, isKingSelected);
+
   return (
     <GameBoard
       src={src}

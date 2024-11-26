@@ -119,7 +119,7 @@ function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove, ra
           move({ x, y });
         } else if (activePlayer) {
           // If no source is selected and the clicked square is an active player's piece, select it
-          setSrc({ x, y });
+          setSrc({ x, y, type: tile.includes('King') ? 'King' : 'Pawn' }); // Pass the piece type (King or Pawn)
         }
       }}
     >
