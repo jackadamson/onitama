@@ -96,11 +96,23 @@ function GameCard({
       </Typography>
       {isKingMoveCard ? (
         <div className={classes.movesContainer}>
-          {/* Normal Moves Grid for KingMove cards */}
-          <GameMoves moves={moves} direction={direction} inverted={inverted} isKingMoves />
-          <Typography className={classes.orLabel}>OR</Typography>
-          {/* King Moves Grid for KingMove cards */}
-          <GameMoves moves={kingMoves} direction={direction} inverted={inverted} isKingMoves isSecondGrid />
+          {inverted ? (
+            <>
+              {/* King Moves Grid for KingMove cards when inverted */}
+              <GameMoves moves={kingMoves} direction={direction} inverted={inverted} isKingMoves isSecondGrid />
+              <Typography className={classes.orLabel}>OR</Typography>
+              {/* Normal Moves Grid for KingMove cards when inverted */}
+              <GameMoves moves={moves} direction={direction} inverted={inverted} isKingMoves={isKingMoveCard} />
+            </>
+          ) : (
+            <>
+              {/* Normal Moves Grid for KingMove cards */}
+              <GameMoves moves={moves} direction={direction} inverted={inverted} isKingMoves={isKingMoveCard} />
+              <Typography className={classes.orLabel}>OR</Typography>
+              {/* King Moves Grid for KingMove cards */}
+              <GameMoves moves={kingMoves} direction={direction} inverted={inverted} isKingMoves isSecondGrid />
+            </>
+          )}
         </div>
       ) : (
         // Regular Cards Grid
