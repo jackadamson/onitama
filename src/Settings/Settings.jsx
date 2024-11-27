@@ -31,6 +31,9 @@ const useStyles = makeStyles((theme) => ({
   card: {
     backgroundColor: theme.palette.background.default,
   },
+  marqueeContainer: {
+    marginTop: theme.spacing(1),
+  },
 }));
 
 function Settings() {
@@ -121,6 +124,15 @@ function Settings() {
     );
   }
 
+  const resetSettings = () => {
+    setDisabledCardSetIds(['WayOfTheWind']);
+    setNumberOfWowCards(2);
+    setForceWindSpiritInclusion(false);
+    localStorage.removeItem('disabled_card_sets');
+    localStorage.setItem('number_of_wow_cards', 2);
+    localStorage.setItem('force_wind_spirit_inclusion', 'false');
+  };
+
   return (
     <Box m={2}>
       <Box display="flex" alignItems="center" justifyContent="center">
@@ -146,7 +158,14 @@ function Settings() {
                     </IconButton>
                   }
                 />
-                <CardContent>
+                {id === 'WayOfTheWind' && wayOfTheWindEnabled && (
+                  <Box display="flex" alignItems="center" mt={1} ml={2}>
+                    <Typography variant="body2" color="textSecondary">
+                      {forceWindSpiritInclusion ? 'The Wind Spirit will now appear in all games!' : 'The Wind Spirit will now appear in 25% of games!'}
+                    </Typography>
+                  </Box>
+                )}
+                <CardContent className={styles.marqueeContainer}>
                   <Marquee speed={25} play={cards.length > 4 || !largeScreen}>
                     {cards.map((card) => (
                       <Box mx={1} key={card.card}>
@@ -204,9 +223,12 @@ function Settings() {
               </Box>
             </Box>
           )}
-          <Box display="flex" mt={3}>
+          <Box display="flex" mt={3} justifyContent="space-between">
             <Button variant="outlined" color="secondary" component={Link} to="/">
               Back to Menu
+            </Button>
+            <Button variant="contained" color="primary" onClick={resetSettings}>
+              Reset to Defaults
             </Button>
           </Box>
         </Box>
