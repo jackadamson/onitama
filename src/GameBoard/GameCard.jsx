@@ -45,6 +45,8 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '0.7rem',
     fontWeight: 'bold',
     color: theme.palette.text.secondary,
+    transform: ({ inverted }) => (inverted ? 'rotate(180deg)' : 'none'),
+    transition: 'transform 0.3s ease',
   },
   movesContainer: {
     display: 'flex',
