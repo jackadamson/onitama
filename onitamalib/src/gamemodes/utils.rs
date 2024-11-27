@@ -8,20 +8,28 @@ use enum_iterator::IntoEnumIterator;
 #[derive(Serialize)]
 pub struct SerializableCard {
     card: Card,
-    moves: Vec<Point>,      
-    king_moves: Vec<Point>, 
-    wind_moves: Vec<Point>, 
+    moves: Vec<Point>,
+    king_moves: Vec<Point>,
+    wind_moves: Vec<Point>,
     direction: CardDirection,
+    card_set: Option<CardSet>,
 }
 
 impl From<&Card> for SerializableCard {
     fn from(card: &Card) -> Self {
+        let moves = card.moves(false, false);
+        let king_moves = card.moves(true, false);
+        let wind_moves = card.moves(false, true);
+        let direction = card.direction();
+        let card_set = card.find_card_set(); 
+
         SerializableCard {
             card: *card,
-            moves: card.moves(false, false),    
-            king_moves: card.moves(true, false),
-            wind_moves: card.moves (false, true),
-            direction: card.direction(),
+            moves,
+            king_moves,
+            wind_moves,
+            direction,
+            card_set,
         }
     }
 }
@@ -50,4 +58,11 @@ pub fn list_card_sets() -> JsValue {
         .collect();
 
     serde_wasm_bindgen::to_value(&card_sets).unwrap()
+}
+
+// Implementing Card to determine the associated CardSet
+impl Card {
+    pub fn find_card_set(&self) -> Option<CardSet> {
+        CardSet::into_enum_iter().find(|set| set.cards().contains(self))
+    }
 }
