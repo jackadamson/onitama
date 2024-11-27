@@ -27,29 +27,38 @@ function GameHand({
           direction={spare.direction}
           selected={false}
           moves={spare.moves}
-          kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []} // Handle kingMoves for spare
+          kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
+          windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
+          cardSet={spare.cardSet || 'DefaultSet'}
           enabled={enabled}
           canMove={canMove}
           discard={discard}
-          showPlayed
+          spare
           inverted={!inverted}
         />
       )}
-      {cards.map(({ card: name, moves, direction, kingMoves }) => (
-        <GameCard
-          setCard={setCard}
-          name={name}
-          direction={direction}
-          selected={selectedCard?.card === name}
-          key={name}
-          moves={moves}
-          kingMoves={KING_MOVE_CARDS.includes(name) ? kingMoves || [] : []} // Handle kingMoves for cards
-          enabled={enabled}
-          canMove={canMove}
-          discard={discard}
-          inverted={inverted}
-        />
-      ))}
+      {cards.map((card, index) => {
+        // Keep the entire card object intact
+        const { card: name, moves, direction, kingMoves, windMoves, cardSet } = card;
+
+        return (
+          <GameCard
+            key={name}
+            setCard={setCard}
+            name={name}
+            direction={direction}
+            selected={selectedCard?.card === name}
+            moves={moves}
+            kingMoves={KING_MOVE_CARDS.includes(name) ? kingMoves || [] : []}
+            windMoves={cardSet === 'WayOfTheWind' ? windMoves || [] : []}
+            cardSet={cardSet}
+            enabled={enabled}
+            canMove={canMove}
+            discard={discard}
+            inverted={inverted}
+          />
+        );
+      })}
     </Box>
   );
 }
@@ -60,15 +69,22 @@ const CardPropType = PropTypes.shape({
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    }),
+    })
   ).isRequired,
   direction: PropTypes.string.isRequired,
-  kingMoves: PropTypes.arrayOf( // Optional kingMoves property
+  kingMoves: PropTypes.arrayOf(
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    }),
+    })
   ),
+  windMoves: PropTypes.arrayOf(
+    PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    })
+  ),
+  cardSet: PropTypes.string,
 });
 
 GameHand.defaultProps = {

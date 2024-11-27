@@ -81,7 +81,7 @@ function GameCard({
       setCard({ card: name, moves, direction, kingMoves, windMoves });
     }
   };
-
+ 
   return (
     <Paper
       className={clsx({

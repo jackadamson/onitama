@@ -93,6 +93,8 @@ function GameBoard({
               inverted={redOriented}
               moves={spare.moves}
               kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
+              windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
+              cardSet={spare.cardSet}  
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -103,6 +105,7 @@ function GameBoard({
         </Box>
         <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1}>
           <Box display="flex" flexDirection={redOriented ? 'column' : 'column-reverse'}>
+            {/* Passing Blue Cards to GameHand */}
             <GameHand
               setCard={setCard}
               selectedCard={card}
@@ -115,10 +118,7 @@ function GameBoard({
               inverted={redOriented}
             />
             <GameGrid
-              isMoveValid={(x, y) => {
-                const isValid = isValidMove(x, y);
-                return isValid;
-              }}
+              isMoveValid={(x, y) => isValidMove(x, y)}
               move={move}
               src={src}
               setSrc={setSrc}
@@ -128,6 +128,7 @@ function GameBoard({
               dstMoveRankings={dstMoveRankings || {}}
               redOriented={redOriented}
             />
+            {/* Passing Red Cards to GameHand */}
             <GameHand
               setCard={setCard}
               selectedCard={card}
@@ -155,6 +156,8 @@ function GameBoard({
               inverted={!redOriented}
               moves={spare.moves}
               kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
+              windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
+              cardSet={spare.cardSet}  
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -193,8 +196,8 @@ function GameBoard({
   );
 }
 
+// Re-adding defaultProps for non-required props
 GameBoard.defaultProps = {
-  card: null,
   src: null,
   winner: null,
   reset: null,
@@ -202,6 +205,7 @@ GameBoard.defaultProps = {
   lastMove: null,
   dstMoveRankings: null,
   connectionStatus: null,
+  card: null,
   canUndo: null,
   undo: null,
   score: null,

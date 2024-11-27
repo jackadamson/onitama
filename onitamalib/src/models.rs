@@ -156,6 +156,7 @@ impl fmt::Display for Card {
 }
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, IntoEnumIterator, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub enum CardSet {
     Base,
     SenseiPath,
@@ -269,6 +270,7 @@ pub struct CardDescription {
     pub king_moves: Vec<Point>, 
     pub wind_moves: Vec<Point>,
     pub direction: CardDirection,
+    pub card_set: CardSet,
 }
 
 impl From<Card> for CardDescription {
@@ -277,12 +279,14 @@ impl From<Card> for CardDescription {
         let king_moves = card.moves(true, false);
         let wind_moves = card.moves(false, true); 
         let direction = card.direction();
+        let card_set = card.find_card_set().expect("All cards must belong to a card set");
         CardDescription {
             card,
             moves,
             king_moves,
             wind_moves, 
             direction,
+            card_set,
         }
     }
 }
