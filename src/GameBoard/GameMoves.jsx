@@ -55,11 +55,13 @@ function GameMoves({ moves, inverted, direction, isKingMoves, isWindMoves, isSec
 
   // Determine the dynamic range for two-grid cards (WindMove or KingMove)
   const isSpecialGrid = isKingMoves || isWindMoves;
-  const shouldUseExtendedRange = moves.some(({ x, y }) => x < -1 || x > 1 || y < -1 || y > 1);
+  const shouldUseAlternateRangeY = moves.some(({ y }) => y > 0 || y < -2);
 
-  const indexesX = isSpecialGrid ? [-2, -1, 0, 1, 2] : [-2, -1, 0, 1, 2]; // Always 5 columns wide
-  const indexesY = isSpecialGrid ? (shouldUseExtendedRange ? [-2, -1, 0] : [-1, 0, 1]) : [-2, -1, 0, 1, 2]; // Dynamically adjust for special grids
-
+  const indexesX = [-2, -1, 0, 1, 2];
+  const indexesY = isSpecialGrid
+      ? (shouldUseAlternateRangeY ? [-1, 0, 1] : [-2, -1, 0])
+      : [-2, -1, 0, 1, 2];
+      
   return (
     <Box className={classes.grid}>
       {indexesY.map((y) => (
@@ -79,18 +81,18 @@ function GameMoves({ moves, inverted, direction, isKingMoves, isWindMoves, isSec
                   [classes.directionRight]: accessible && direction === 'Right' && !(isWindMoves && isSecondGrid),
                 })}
               >
-                {(isKingMoves || isWindMoves) && x === 0 && y === 0 && (
-                  <FontAwesomeIcon
-                    icon={isKingMoves ? faChessKing : faChessQueen}
-                    style={{
-                      color: 'white',
-                      fontSize: '10px',
-                      position: 'relative',
-                      margin: 'auto',
-                      transform: inverted ? 'rotate(180deg)' : 'none',
-                    }}
-                  />
-                )}
+                  {isSecondGrid && (isKingMoves || isWindMoves) && x === 0 && y === 0 && (
+                    <FontAwesomeIcon
+                      icon={isKingMoves ? faChessKing : faChessQueen}
+                      style={{
+                        color: isKingMoves ? 'white' : '#C2C2C2',
+                        fontSize: '10px',
+                        position: 'relative',
+                        margin: 'auto',
+                        transform: inverted ? 'rotate(180deg)' : 'none',
+                      }}
+                    />
+                  )}
               </Box>
             );
           })}
