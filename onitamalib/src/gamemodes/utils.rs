@@ -4,12 +4,13 @@ use serde_wasm_bindgen;
 use crate::models::{Card, CardDirection, CardSet, Point};
 use enum_iterator::IntoEnumIterator;
 
-/// A struct for serializing cards with both normal moves and king moves.
+/// A struct for serializing cards and their moves
 #[derive(Serialize)]
 pub struct SerializableCard {
     card: Card,
-    moves: Vec<Point>,      // Normal moves
-    king_moves: Vec<Point>, // King moves
+    moves: Vec<Point>,      
+    king_moves: Vec<Point>, 
+    wind_moves: Vec<Point>, 
     direction: CardDirection,
 }
 
@@ -17,8 +18,9 @@ impl From<&Card> for SerializableCard {
     fn from(card: &Card) -> Self {
         SerializableCard {
             card: *card,
-            moves: card.moves(false, false),     // Normal moves
-            king_moves: card.moves(true, false), // King moves
+            moves: card.moves(false, false),    
+            king_moves: card.moves(true, false),
+            wind_moves: card.moves (false, true),
             direction: card.direction(),
         }
     }

@@ -267,18 +267,21 @@ pub struct CardDescription {
     pub card: Card,
     pub moves: Vec<Point>,
     pub king_moves: Vec<Point>, 
+    pub wind_moves: Vec<Point>,
     pub direction: CardDirection,
 }
 
 impl From<Card> for CardDescription {
     fn from(card: Card) -> Self {
         let moves = card.moves(false, false);
-        let king_moves = card.moves(true, false); 
+        let king_moves = card.moves(true, false);
+        let wind_moves = card.moves(false, true); 
         let direction = card.direction();
         CardDescription {
             card,
             moves,
-            king_moves, 
+            king_moves,
+            wind_moves, 
             direction,
         }
     }
