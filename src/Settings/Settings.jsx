@@ -129,8 +129,7 @@ function Settings() {
           <Box my={2} />
           <Typography variant="h5">Card Sets</Typography>
           <Typography variant="body1">
-            Turn sets of cards on or off (currently only works for Single Player and Local
-            Multiplayer)
+            Turn sets of cards on or off (currently only works for Single Player and Local Multiplayer)
           </Typography>
           {errorMessage}
           {cardSets.map(({ id, name, cards }) => (
@@ -154,11 +153,15 @@ function Settings() {
                         <GameCard
                           moves={card.moves}
                           kingMoves={KING_MOVE_CARDS.includes(card.card) ? card.king_moves || [] : []}
+                          windMoves={id === 'WayOfTheWind' ? card.wind_moves || [] : []}
                           name={card.card}
                           setCard={() => {}}
                           direction={card.direction}
                           enabled
                           spare
+                          cardSet={id === 'WayOfTheWind' ? 'WayOfTheWind' : ''}
+                          isKingMoves={KING_MOVE_CARDS.includes(card.card)}
+                          isWindMoves={!!(id === 'WayOfTheWind' && card.wind_moves && card.wind_moves.length > 0)}
                         />
                       </Box>
                     ))}

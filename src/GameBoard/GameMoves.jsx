@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChessKing } from '@fortawesome/free-solid-svg-icons';
+import { faChessKing, faChessQueen } from '@fortawesome/free-solid-svg-icons';
 import * as R from 'ramda';
 
 const useStyles = makeStyles((theme) => ({
@@ -13,12 +13,12 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: ({ isKingMoves }) => (isKingMoves ? '12px' : '16px'),
-    height: ({ isKingMoves }) => (isKingMoves ? '12px' : '16px'),
+    width: ({ isKingMoves, isWindMoves }) => (isKingMoves || isWindMoves ? '12px' : '16px'),
+    height: ({ isKingMoves, isWindMoves }) => (isKingMoves || isWindMoves ? '12px' : '16px'),
   },
   moveCell: {
-    width: ({ isKingMoves }) => (isKingMoves ? '12px' : '16px'),
-    height: ({ isKingMoves }) => (isKingMoves ? '12px' : '16px'),
+    width: ({ isKingMoves, isWindMoves }) => (isKingMoves || isWindMoves ? '12px' : '16px'),
+    height: ({ isKingMoves, isWindMoves }) => (isKingMoves || isWindMoves ? '12px' : '16px'),
     borderStyle: 'solid',
     borderWidth: '1px',
     borderColor: theme.palette.grey['600'],
@@ -45,18 +45,26 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'transparent', // Remove background for second grid origin
   },
 }));
 
-function GameMoves({ moves, inverted, direction, isKingMoves, isSecondGrid }) {
-  const classes = useStyles({ inverted, isKingMoves });
+function GameMoves({ moves, inverted, direction, isKingMoves, isWindMoves, isSecondGrid }) {
+  const classes = useStyles({ inverted, isKingMoves, isWindMoves });
   const moveSet = new Set(moves.map(({ x, y }) => `${x},${y}`));
-  const indexes = isKingMoves ? [-2, -1, 0] : [-2, -1, 0, 1, 2];
+
+  // Determine the dynamic range for two-grid cards (WindMove or KingMove)
+  const isSpecialGrid = isKingMoves || isWindMoves;
+  const shouldUseExtendedRange = moves.some(({ x, y }) => x < -1 || x > 1 || y < -1 || y > 1);
+
+  const indexesX = isSpecialGrid ? [-2, -1, 0, 1, 2] : [-2, -1, 0, 1, 2]; // Always 5 columns wide
+  const indexesY = isSpecialGrid ? (shouldUseExtendedRange ? [-2, -1, 0] : [-1, 0, 1]) : [-2, -1, 0, 1, 2]; // Dynamically adjust for special grids
+
   return (
     <Box className={classes.grid}>
-      {indexes.map((y) => (
+      {indexesY.map((y) => (
         <Box className={classes.row} key={y}>
-          {[-2, -1, 0, 1, 2].map((x) => {
+          {indexesX.map((x) => {
             const keyed = `${x},${y}`;
             const accessible = moveSet.has(keyed);
             return (
@@ -64,16 +72,16 @@ function GameMoves({ moves, inverted, direction, isKingMoves, isSecondGrid }) {
                 key={keyed}
                 className={clsx({
                   [classes.moveCell]: true,
-                  [classes.origin]: x === 0 && y === 0 && !(isKingMoves && isSecondGrid),
-                  [classes.secondGridOrigin]: x === 0 && y === 0 && isKingMoves && isSecondGrid,
-                  [classes.directionBalanced]: accessible && direction === 'Balanced',
-                  [classes.directionLeft]: accessible && direction === 'Left',
-                  [classes.directionRight]: accessible && direction === 'Right',
+                  [classes.origin]: x === 0 && y === 0 && !(isKingMoves && isSecondGrid) && !(isWindMoves && isSecondGrid),
+                  [classes.secondGridOrigin]: x === 0 && y === 0 && (isKingMoves || isWindMoves) && isSecondGrid,
+                  [classes.directionBalanced]: accessible && (direction === 'Balanced' || (isWindMoves && isSecondGrid)),
+                  [classes.directionLeft]: accessible && direction === 'Left' && !(isWindMoves && isSecondGrid),
+                  [classes.directionRight]: accessible && direction === 'Right' && !(isWindMoves && isSecondGrid),
                 })}
               >
-                {isKingMoves && isSecondGrid && x === 0 && y === 0 && (
+                {(isKingMoves || isWindMoves) && x === 0 && y === 0 && (
                   <FontAwesomeIcon
-                    icon={faChessKing}
+                    icon={isKingMoves ? faChessKing : faChessQueen}
                     style={{
                       color: 'white',
                       fontSize: '10px',
@@ -83,7 +91,6 @@ function GameMoves({ moves, inverted, direction, isKingMoves, isSecondGrid }) {
                     }}
                   />
                 )}
-
               </Box>
             );
           })}
@@ -95,6 +102,7 @@ function GameMoves({ moves, inverted, direction, isKingMoves, isSecondGrid }) {
 
 GameMoves.defaultProps = {
   isKingMoves: false,
+  isWindMoves: false,
   isSecondGrid: false,
 };
 
@@ -104,10 +112,11 @@ GameMoves.propTypes = {
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    }),
+    })
   ).isRequired,
   direction: PropTypes.string.isRequired,
   isKingMoves: PropTypes.bool,
+  isWindMoves: PropTypes.bool,
   isSecondGrid: PropTypes.bool,
 };
 

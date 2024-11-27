@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: spare ? '100%' : '50%',
     height: '142px',
     alignItems: 'center',
-    padding: theme.spacing(0.5, 0), // Reduced padding inside the card
+    padding: theme.spacing(0.5, 0),
     cursor: enabled ? 'pointer' : 'default',
     color: enabled ? theme.palette.common.white : theme.palette.action.disabled,
     backgroundColor: enabled ? theme.palette.background.paper : '#1a1d21',
@@ -40,8 +40,8 @@ const useStyles = makeStyles((theme) => ({
   played: {
     borderColor: theme.palette.secondary.dark,
   },
-  orLabel: {
-    margin: '2px 0', // Minimal margin around the "OR" label
+  label: {
+    margin: '2px 0',
     fontSize: '0.7rem',
     fontWeight: 'bold',
     color: theme.palette.text.secondary,
@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '4px', // Tightened gap between grids and label
+    gap: '4px',
   },
 }));
 
@@ -62,6 +62,8 @@ function GameCard({
   enabled,
   moves,
   kingMoves,
+  windMoves,
+  cardSet,
   spare,
   canMove,
   discard,
@@ -70,12 +72,13 @@ function GameCard({
 }) {
   const classes = useStyles({ enabled, spare, inverted });
   const isKingMoveCard = kingMoves && kingMoves.length > 0;
+  const isWindMoveCard = cardSet === 'WayOfTheWind' && windMoves && windMoves.length > 0;
 
   const handler = () => {
     if (enabled && !canMove) {
       discard(name);
     } else if (enabled) {
-      setCard({ card: name, moves, direction, kingMoves });
+      setCard({ card: name, moves, direction, kingMoves, windMoves });
     }
   };
 
@@ -91,26 +94,56 @@ function GameCard({
       })}
       onClick={handler}
     >
-      <Typography variant="subtitle1" style={{ fontSize: isKingMoveCard ? '0.75rem' : '1rem' }}>
+      <Typography variant="subtitle1" style={{ fontSize: isKingMoveCard || isWindMoveCard ? '0.75rem' : '1rem' }}>
         {name}
       </Typography>
-      {isKingMoveCard ? (
+      {(isKingMoveCard || isWindMoveCard) ? (
         <div className={classes.movesContainer}>
           {inverted ? (
             <>
-              {/* King Moves Grid for KingMove cards when inverted */}
-              <GameMoves moves={kingMoves} direction={direction} inverted={inverted} isKingMoves isSecondGrid />
-              <Typography className={classes.orLabel}>OR</Typography>
-              {/* Normal Moves Grid for KingMove cards when inverted */}
-              <GameMoves moves={moves} direction={direction} inverted={inverted} isKingMoves={isKingMoveCard} />
+              {/* Second Grid for WindMove or KingMove cards when inverted */}
+              <GameMoves
+                moves={isWindMoveCard ? windMoves : kingMoves}
+                direction={direction}
+                inverted={inverted}
+                isKingMoves={isKingMoveCard}
+                isWindMoves={isWindMoveCard}
+                isSecondGrid
+                icon={isWindMoveCard ? 'queen' : 'king'}
+              />
+              <Typography className={classes.label}>{isWindMoveCard ? 'THEN' : 'OR'}</Typography>
+              {/* Normal Moves Grid for WindMove or KingMove cards when inverted */}
+              <GameMoves
+                moves={moves}
+                direction={direction}
+                inverted={inverted}
+                isKingMoves={isKingMoveCard}
+                isWindMoves={isWindMoveCard}
+                icon={isWindMoveCard ? 'queen' : 'king'}
+              />
             </>
           ) : (
             <>
-              {/* Normal Moves Grid for KingMove cards */}
-              <GameMoves moves={moves} direction={direction} inverted={inverted} isKingMoves={isKingMoveCard} />
-              <Typography className={classes.orLabel}>OR</Typography>
-              {/* King Moves Grid for KingMove cards */}
-              <GameMoves moves={kingMoves} direction={direction} inverted={inverted} isKingMoves isSecondGrid />
+              {/* Normal Moves Grid for WindMove or KingMove cards */}
+              <GameMoves
+                moves={moves}
+                direction={direction}
+                inverted={inverted}
+                isKingMoves={isKingMoveCard}
+                isWindMoves={isWindMoveCard}
+                icon={isWindMoveCard ? 'queen' : 'king'}
+              />
+              <Typography className={classes.label}>{isWindMoveCard ? 'THEN' : 'OR'}</Typography>
+              {/* Second Grid for WindMove or KingMove cards */}
+              <GameMoves
+                moves={isWindMoveCard ? windMoves : kingMoves}
+                direction={direction}
+                inverted={inverted}
+                isKingMoves={isKingMoveCard}
+                isWindMoves={isWindMoveCard}
+                isSecondGrid
+                icon={isWindMoveCard ? 'queen' : 'king'}
+              />
             </>
           )}
         </div>
@@ -137,6 +170,7 @@ GameCard.defaultProps = {
   discard: () => {},
   showPlayed: false,
   kingMoves: [],
+  windMoves: [],
 };
 
 GameCard.propTypes = {
@@ -149,14 +183,21 @@ GameCard.propTypes = {
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    }),
+    })
   ).isRequired,
   kingMoves: PropTypes.arrayOf(
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    }),
+    })
   ),
+  windMoves: PropTypes.arrayOf(
+    PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    })
+  ),
+  cardSet: PropTypes.string.isRequired,
   spare: PropTypes.bool,
   canMove: PropTypes.bool,
   discard: PropTypes.func,
