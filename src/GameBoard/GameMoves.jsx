@@ -58,9 +58,16 @@ function GameMoves({ moves, inverted, direction, isKingMoves, isWindMoves, isSec
   const shouldUseAlternateRangeY = moves.some(({ y }) => y > 0 || y < -2);
 
   const indexesX = [-2, -1, 0, 1, 2];
-  const indexesY = isSpecialGrid
-      ? (shouldUseAlternateRangeY ? [-1, 0, 1] : [-2, -1, 0])
-      : [-2, -1, 0, 1, 2];
+  let indexesY;
+  if (isSpecialGrid) {
+    if (shouldUseAlternateRangeY) {
+      indexesY = [-1, 0, 1];
+    } else {
+      indexesY = [-2, -1, 0];
+    }
+  } else {
+    indexesY = [-2, -1, 0, 1, 2];
+  }
       
   return (
     <Box className={classes.grid}>
