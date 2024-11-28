@@ -6,12 +6,20 @@ import KING_MOVE_CARDS from '../constants/SpecialCards';
  * @param {Object} card - The active card ({ moves, kingMoves }).
  * @param {String} turn - The current turn ('Red' or 'Blue').
  * @param {Boolean} isKingSelected - Whether the selected piece is a King.
+ * @param {Boolean} isWindSpiritSelected - Whether the selected piece is the Wind Spirit.
  * @returns {Function} A function to validate moves for a given destination.
  */
 
-const getMoves = (src, card, turn, isKingSelected = false) => {
+const getMoves = (src, card, turn, isKingSelected = false, isWindSpiritSelected = false) => {
   if (!src || !card || !card.card) {
     return () => false;
+  }
+
+  // Check if the card is a "Way of the Wind" card
+  const isWayOfTheWindCard = card.cardSet === 'WayOfTheWind';
+    // If this is the Wind Spirit and it's a "Way of the Wind" card, return a function that does nothing
+  if (isWindSpiritSelected && isWayOfTheWindCard) {
+    return () => false;  // Prevent the Wind Spirit from using the "Way of the Wind" card
   }
 
   // Determine if this is a card that has special moves for a king piece

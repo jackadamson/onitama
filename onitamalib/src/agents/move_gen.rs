@@ -14,11 +14,10 @@ impl Board {
             let is_wind_spirit = Some(src) == wind_spirit_pos;
             for &card in self.player_hand() {
                 let is_king = src == *self.player_king();
+                if is_wind_spirit && CardSet::WayOfTheWind.cards().contains(&card) {
+                    continue; // Skip this illegal move
+                }
                 for &raw_delta in card.moves(is_king, is_wind_spirit).iter() {
-                    // Skip if it's the case where is_king = false and is_wind_spirit = true
-                    if is_wind_spirit && !is_king {
-                        continue; // Skip this move
-                    }
                     let offset = match self.turn {
                         Player::Red => raw_delta,
                         Player::Blue => -raw_delta,

@@ -63,9 +63,10 @@ function RemoteGame({ isAi }) {
 
   // Determine if a king is selected
   const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
+  const isWindSpiritSelected = src && grid[src.y]?.[src.x]?.includes('WindSpirit');
 
   // Use the centralized getMoves function
-  const isMoveValid = getMoves(src, card, turn, isKingSelected);
+  const isMoveValid = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected);
 
   return (
     <>

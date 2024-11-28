@@ -58,7 +58,8 @@ function SinglePlayerGame() {
 
   const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove } = state;
   const isKingSelected = src?.type === 'King';
-  const isMoveValid = getMoves(src, card, turn, isKingSelected);
+  const isWindSpiritSelected = src?.type === 'WindSpirit';
+  const isMoveValid = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected);
 
   return (
     <GameBoard

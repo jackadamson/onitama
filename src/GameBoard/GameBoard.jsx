@@ -57,9 +57,10 @@ function GameBoard({
 
   // Determine if a king is selected
   const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
+  const isWindSpiritSelected = src && grid[src.y]?.[src.x]?.includes('WindSpirit');
 
   // Updated isMoveValid logic using centralized getMoves
-  const isValidMove = getMoves(src, card, turn, isKingSelected);
+  const isValidMove = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected);
 
   return (
     <Box height="100vh" display="flex" flexDirection="column">

@@ -59,11 +59,12 @@ function TrainingGame() {
   const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, canUndo } =
     state;
 
-  // Determine if a king is selected
+  
   const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
-
+  const isWindSpiritSelected = src && grid[src.y]?.[src.x]?.includes('WindSpirit');
+    
   // Use the centralized getMoves function
-  const isMoveValid = getMoves(src, card, turn, isKingSelected);
+  const isMoveValid = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected);
 
   const { max, min, ranksByCardSrc, stale } = moveRankings;
   const dstMoveRankings =
