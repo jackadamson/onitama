@@ -11,7 +11,6 @@ import KING_MOVE_CARDS from '../constants/SpecialCards';
 
 const getMoves = (src, card, turn, isKingSelected = false) => {
   if (!src || !card || !card.card) {
-    console.error('Invalid src or card in getMoves:', { src, card });
     return () => false;
   }
 

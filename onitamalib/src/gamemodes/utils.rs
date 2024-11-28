@@ -59,18 +59,3 @@ pub fn list_card_sets() -> JsValue {
 
     serde_wasm_bindgen::to_value(&card_sets).unwrap()
 }
-
-// Implementing Card to determine the associated CardSet
-impl Card {
-    pub fn find_card_set(&self) -> Option<CardSet> {
-        // Iterate over all CardSets and check if they contain this card
-        for card_set in CardSet::into_enum_iter() {
-            if card_set.cards().contains(self) {
-                return Some(card_set);
-            }
-        }
-
-        // If no matching card set is found, return None
-        None
-    }
-}
