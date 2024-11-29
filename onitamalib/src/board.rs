@@ -79,7 +79,8 @@ impl Board {
             Player::Blue => -raw_delta,
         };
         let is_king = *player_king == src;
-        let moves = card.moves(is_king, move_wind_spirit);
+        let moves = card.moves(is_king, false);
+
         if !moves.contains(&delta) {
             return Err("Move not valid for card".to_string());
         }
@@ -339,18 +340,36 @@ impl Board {
 
     pub fn can_move(&self) -> bool {
         let player_pieces = self.player_pieces();
+        let opponent_kings = [self.red_king, self.blue_king];
+
         for src in player_pieces.iter().filter_map(|&src| src) {
             for &card in self.player_hand() {
                 let is_king = *self.player_king() == src;
                 let is_spirit = self.wind_spirit() == Some(src);
-                for &raw_delta in card.moves(is_king, is_spirit).iter() {
+        
+                if is_spirit && CardSet::WayOfTheWind.cards().contains(&card) {
+                    continue;
+                }
+        
+                for &raw_delta in card.moves(is_king, false).iter() {
                     let delta = match self.turn {
                         Player::Red => raw_delta,
                         Player::Blue => -raw_delta,
                     };
                     let dst = src + delta;
-                    if dst.in_bounds() && !player_pieces.contains(&Some(dst)) {
-                        return true;
+        
+                    if dst.in_bounds() {
+                        if let Some(wind_spirit_pos) = self.wind_spirit() {
+                            if dst == wind_spirit_pos {
+                                continue;
+                            }
+                        }
+                
+                        if (!player_pieces.contains(&Some(dst)) || is_spirit)
+                            && !(is_spirit && opponent_kings.contains(&dst))
+                        {
+                            return true;
+                        }
                     }
                 }
             }

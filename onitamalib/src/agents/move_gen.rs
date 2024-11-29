@@ -32,7 +32,7 @@ impl Board {
                     };
                     let dst = src + offset;
 
-                    if dst.in_bounds() && !pieces.contains(&Some(dst)) {
+                    if dst.in_bounds() && (!pieces.contains(&Some(dst)) || is_wind_spirit) {
 
                         // Prevent Wind Spirit from moving onto a King
                         if is_wind_spirit && opponent_kings.contains(&dst) {
