@@ -4,6 +4,7 @@ import { SinglePlayerGame } from '../onitamalib';
 import logger from '../logger';
 import onEvent from '../events';
 import getMeta from '../meta';
+import useGameSettings from './useGameSettings'; 
 
 const useSingleplayer = (difficulty, trainingMode) => {
   const [state, setState] = useState(null);
@@ -14,6 +15,9 @@ const useSingleplayer = (difficulty, trainingMode) => {
     ranksByCardSrc: null,
   });
   const { enqueueSnackbar } = useSnackbar();
+
+  const [gameSettings] = useGameSettings();
+
   const handlers = useMemo(() => {
     const worker = new Worker(new URL('../ai.worker.js', import.meta.url));
     const trainer = trainingMode && new Worker(new URL('../trainer.worker.js', import.meta.url));
@@ -28,19 +32,19 @@ const useSingleplayer = (difficulty, trainingMode) => {
       setMoveRankings(({ min, max }) => ({ min, max, stale: true, ranksByCardSrc: null }));
       setState(newState);
     };
-    const disabledCardSetsRaw = localStorage.getItem('disabled_card_sets');
-    const disabledCardSets = disabledCardSetsRaw ? JSON.parse(disabledCardSetsRaw) : [];
+
     const game = new SinglePlayerGame(
       getMeta(),
       difficulty,
       trainingMode || false,
-      disabledCardSets,
+      gameSettings,
       onSetState,
       onError,
       requestAiMove,
       requestMoveRanking,
       onEvent,
     );
+
     worker.onmessage = (m) => game.move(m.data, false);
     if (trainer) {
       trainer.onmessage = (m) => {
@@ -67,7 +71,8 @@ const useSingleplayer = (difficulty, trainingMode) => {
       reset: (m) => game.reset(m),
       undo: () => game.undo(),
     };
-  }, [setState, enqueueSnackbar, difficulty, trainingMode]);
+  }, [setState, enqueueSnackbar, difficulty, trainingMode, gameSettings]);
+  
   logger.log(state);
   return { state, moveRankings, ...handlers };
 };

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -21,11 +21,12 @@ import { Alert, AlertTitle } from '@material-ui/lab';
 import EnabledIcon from '@material-ui/icons/Visibility';
 import DisabledIcon from '@material-ui/icons/VisibilityOff';
 
-import { Link } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import Marquee from 'react-fast-marquee';
 import { listCardSets } from '../onitamalib';
 import GameCard from '../GameBoard/GameCard';
 import KING_MOVE_CARDS from '../constants/SpecialCards';
+import useGameSettings from '../hooks/useGameSettings';
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -40,67 +41,55 @@ function Settings() {
   const theme = useTheme();
   const largeScreen = useMediaQuery(theme.breakpoints.up('md'));
   const styles = useStyles();
+  const history = useHistory();
   const cardSets = useMemo(() => listCardSets(), []);
   const validSetIds = useMemo(() => cardSets.map(({ id }) => id), [cardSets]);
 
-  const storedDisabledCardSetIds = useMemo(() => {
-    const rawCardSetIds = localStorage.getItem('disabled_card_sets');
-    if (rawCardSetIds) {
-      return JSON.parse(rawCardSetIds);
-    }
-    return ['WayOfTheWind'];
-  }, []);
-  const [disabledCardSetIds, setDisabledCardSetIds] = useState(storedDisabledCardSetIds);
+  // Use the custom hook
+  const [gameSettings, updateGameSettings] = useGameSettings();
 
+  // Create local state copies for settings
+  const [localDisabledCardSets, setLocalDisabledCardSets] = useState(gameSettings.disabledCardSets);
+  const [localNumberOfWindCards, setLocalNumberOfWindCards] = useState(gameSettings.numberOfWindCards);
+  const [localForceWindSpiritInclusion, setLocalForceWindSpiritInclusion] = useState(gameSettings.forceWindSpiritInclusion);
+
+  // Toggle card set in local state
   const toggleCardSet = (toggledId) => {
-    const addingCard = disabledCardSetIds.includes(toggledId);
+    const addingCard = localDisabledCardSets.includes(toggledId);
     const newDisabledIds = addingCard
-      ? disabledCardSetIds.filter((id) => id !== toggledId)
-      : [...disabledCardSetIds, toggledId];
-    setDisabledCardSetIds(newDisabledIds);
-
-    if (newDisabledIds.length === 0 || newDisabledIds.length === validSetIds.length) {
-      localStorage.removeItem('disabled_card_sets');
-    } else {
-      localStorage.setItem('disabled_card_sets', JSON.stringify(newDisabledIds));
-    }
+      ? localDisabledCardSets.filter((id) => id !== toggledId)
+      : [...localDisabledCardSets, toggledId];
+    setLocalDisabledCardSets(newDisabledIds);
   };
 
-  const storedNumberOfWowCards = localStorage.getItem('number_of_wow_cards');
-  let initialNumberOfWowCards;
-  if (storedNumberOfWowCards === 'Random') {
-    initialNumberOfWowCards = 'Random';
-  } else if (storedNumberOfWowCards) {
-    initialNumberOfWowCards = parseInt(storedNumberOfWowCards, 10);
-  } else {
-    initialNumberOfWowCards = 2;
-  }
-  const [numberOfWowCards, setNumberOfWowCards] = useState(initialNumberOfWowCards);
+  const resetSettings = () => {
+    setLocalDisabledCardSets(['WayOfTheWind']);
+    setLocalNumberOfWindCards(2);
+    setLocalForceWindSpiritInclusion(false);
+  };
 
-  const storedForceWindSpiritInclusion = localStorage.getItem('force_wind_spirit_inclusion');
-  const initialForceWindSpiritInclusion =
-    storedForceWindSpiritInclusion !== null ? storedForceWindSpiritInclusion === 'true' : false;
+  const handleBackToMenu = () => {
+    // Save to global settings when navigating back
+    updateGameSettings({
+      disabledCardSets: localDisabledCardSets,
+      numberOfWindCards: localNumberOfWindCards,
+      forceWindSpiritInclusion: localForceWindSpiritInclusion,
+    });
 
-  const [forceWindSpiritInclusion, setForceWindSpiritInclusion] = useState(
-    initialForceWindSpiritInclusion,
-  );
-
-  useEffect(() => {
-    localStorage.setItem('number_of_wow_cards', numberOfWowCards);
-  }, [numberOfWowCards]);
-
-  useEffect(() => {
-    localStorage.setItem('force_wind_spirit_inclusion', forceWindSpiritInclusion);
-  }, [forceWindSpiritInclusion]);
+    // Delay navigation slightly to ensure state is updated
+    setTimeout(() => {
+      history.push('/');
+    }, 200);
+  };
 
   const enabledCardSetIds = useMemo(
-    () => validSetIds.filter((id) => !disabledCardSetIds.includes(id)),
-    [validSetIds, disabledCardSetIds],
+    () => validSetIds.filter((id) => !localDisabledCardSets.includes(id)),
+    [validSetIds, localDisabledCardSets],
   );
 
   const wayOfTheWindEnabled = enabledCardSetIds.includes('WayOfTheWind');
   const otherEnabledCardSets = cardSets.filter(
-    ({ id }) => !disabledCardSetIds.includes(id) && id !== 'WayOfTheWind',
+    ({ id }) => !localDisabledCardSets.includes(id) && id !== 'WayOfTheWind',
   );
   const totalEnabledCardCount = enabledCardSetIds.reduce((accumulator, id) => {
     const cardSet = cardSets.find((setItem) => setItem.id === id);
@@ -115,7 +104,7 @@ function Settings() {
         At least 5 cards are required for a game
       </Alert>
     );
-  } else if (wayOfTheWindEnabled && otherEnabledCardSets.length === 0 && numberOfWowCards !== 5) {
+  } else if (wayOfTheWindEnabled && otherEnabledCardSets.length === 0 && localNumberOfWindCards !== 5) {
     errorMessage = (
       <Alert severity="error">
         <AlertTitle>Not Enough Cards Selected</AlertTitle>
@@ -123,15 +112,6 @@ function Settings() {
       </Alert>
     );
   }
-
-  const resetSettings = () => {
-    setDisabledCardSetIds(['WayOfTheWind']);
-    setNumberOfWowCards(2);
-    setForceWindSpiritInclusion(false);
-    localStorage.removeItem('disabled_card_sets');
-    localStorage.setItem('number_of_wow_cards', 2);
-    localStorage.setItem('force_wind_spirit_inclusion', 'false');
-  };
 
   return (
     <Box m={2}>
@@ -151,20 +131,13 @@ function Settings() {
                   title={name}
                   action={
                     <IconButton
-                      aria-label={disabledCardSetIds.includes(id) ? 'Enable set' : 'Disable set'}
+                      aria-label={localDisabledCardSets.includes(id) ? 'Enable set' : 'Disable set'}
                       onClick={() => toggleCardSet(id)}
                     >
-                      {disabledCardSetIds.includes(id) ? <DisabledIcon /> : <EnabledIcon />}
+                      {localDisabledCardSets.includes(id) ? <DisabledIcon /> : <EnabledIcon />}
                     </IconButton>
                   }
                 />
-                {id === 'WayOfTheWind' && wayOfTheWindEnabled && (
-                  <Box display="flex" alignItems="center" mt={1} ml={2}>
-                    <Typography variant="body2" color="textSecondary">
-                      {forceWindSpiritInclusion ? 'The Wind Spirit will now appear in all games!' : 'The Wind Spirit will now appear in 25% of games!'}
-                    </Typography>
-                  </Box>
-                )}
                 <CardContent className={styles.marqueeContainer}>
                   <Marquee speed={25} play={cards.length > 4 || !largeScreen}>
                     {cards.map((card) => (
@@ -180,7 +153,13 @@ function Settings() {
                           spare
                           cardSet={id === 'WayOfTheWind' ? 'WayOfTheWind' : ''}
                           isKingMoves={KING_MOVE_CARDS.includes(card.card)}
-                          isWindMoves={!!(id === 'WayOfTheWind' && card.wind_moves && card.wind_moves.length > 0)}
+                          isWindMoves={
+                            !!(
+                              id === 'WayOfTheWind' &&
+                              card.wind_moves &&
+                              card.wind_moves.length > 0
+                            )
+                          }
                         />
                       </Box>
                     ))}
@@ -197,8 +176,8 @@ function Settings() {
                 </InputLabel>
                 <Select
                   labelId="number-of-wow-cards-label"
-                  value={numberOfWowCards}
-                  onChange={(event) => setNumberOfWowCards(event.target.value)}
+                  value={localNumberOfWindCards}
+                  onChange={(event) => setLocalNumberOfWindCards(event.target.value)}
                   label="Number of Way of the Wind Cards"
                 >
                   <MenuItem value="Random">Random</MenuItem>
@@ -213,8 +192,10 @@ function Settings() {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={forceWindSpiritInclusion}
-                      onChange={(event) => setForceWindSpiritInclusion(event.target.checked)}
+                      checked={localForceWindSpiritInclusion}
+                      onChange={() =>
+                        setLocalForceWindSpiritInclusion(!localForceWindSpiritInclusion)
+                      }
                       color="primary"
                     />
                   }
@@ -223,8 +204,13 @@ function Settings() {
               </Box>
             </Box>
           )}
-          <Box display="flex" mt={3} justifyContent="space-between">
-            <Button variant="outlined" color="secondary" component={Link} to="/">
+          <Box mt={3} display="flex" justifyContent="space-between">
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleBackToMenu}
+              disabled={!!errorMessage} // Disable if there's an active error message
+            >
               Back to Menu
             </Button>
             <Button variant="contained" color="primary" onClick={resetSettings}>

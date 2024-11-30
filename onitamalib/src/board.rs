@@ -2,7 +2,7 @@ use crate::CardSet;
 use enum_iterator::IntoEnumIterator;
 use rand::prelude::*;
 
-use crate::models::{Board, Card, GameSquare, GameState, Move, Player, Point};
+use crate::models::{Board, Card, GameSquare, GameSettings, GameState, Move, Player, Point};
 
 impl Board {
     pub fn try_move(&self, game_move: Move) -> Result<GameState, String> {
@@ -174,57 +174,59 @@ impl Board {
         Ok(GameState::Playing { board })
     }
 
-    pub fn new_from_card_sets(card_sets: &Vec<CardSet>) -> Board {
+    pub fn new_with_settings(settings: GameSettings) -> Board { 
         let mut rng = thread_rng();
-
-        // Determine if the Wind Spirit should be included
-        let include_wind_spirit = card_sets.contains(&CardSet::WayOfTheWind) && rng.gen_bool(0.25);
-
+    
+        // Determine if the Wind Spirit should be included based on settings
+        let include_wind_spirit = !settings.disabled_card_sets.contains(&"WayOfTheWind".to_string())
+        && (settings.force_wind_spirit_inclusion || rng.gen_bool(0.25));
+  
+        // Separate "Way of the Wind" cards from other cards
         let mut way_of_the_wind_cards = Vec::new();
         let mut other_cards = Vec::new();
-
-        // Separate "Way of the Wind" cards from other cards
-        for set in card_sets {
-            if *set == CardSet::WayOfTheWind {
-                way_of_the_wind_cards.extend(set.cards());
-            } else {
-                other_cards.extend(set.cards());
+        
+        for card_set in CardSet::into_enum_iter() {
+            if !settings.disabled_card_sets.contains(&card_set.to_string()) {
+                if card_set == CardSet::WayOfTheWind {
+                    way_of_the_wind_cards.extend(card_set.cards());
+                } else {
+                    other_cards.extend(card_set.cards());
+                }
             }
         }
-
-        // If Wind Spirit is not included, use only other cards
-        if !include_wind_spirit {
-            other_cards.shuffle(&mut rng);
-            return Board::new_from_cards_and_wind_spirit(other_cards, include_wind_spirit);
-        }
-
-        // Determine the number of "Way of the Wind" cards to use
-        let num_wind_cards = {
-            let chance = rng.gen_range(0.0..1.0);
-            if chance < 0.10 {
-                0
-            } else if chance < 0.25 {
-                1
-            } else if chance < 0.60 {
-                2
-            } else if chance < 0.75 {
-                3
-            } else if chance < 0.90 {
-                4
-            } else {
-                5
-            }
+    
+        // Use the number of wind cards specified in settings, if provided
+        // If Wind Spirit is not included, ensure no "Way of the Wind" cards are selected
+        let num_wind_cards = if include_wind_spirit {
+            settings.number_of_wind_cards.unwrap_or_else(|| {
+                // Default logic if not specified in settings
+                let chance = rng.gen_range(0.0..1.0);
+                if chance < 0.10 {
+                    0
+                } else if chance < 0.25 {
+                    1
+                } else if chance < 0.60 {
+                    2
+                } else if chance < 0.75 {
+                    3
+                } else if chance < 0.90 {
+                    4
+                } else {
+                    5
+                }
+            })
+        } else {
+            0
         };
 
         way_of_the_wind_cards.shuffle(&mut rng);
         other_cards.shuffle(&mut rng);
-
-        // Declare the player hands and spare card without initializing them
+    
+        // Assign cards to players and spare card
         let player_hand_red: [Card; 2];
         let player_hand_blue: [Card; 2];
         let spare_card: Card;
-
-        // Assign cards based on the determined number of "Way of the Wind" cards
+    
         match num_wind_cards {
             0 => {
                 player_hand_red = [other_cards.pop().unwrap(), other_cards.pop().unwrap()];
@@ -431,9 +433,9 @@ impl GameState {
         }
     }
 
-    pub fn new_from_card_sets(card_sets: &Vec<CardSet>) -> GameState {
+    pub fn new_with_settings(settings: GameSettings) -> GameState {
         GameState::Playing {
-            board: Board::new_from_card_sets(card_sets),
+            board: Board::new_with_settings(settings),
         }
     }
 

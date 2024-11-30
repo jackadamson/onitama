@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 use std::ops::{Add, Neg, Sub};
 
 use crate::AiAgent;
@@ -378,5 +379,38 @@ impl Card {
 
         // If no matching card set is found, return None
         None
+    }
+}
+
+impl FromStr for CardSet {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<CardSet, Self::Err> {
+        match input {
+            "Base" | "Base Game" => Ok(CardSet::Base),
+            "SenseiPath" | "Sensei's Path" => Ok(CardSet::SenseiPath),
+            "PromotionalPack" | "Promotional Cards" => Ok(CardSet::PromotionalPack),
+            "WayOfTheWind" | "Way of the Wind" => Ok(CardSet::WayOfTheWind),
+            _ => Err(()),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct GameSettings {
+    pub disabled_card_sets: Vec<String>,  // List of disabled card sets by name
+    pub number_of_wind_cards: Option<usize>,  // Number of Way Of The Wind cards to include in the game
+    pub force_wind_spirit_inclusion: bool,  // Force the inclusion of the Wind Spirit piece
+}
+
+impl GameSettings {
+    // Default settings for a standard game
+    pub fn default() -> Self {
+        GameSettings {
+            disabled_card_sets: vec!["WayOfTheWind".to_string()],  // Way Of The Wind card set is disabled by default
+            number_of_wind_cards: Some(2),  // Default to two Way Of The Wind cards
+            force_wind_spirit_inclusion: false,  // Default to not force Wind Spirit piece inclusion
+        }
     }
 }
