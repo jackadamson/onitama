@@ -49,9 +49,30 @@ function Settings() {
   const [gameSettings, updateGameSettings] = useGameSettings();
 
   // Create local state copies for settings
-  const [localDisabledCardSets, setLocalDisabledCardSets] = useState(gameSettings.disabledCardSets);
-  const [localNumberOfWindCards, setLocalNumberOfWindCards] = useState(gameSettings.numberOfWindCards);
-  const [localForceWindSpiritInclusion, setLocalForceWindSpiritInclusion] = useState(gameSettings.forceWindSpiritInclusion);
+  const [localDisabledCardSets, setLocalDisabledCardSets] = useState(
+    gameSettings.disabledCardSets,
+  );
+  const [localNumberOfWindCards, setLocalNumberOfWindCards] = useState(
+    gameSettings.numberOfWindCards,
+  );
+  const [localForceWindSpiritInclusion, setLocalForceWindSpiritInclusion] = useState(
+    gameSettings.forceWindSpiritInclusion,
+  );
+  const [marqueeStates, setMarqueeStates] = useState(
+    cardSets.reduce((acc, { id }) => ({ ...acc, [id]: false }), {})
+  );
+
+  // Default settings
+  const defaultDisabledCardSets = ['WayOfTheWind'];
+  const defaultNumberOfWindCards = 2;
+  const defaultForceWindSpiritInclusion = false;
+
+  // Determine if settings match defaults
+  const settingsAreDefault = useMemo(() => (
+    JSON.stringify(localDisabledCardSets) === JSON.stringify(defaultDisabledCardSets) &&
+    localNumberOfWindCards === defaultNumberOfWindCards &&
+    localForceWindSpiritInclusion === defaultForceWindSpiritInclusion
+  ), [localDisabledCardSets, localNumberOfWindCards, localForceWindSpiritInclusion]);
 
   // Toggle card set in local state
   const toggleCardSet = (toggledId) => {
@@ -63,9 +84,9 @@ function Settings() {
   };
 
   const resetSettings = () => {
-    setLocalDisabledCardSets(['WayOfTheWind']);
-    setLocalNumberOfWindCards(2);
-    setLocalForceWindSpiritInclusion(false);
+    setLocalDisabledCardSets(defaultDisabledCardSets);
+    setLocalNumberOfWindCards(defaultNumberOfWindCards);
+    setLocalForceWindSpiritInclusion(defaultForceWindSpiritInclusion);
   };
 
   const handleBackToMenu = () => {
@@ -88,8 +109,8 @@ function Settings() {
   );
 
   const wayOfTheWindEnabled = enabledCardSetIds.includes('WayOfTheWind');
-  const otherEnabledCardSets = cardSets.filter(
-    ({ id }) => !localDisabledCardSets.includes(id) && id !== 'WayOfTheWind',
+  const otherEnabledCardSets = cardSets.filter(({ id }) =>
+    !localDisabledCardSets.includes(id) && id !== 'WayOfTheWind',
   );
   const totalEnabledCardCount = enabledCardSetIds.reduce((accumulator, id) => {
     const cardSet = cardSets.find((setItem) => setItem.id === id);
@@ -104,7 +125,11 @@ function Settings() {
         At least 5 cards are required for a game
       </Alert>
     );
-  } else if (wayOfTheWindEnabled && otherEnabledCardSets.length === 0 && localNumberOfWindCards !== 5) {
+  } else if (
+    wayOfTheWindEnabled &&
+    otherEnabledCardSets.length === 0 &&
+    localNumberOfWindCards !== 5
+  ) {
     errorMessage = (
       <Alert severity="error">
         <AlertTitle>Not Enough Cards Selected</AlertTitle>
@@ -112,6 +137,10 @@ function Settings() {
       </Alert>
     );
   }
+
+  const toggleMarquee = (id) => {
+    setMarqueeStates((prevState) => ({ ...prevState, [id]: !prevState[id] }));
+  };
 
   return (
     <Box m={2}>
@@ -128,7 +157,23 @@ function Settings() {
             <Box my={1} key={id}>
               <Card variant="outlined" className={styles.card}>
                 <CardHeader
-                  title={name}
+                  title={
+                    <Box onClick={() => toggleMarquee(id)} style={{ cursor: 'pointer' }}>
+                      {name}
+                      {!marqueeStates[id] && (
+                        <Typography variant="subtitle2" color="textSecondary">
+                          Click to see cards.
+                        </Typography>
+                      )}
+                      {wayOfTheWindEnabled && id === 'WayOfTheWind' && (
+                        <Typography variant="subtitle2" color="textSecondary">
+                          {localForceWindSpiritInclusion
+                            ? 'The Wind Spirit will appear in all games!'
+                            : 'The Wind Spirit will appear in 25% of games.'}
+                        </Typography>
+                      )}
+                    </Box>
+                  }
                   action={
                     <IconButton
                       aria-label={localDisabledCardSets.includes(id) ? 'Enable set' : 'Disable set'}
@@ -138,33 +183,37 @@ function Settings() {
                     </IconButton>
                   }
                 />
-                <CardContent className={styles.marqueeContainer}>
-                  <Marquee speed={25} play={cards.length > 4 || !largeScreen}>
-                    {cards.map((card) => (
-                      <Box mx={1} key={card.card}>
-                        <GameCard
-                          moves={card.moves}
-                          kingMoves={KING_MOVE_CARDS.includes(card.card) ? card.king_moves || [] : []}
-                          windMoves={id === 'WayOfTheWind' ? card.wind_moves || [] : []}
-                          name={card.card}
-                          setCard={() => {}}
-                          direction={card.direction}
-                          enabled
-                          spare
-                          cardSet={id === 'WayOfTheWind' ? 'WayOfTheWind' : ''}
-                          isKingMoves={KING_MOVE_CARDS.includes(card.card)}
-                          isWindMoves={
-                            !!(
-                              id === 'WayOfTheWind' &&
-                              card.wind_moves &&
-                              card.wind_moves.length > 0
-                            )
-                          }
-                        />
-                      </Box>
-                    ))}
-                  </Marquee>
-                </CardContent>
+                {marqueeStates[id] && (
+                  <CardContent className={styles.marqueeContainer}>
+                    <Marquee speed={25} play={cards.length > 4 || !largeScreen}>
+                      {cards.map((card) => (
+                        <Box mx={1} key={card.card}>
+                          <GameCard
+                            moves={card.moves}
+                            kingMoves={
+                              KING_MOVE_CARDS.includes(card.card) ? card.king_moves || [] : []
+                            }
+                            windMoves={id === 'WayOfTheWind' ? card.wind_moves || [] : []}
+                            name={card.card}
+                            setCard={() => {}}
+                            direction={card.direction}
+                            enabled
+                            spare
+                            cardSet={id === 'WayOfTheWind' ? 'WayOfTheWind' : ''}
+                            isKingMoves={KING_MOVE_CARDS.includes(card.card)}
+                            isWindMoves={
+                              !!(
+                                id === 'WayOfTheWind' &&
+                                card.wind_moves &&
+                                card.wind_moves.length > 0
+                              )
+                            }
+                          />
+                        </Box>
+                      ))}
+                    </Marquee>
+                  </CardContent>
+                )}
               </Card>
             </Box>
           ))}
@@ -213,9 +262,11 @@ function Settings() {
             >
               Back to Menu
             </Button>
-            <Button variant="contained" color="primary" onClick={resetSettings}>
-              Reset to Defaults
-            </Button>
+            {!settingsAreDefault && (
+              <Button variant="contained" color="primary" onClick={resetSettings}>
+                Reset to Defaults
+              </Button>
+            )}
           </Box>
         </Box>
       </Box>
