@@ -15,14 +15,22 @@ impl Board {
             red_pawns,
             red_hand,
             spare_card,
+            extra_move_pending,
+            extra_move_card,
             turn,
         } = self;
+
+        if self.extra_move_pending {
+            return self.try_extra_move(game_move);
+        }
 
         let (player_king, opponent_king) = match turn {
             Player::Red => (red_king, blue_king),
             Player::Blue => (blue_king, red_king),
         };
+
         let player_pieces = self.player_pieces();
+
         let (card, src, dst) = match game_move {
             Move::Move { card, src, dst } => (card, src, dst),
             Move::Discard { card } => {
@@ -38,6 +46,7 @@ impl Board {
                     Player::Red => (player_hand, *blue_hand),
                     Player::Blue => (*red_hand, player_hand),
                 };
+
                 return Ok(GameState::Playing {
                     board: Board {
                         wind_spirit: *wind_spirit,
@@ -48,14 +57,18 @@ impl Board {
                         red_pawns: *red_pawns,
                         red_hand,
                         spare_card: card,
+                        extra_move_pending: false,
+                        extra_move_card: None,
                         turn: turn.invert(),
                     },
                 });
             }
         };
+
         if !self.player_hand().contains(&card) {
             return Err("Card not in hand".to_string());
         }
+
         if !player_pieces.contains(&Some(src)) {
             return Err("No piece at source".to_string());
         }
@@ -78,8 +91,10 @@ impl Board {
             Player::Red => raw_delta,
             Player::Blue => -raw_delta,
         };
-        let is_king = *player_king == src;
-        let moves = card.moves(is_king, false);
+
+        let moving_king = *player_king == src;
+
+        let moves = card.moves(moving_king, false);
 
         if !moves.contains(&delta) {
             return Err("Move not valid for card".to_string());
@@ -89,12 +104,15 @@ impl Board {
             return Err("Destination occupied by your piece".to_string());
         }
 
+        if move_wind_spirit && (dst == *red_king || dst == *blue_king) {
+            return Err("Wind Spirit cannot move onto a Master!".to_string());
+        }
+
         let goal_square = match turn {
             Player::Red => Point { x: 2, y: 0 },
             Player::Blue => Point { x: 2, y: 4 },
         };
-        let moving_king = *player_king == src;
-
+      
         let mut player_pawns = self.player_pawns();
         for pawn in player_pawns.iter_mut() {
             match pawn {
@@ -124,16 +142,20 @@ impl Board {
             }
         }
 
-        let [c1, c2] = self.player_hand();
-        let player_hand = [
-            if *c1 == card { *spare_card } else { *c1 },
-            if *c2 == card { *spare_card } else { *c2 },
-        ];
-        let player_king = if moving_king { dst } else { *player_king };
+        let extra_move_pending = CardSet::WayOfTheWind.cards().contains(&card);
+        let extra_move_card = if extra_move_pending { Some(card) } else { None };
 
-        if move_wind_spirit && (dst == *red_king || dst == *blue_king) {
-            return Err("Wind Spirit cannot move onto a Master!".to_string());
-        }
+        let player_hand = if !extra_move_pending {
+            let [c1, c2] = self.player_hand();
+            [
+                if *c1 == card { *spare_card } else { *c1 },
+                if *c2 == card { *spare_card } else { *c2 },
+            ]
+        } else {
+            *self.player_hand()
+        };
+        
+        let player_king = if moving_king { dst } else { *player_king };
 
         let wind_spirit = if move_wind_spirit {
             Some(dst)
@@ -150,8 +172,10 @@ impl Board {
                 red_king: player_king,
                 red_pawns: player_pawns,
                 red_hand: player_hand,
-                spare_card: card,
-                turn: Player::Blue,
+                spare_card: if extra_move_pending { *spare_card } else { card },
+                extra_move_pending,
+                extra_move_card,
+                turn: if extra_move_pending { Player::Red } else { Player::Blue },
             },
             Player::Blue => Board {
                 wind_spirit,
@@ -161,16 +185,146 @@ impl Board {
                 red_king: *red_king,
                 red_pawns: opponent_pawns,
                 red_hand: *red_hand,
-                spare_card: card,
-                turn: Player::Red,
+                spare_card: if extra_move_pending { *spare_card } else { card },
+                extra_move_pending,
+                extra_move_card,
+                turn: if extra_move_pending { Player::Blue } else { Player::Red },
             },
         };
+
         if dst == *opponent_king || (moving_king && dst == goal_square) {
             return Ok(GameState::Finished {
                 winner: *turn,
                 board,
             });
         }
+
+        Ok(GameState::Playing { board })
+    }
+
+    fn try_extra_move(&self, game_move: Move) -> Result<GameState, String> {
+        let Board {
+            wind_spirit,
+            blue_king,
+            blue_pawns,
+            blue_hand,
+            red_king,
+            red_pawns,
+            red_hand,
+            spare_card,
+            extra_move_pending,
+            extra_move_card,
+            turn,
+        } = self;
+    
+        let (card, src, dst) = match game_move {
+            Move::Move { card, src, dst } => (card, src, dst),
+            Move::Discard { .. } => return Err("Cannot discard during an extra move".to_string()),
+        };
+    
+        let wind_spirit_pos = match wind_spirit {
+            Some(pos) => pos,
+            None => return Err("Wind Spirit is missing!".to_string()),
+        };
+    
+        if src != *wind_spirit_pos {
+            return Err("You must move the Wind Spirit".to_string());
+        }
+    
+        if card != self.extra_move_card.unwrap() {
+            return Err(format!("Must use {} to move", extra_move_card.unwrap()));
+        }
+    
+        let (player_king, opponent_king) = match turn {
+            Player::Red => (red_king, blue_king),
+            Player::Blue => (blue_king, red_king),
+        };
+    
+        let goal_square = match turn {
+            Player::Red => Point { x: 2, y: 0 },
+            Player::Blue => Point { x: 2, y: 4 },
+        };
+    
+        if dst.out_of_bounds() {
+            return Err("Destination is out of bounds".to_string());
+        }
+    
+        let raw_delta = dst - src;
+        let delta = match turn {
+            Player::Red => raw_delta,
+            Player::Blue => -raw_delta,
+        };
+    
+        // Get the Wind moves for the card
+        let moves = card.moves(false, true);
+        if !moves.contains(&delta) {
+            return Err("Move not valid for card".to_string());
+        }
+    
+        if dst == *red_king || dst == *blue_king {
+            return Err("Wind Spirit cannot move onto a Master!".to_string());
+        }
+    
+        let mut player_pawns = self.player_pawns();
+        for pawn in player_pawns.iter_mut() {
+            if let Some(pawn_pos) = pawn {
+                if *pawn_pos == src {
+                    *pawn_pos = dst;
+                } else if *pawn_pos == dst {
+                    *pawn_pos = src;
+                }
+            }
+        }
+    
+        let mut opponent_pawns = self.opponent_pawns();
+        for pawn in opponent_pawns.iter_mut() {
+            if let Some(pawn_pos) = pawn {
+                if *pawn_pos == dst {
+                    *pawn_pos = src;
+                }
+            }
+        }
+    
+        let wind_spirit = Some(dst);
+    
+        let player_king = *player_king;
+    
+        let board = match turn {
+            Player::Red => Board {
+                wind_spirit,
+                blue_king: *blue_king,
+                blue_pawns: opponent_pawns,
+                blue_hand: *blue_hand,
+                red_king: player_king,
+                red_pawns: player_pawns,
+                red_hand: *red_hand,
+                spare_card: *spare_card,
+                extra_move_pending: false,
+                extra_move_card: None,
+                turn: Player::Blue,
+            },
+            Player::Blue => Board {
+                wind_spirit,
+                blue_king: player_king,
+                blue_pawns: player_pawns,
+                blue_hand: *blue_hand,
+                red_king: *red_king,
+                red_pawns: opponent_pawns,
+                red_hand: *red_hand,
+                spare_card: *spare_card,
+                extra_move_pending: false,
+                extra_move_card: None,
+                turn: Player::Red,
+            },
+        };
+    
+        if player_king == goal_square {
+            return Ok(GameState::Finished {
+                winner: *turn,
+                board,
+            });
+        }
+    
         Ok(GameState::Playing { board })
     }
 
@@ -275,6 +429,8 @@ impl Board {
             red_pawns: [Some(Point { x: 0, y: 4 }), Some(Point { x: 1, y: 4 }), Some(Point { x: 3, y: 4 }), Some(Point { x: 4, y: 4 })],
             red_hand: player_hand_red,
             spare_card,
+            extra_move_pending: false,
+            extra_move_card: None,
             turn: Player::Red,
         }
     }
@@ -343,6 +499,27 @@ impl Board {
     pub fn can_move(&self) -> bool {
         let player_pieces = self.player_pieces();
         let opponent_kings = [self.red_king, self.blue_king];
+
+        // If an extra move is pending, restrict to Wind Spirit and extra_move_card
+        if self.extra_move_pending {
+            if let Some(wind_spirit_pos) = self.wind_spirit() {
+                if let Some(extra_card) = self.extra_move_card {
+                    // Get moves for the extra card, restricted to the Wind Spirit
+                    for &raw_delta in extra_card.moves(false, true).iter() {
+                        let delta = match self.turn {
+                            Player::Red => raw_delta,
+                            Player::Blue => -raw_delta,
+                        };
+                        let dst = wind_spirit_pos + delta;
+
+                        if dst.in_bounds() && !opponent_kings.contains(&dst) {
+                            return true; // A valid Wind Spirit extra move exists
+                        }
+                    }
+                }
+            }
+            return false; // No valid extra moves for the Wind Spirit
+        }
 
         for src in player_pieces.iter().filter_map(|&src| src) {
             for &card in self.player_hand() {
@@ -413,6 +590,8 @@ impl Board {
             red_pawns: pawn_xs.map(|x| Some(Point { x, y: 4 })), 
             red_hand: [cards.next().unwrap(), cards.next().unwrap()],
             spare_card: cards.next().unwrap(),
+            extra_move_pending: false,
+            extra_move_card: None,
             turn: Player::Red,
         }
     }

@@ -208,6 +208,8 @@ pub struct Board {
     pub red_pawns: [Option<Point>; 4],
     pub red_hand: [Card; 2],
     pub spare_card: Card,
+    pub extra_move_pending: bool,
+    pub extra_move_card: Option<Card>,
     pub turn: Player,
 }
 
