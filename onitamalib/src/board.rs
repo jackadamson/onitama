@@ -216,10 +216,44 @@ impl Board {
             extra_move_card,
             turn,
         } = self;
+
+        if !self.can_move() {
+            // Automatically discard the extra_move_card if no valid extra moves exist
+            let card = extra_move_card.unwrap();
+            let [c1, c2] = self.player_hand();
+            let player_hand = [
+                if *c1 == card { *spare_card } else { *c1 },
+                if *c2 == card { *spare_card } else { *c2 },
+            ];
+            let (red_hand, blue_hand) = match turn {
+                Player::Red => (player_hand, *blue_hand),
+                Player::Blue => (*red_hand, player_hand),
+            };
+    
+            return Ok(GameState::Playing {
+                board: Board {
+                    wind_spirit: *wind_spirit,
+                    blue_king: *blue_king,
+                    blue_pawns: *blue_pawns,
+                    blue_hand,
+                    red_king: *red_king,
+                    red_pawns: *red_pawns,
+                    red_hand,
+                    spare_card: card,
+                    extra_move_pending: false,
+                    extra_move_card: None,
+                    turn: turn.invert(),
+                },
+            });
+        }
     
         let (card, src, dst) = match game_move {
             Move::Move { card, src, dst } => (card, src, dst),
-            Move::Discard { .. } => return Err("Cannot discard during an extra move".to_string()),
+            Move::Discard { card } => {
+                let mut updated_board = self.clone();
+                updated_board.extra_move_pending = false;
+                return updated_board.try_move(Move::Discard { card });
+            }
         };
     
         let wind_spirit_pos = match wind_spirit {
@@ -265,6 +299,12 @@ impl Board {
             return Err("Wind Spirit cannot move onto a Master!".to_string());
         }
     
+        let [c1, c2] = self.player_hand();
+        let player_hand = [
+            if *c1 == card { *spare_card } else { *c1 },
+            if *c2 == card { *spare_card } else { *c2 },
+        ];
+
         let mut player_pawns = self.player_pawns();
         for pawn in player_pawns.iter_mut() {
             if let Some(pawn_pos) = pawn {
@@ -288,7 +328,7 @@ impl Board {
         let wind_spirit = Some(dst);
     
         let player_king = *player_king;
-    
+  
         let board = match turn {
             Player::Red => Board {
                 wind_spirit,
@@ -297,8 +337,8 @@ impl Board {
                 blue_hand: *blue_hand,
                 red_king: player_king,
                 red_pawns: player_pawns,
-                red_hand: *red_hand,
-                spare_card: *spare_card,
+                red_hand: player_hand,
+                spare_card: card,
                 extra_move_pending: false,
                 extra_move_card: None,
                 turn: Player::Blue,
@@ -307,11 +347,11 @@ impl Board {
                 wind_spirit,
                 blue_king: player_king,
                 blue_pawns: player_pawns,
-                blue_hand: *blue_hand,
+                blue_hand: player_hand,
                 red_king: *red_king,
                 red_pawns: opponent_pawns,
                 red_hand: *red_hand,
-                spare_card: *spare_card,
+                spare_card: card,
                 extra_move_pending: false,
                 extra_move_card: None,
                 turn: Player::Red,
