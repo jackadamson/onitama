@@ -9,6 +9,36 @@ impl Board {
         let red_king_pos = self.red_king;
         let blue_king_pos = self.blue_king;
         let opponent_kings = [red_king_pos, blue_king_pos];
+
+        if self.extra_move_pending {
+            let mut moves = vec![];
+            if let Some(wind_spirit_pos) = self.wind_spirit() {
+                let extra_card = self.extra_move_card.unwrap();
+                for offset in extra_card.moves(false, true) {
+                    let offset = match self.turn {
+                        Player::Red => offset,
+                        Player::Blue => -offset,
+                    };
+                    let dst = wind_spirit_pos + offset;
+
+                    if dst.in_bounds()
+                        && (!self.player_pieces().contains(&Some(dst)) || opponent_kings.contains(&dst))
+                    {
+                        // Prevent Wind Spirit from moving onto a King
+                        if opponent_kings.contains(&dst) {
+                            continue;
+                        }
+
+                        moves.push(Move::Move {
+                            card: extra_card,
+                            src: wind_spirit_pos,
+                            dst,
+                        });
+                    }
+                }
+            }
+            return moves;
+        }
         
         for card in self.player_hand() {
 
