@@ -37,8 +37,10 @@ function Home() {
   return (
     <Box className={classes.outer}>
       <GithubRibbon />
-      <Typography variant="h2">Onitama App</Typography>
-      <Box m={1} />
+      <Typography variant="h2" className={classes.title}>
+        Onitama App
+      </Typography>
+      <Box m={0.5} />
       <Button
         component={Link}
         to="/help"
@@ -48,7 +50,7 @@ function Home() {
       >
         How to Play
       </Button>
-      <Box m={1} />
+      <Box m={0.5} />
       <Button
         component={Link}
         to="/ai"
@@ -58,7 +60,7 @@ function Home() {
       >
         Single Player
       </Button>
-      <Box m={1} />
+      <Box m={0.5} />
       <Button
         component={Link}
         to="/l/"
@@ -100,11 +102,11 @@ function Home() {
         color="secondary"
         className={classes.button}
       >
-        Settings (NEW)
+        Settings
       </Button>
 
       {/* Display Current Game Settings */}
-      <Box mt={1}>
+      <Box mt={0}>
         <Typography variant="body1">
           Disabled Card Sets: {disabledCardSetsDisplayNames.join(', ') || 'None'}
         </Typography>
