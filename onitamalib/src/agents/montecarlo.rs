@@ -307,7 +307,6 @@ pub fn pure_montecarlo_agent(state: &GameState, duration: Duration) -> Option<(M
         )
 }
 
-// Choose random moves and return the player that one, or None if loop
 fn simulate<R: Rng>(state: GameState, rng: &mut R) -> Option<Player> {
     let mut state = state;
     for _ in 0..1000 {
@@ -317,10 +316,17 @@ fn simulate<R: Rng>(state: GameState, rng: &mut R) -> Option<Player> {
                 return Some(winner);
             }
         };
-        let game_move = board.random_legal_move(rng);
+        let game_move = match board.random_legal_move(rng) {
+            Some(mv) => mv,
+            None => {
+                log::debug!("No valid moves found during simulation. Ending simulation.");
+                return None;
+            }
+        };
         state = state
             .try_move(game_move)
             .expect("montecarlo played illegal move");
     }
     None
 }
+

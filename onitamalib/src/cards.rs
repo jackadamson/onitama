@@ -1,7 +1,7 @@
 use crate::models::{Card, CardDirection, CardSet, Point};
 
 impl Card {
-    pub fn moves(&self) -> Vec<Point> {
+    pub fn moves(&self, is_king:bool, is_spirit:bool) -> Vec<Point> {
         match self {
             Card::Tiger => vec![
                 Point { x: 0, y: -2 }, 
@@ -170,7 +170,127 @@ impl Card {
                 Point { x: 2, y: 0 },
                 Point { x: 1, y: 1 },
                 Point { x: -1, y: -1 },
-            ],
+            ],            
+            // Way of the Wind
+            Card::Bat => {
+                if is_spirit {
+                    vec![
+                        Point { x: -2, y: -1 },
+                        Point { x: -1, y: -1 },
+                        Point { x: 1, y: -1 },
+                        Point { x: 2, y: -1 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: 0, y: 1 },
+                        Point { x: 0, y: -1 },
+                    ]    
+                }
+            },
+            Card::Eagle => {
+                if is_spirit {
+                    vec![
+                        Point { x: -2, y: -2 },
+                        Point { x: 2, y: -2 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 1, y: -1 },
+                    ]    
+                }
+            },
+            Card::Hawk => {
+                if is_spirit {
+                    vec![
+                        Point { x: -2, y: 0 },
+                        Point { x: -2, y: -1 },
+                        Point { x: 2, y: -1 },
+                        Point { x: 2, y: 0 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: -1, y: 1 },
+                    ]    
+                }
+            },
+            Card::Lion => {
+                if is_spirit {
+                    vec![
+                        Point { x: 0, y: -1 },
+                        Point { x: 0, y: -2 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: 1 },
+                        Point { x: 1, y: -1 },
+                    ]    
+                }
+            },
+            Card::Octopus => {
+                if is_spirit {
+                    vec![
+                        Point { x: -1, y: 0 },
+                        Point { x: -1, y: 1 },
+                        Point { x: 0, y: -1 },
+                        Point { x: 0, y: 1 },    
+                        Point { x: 1, y: 0 },
+                        Point { x: 1, y: 1 },  
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 1, y: 1 },
+                    ]    
+                }
+            },
+            Card::Rhinoceros => {
+                if is_spirit {
+                    vec![
+                        Point { x: -2, y: 0 },
+                        Point { x: -1, y: -1 },
+                        Point { x: 0, y: -1 },
+                        Point { x: 1, y: -1 },    
+                        Point { x: 2, y: 0 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 0, y: 1 },
+                    ]    
+                }
+            },
+            Card::Scorpion => {
+                if is_spirit {
+                    vec![
+                        Point { x: -2, y: -1 },
+                        Point { x: -1, y: -2 },
+                        Point { x: 1, y: -2 },
+                        Point { x: 2, y: -1 },    
+                    ]
+                } else {
+                    vec![
+                        Point { x: 1, y: 1 },
+                        Point { x: 1, y: -1 },
+                    ]    
+                }
+            },
+            Card::Spider => {
+                if is_spirit {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 0, y: -1 },
+                        Point { x: 0, y: 1 },
+                        Point { x: 1, y: -1 },    
+                    ]
+                } else {
+                    vec![
+                        Point { x: 1, y: -1 },
+                        Point { x: 0, y: 1 },
+                    ]    
+                }
+            },
             // Promotional Cards
             Card::Goat => vec![
                 Point { x: -1, y: 0 },
@@ -232,6 +352,56 @@ impl Card {
                 Point { x: 2, y: 1 },
                 Point { x: 0, y: -1 },
             ],
+            Card::Okija => {
+                if is_king {
+                    vec![
+                        Point { x: -2, y: -2 },
+                        Point { x: 2, y: -2 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: 0, y: -1 },
+                    ]
+                }
+            },
+            Card::Mejika => {
+                if is_king {
+                    vec![
+                        Point { x: 0, y: -1 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -2, y: -1 },
+                        Point { x: 2, y: -1 },
+                    ]
+                }
+            },
+            Card::Kumo => {
+                if is_king {
+                    vec![
+                        Point { x: -2, y: 0 },
+                        Point { x: 2, y: 0 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -1, y: -1 },
+                        Point { x: 1, y: -1 },
+                    ]
+                }
+            },
+            Card::Sasori => {
+                if is_king {
+                    vec![
+                        Point { x: -1, y: -2 },
+                        Point { x: 1, y: -2 },
+                    ]
+                } else {
+                    vec![
+                        Point { x: -2, y: 0 },
+                        Point { x: 2, y: 0 },
+                    ]
+                }
+            },
         }
     }
     pub fn direction(&self) -> CardDirection {
@@ -269,19 +439,33 @@ impl Card {
             Card::Tanuki => CardDirection::Right,
             Card::Iguana => CardDirection::Left,
             Card::Sable => CardDirection::Right,
-            Card::Otter => CardDirection::Left,
+            Card::Otter => CardDirection::Left,            
+            // Way of the Wind
+            Card::Bat => CardDirection::Balanced,
+            Card::Eagle => CardDirection::Balanced,
+            Card::Hawk => CardDirection::Left,
+            Card::Lion => CardDirection::Right,
+            Card::Octopus => CardDirection::Left,
+            Card::Rhinoceros => CardDirection::Left,
+            Card::Scorpion => CardDirection::Right,
+            Card::Spider => CardDirection::Right,
             // Promotional Cards
             Card::Goat => CardDirection::Right,
             Card::Sheep => CardDirection::Left,
+            Card::Okija => CardDirection::Balanced,
+            Card::Mejika => CardDirection::Balanced,
+            Card::Kumo => CardDirection::Balanced,
+            Card::Sasori => CardDirection::Balanced,
             Card::Lobster => CardDirection::Balanced,
             Card::Steer => CardDirection::Balanced,
             Card::Hornet => CardDirection::Right,
             Card::Centipede => CardDirection::Left,
+            Card::Nessie => CardDirection::Balanced,
             Card::Cat => CardDirection::Right,
             Card::Serow => CardDirection::Left,
-            Card::Nessie => CardDirection::Balanced,
             Card::Butterfly => CardDirection::Balanced,
             Card::Moth => CardDirection::Balanced,
+
         }
     }
     pub fn index(&self) -> u32 {
@@ -319,18 +503,31 @@ impl Card {
             Card::Iguana => 29,
             Card::Sable => 30,
             Card::Otter => 31,
+            // Way of the Wind
+            Card::Bat => 32,
+            Card::Eagle => 33,
+            Card::Hawk => 34,
+            Card::Lion => 35,
+            Card::Octopus => 36,
+            Card::Rhinoceros => 37,
+            Card::Scorpion => 38,
+            Card::Spider => 39,
             // Promotional Cards
-            Card::Goat => 32,
-            Card::Sheep => 33,
-            Card::Lobster => 34,
-            Card::Steer => 35,
-            Card::Hornet => 36,
-            Card::Centipede => 37,
-            Card::Cat => 38,
-            Card::Serow => 39,
-            Card::Nessie => 40,
-            Card::Butterfly => 41,
-            Card::Moth => 42,
+            Card::Goat => 40,
+            Card::Sheep => 41,
+            Card::Okija => 42,
+            Card::Mejika => 43,
+            Card::Kumo => 44,
+            Card::Sasori => 45,
+            Card::Lobster => 46,
+            Card::Steer => 47,
+            Card::Hornet => 48,
+            Card::Centipede => 49,
+            Card::Nessie => 50,
+            Card::Cat => 51,
+            Card::Serow => 52,
+            Card::Butterfly => 53,
+            Card::Moth => 54,
         }
     }
 }
@@ -370,19 +567,33 @@ impl From<u32> for Card {
             28 => Card::Tanuki,
             29 => Card::Iguana,
             30 => Card::Sable,
-            31 => Card::Otter,
+            31 => Card::Otter, 
+            // Way of the Wind
+            32 => Card::Bat,
+            33 => Card::Eagle,
+            34 => Card::Hawk,
+            35 => Card::Lion,
+            36 => Card::Octopus,
+            37 => Card::Rhinoceros,
+            38 => Card::Scorpion,
+            39 => Card::Spider,
             // Promotional Cards
-            32 => Card::Goat,
-            33 => Card::Sheep,
-            34 => Card::Lobster,
-            35 => Card::Steer,
-            36 => Card::Hornet,
-            37 => Card::Centipede,
-            38 => Card::Cat,
-            39 => Card::Serow,
-            40 => Card::Nessie,
-            41 => Card::Butterfly,
-            42 => Card::Moth,
+            40 => Card::Goat,
+            41 => Card::Sheep,
+            42 => Card::Okija,
+            43 => Card::Mejika,
+            44 => Card::Kumo,
+            45 => Card::Sasori,
+            46 => Card::Lobster,
+            47 => Card::Steer,
+            48 => Card::Hornet,
+            49 => Card::Centipede,
+            50 => Card::Nessie,
+            51 => Card::Cat,
+            52 => Card::Serow,
+            53 => Card::Butterfly,
+            54 => Card::Moth,
+         
             _ => panic!("invalid index for card"),
         }
     }
@@ -426,21 +637,35 @@ impl CardSet {
                 Card::Sable,
                 Card::Viper,
                 Card::SeaSnake,
+            ],            
+            CardSet::WayOfTheWind => vec![
+                Card::Bat,
+                Card::Eagle,
+                Card::Hawk,
+                Card::Lion,
+                Card::Octopus,
+                Card::Rhinoceros,
+                Card::Scorpion,
+                Card::Spider,
             ],
             CardSet::PromotionalPack => vec![
                 Card::Sheep,
                 Card::Goat,
+                Card::Okija,
+                Card::Mejika,
+                Card::Kumo,
+                Card::Sasori,  
                 Card::Lobster, 
                 Card::Steer, 
                 Card::Centipede, 
                 Card::Hornet, 
+                Card::Nessie,
                 Card::Serow,
                 Card::Cat, 
-                Card::Nessie,
                 Card::Butterfly,
                 Card::Moth,
             ],
-            
+
         }
     }
 }

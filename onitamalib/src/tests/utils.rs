@@ -34,6 +34,7 @@ impl Board {
         let mut cards = cards.into_iter();
         let pawn_xs: [i8; 4] = [0, 1, 3, 4];
         Board {
+            wind_spirit: Point { x: 2, y: 2 },
             blue_king: Point { x: 2, y: 0 },
             blue_pawns: pawn_xs.map(|x| Some(Point { x, y: 0 })),
 
