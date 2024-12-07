@@ -255,7 +255,7 @@ impl Board {
                 return updated_board.try_move(Move::Discard { card });
             }
         };
-    
+
         let wind_spirit_pos = match wind_spirit {
             Some(pos) => pos,
             None => return Err("Wind Spirit is missing!".to_string()),

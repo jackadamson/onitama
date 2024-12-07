@@ -37,6 +37,13 @@ impl Board {
                     }
                 }
             }
+
+            if moves.is_empty() {
+                let mut updated_board = self.clone();
+                updated_board.extra_move_pending = false;
+                return vec![];
+            }
+
             return moves;
         }
         
@@ -105,20 +112,21 @@ impl Board {
             .collect()
     }
 
-    pub fn random_legal_move<R: Rng>(&self, rng: &mut R) -> Move {
+    pub fn random_legal_move<R: Rng>(&self, rng: &mut R) -> Option<Move> {
         let mut moves = self.legal_moves();
-
+    
         // Shuffle moves to randomize selection
         moves.shuffle(rng);
-
+    
         // Validate each move using `try_move` before selecting
         for game_move in moves {
             if self.try_move(game_move).is_ok() {
-                return game_move; // Return the first valid move
+                return Some(game_move); // Return the first valid move
             }
         }
-
-        // If no valid moves remain, return a default error or panic
-        panic!("No valid moves available in random_legal_move");
-        }
+    
+        // Return None if no valid moves remain
+        None
+    }
+    
 }
