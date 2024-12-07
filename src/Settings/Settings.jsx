@@ -185,33 +185,39 @@ function Settings() {
                 />
                 {marqueeStates[id] && (
                   <CardContent className={styles.marqueeContainer}>
-                    <Marquee speed={25} play={cards.length > 4 || !largeScreen}>
-                      {cards.map((card) => (
-                        <Box mx={1} key={card.card}>
-                          <GameCard
-                            moves={card.moves}
-                            kingMoves={
-                              KING_MOVE_CARDS.includes(card.card) ? card.king_moves || [] : []
-                            }
-                            windMoves={id === 'WayOfTheWind' ? card.wind_moves || [] : []}
-                            name={card.card}
-                            setCard={() => {}}
-                            direction={card.direction}
-                            enabled
-                            spare
-                            cardSet={id === 'WayOfTheWind' ? 'WayOfTheWind' : ''}
-                            isKingMoves={KING_MOVE_CARDS.includes(card.card)}
-                            isWindMoves={
-                              !!(
-                                id === 'WayOfTheWind' &&
-                                card.wind_moves &&
-                                card.wind_moves.length > 0
-                              )
-                            }
-                          />
-                        </Box>
-                      ))}
-                    </Marquee>
+                    <Box style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
+                      <Marquee
+                        speed={25}
+                        play={cards.length > 4 || !largeScreen}
+                        pauseOnClick
+                      >
+                        {cards.map((card) => (
+                          <Box mx={1} key={card.card}>
+                            <GameCard
+                              moves={card.moves}
+                              kingMoves={
+                                KING_MOVE_CARDS.includes(card.card) ? card.king_moves || [] : []
+                              }
+                              windMoves={id === 'WayOfTheWind' ? card.wind_moves || [] : []}
+                              name={card.card}
+                              setCard={() => {}}
+                              direction={card.direction}
+                              enabled
+                              spare
+                              cardSet={id === 'WayOfTheWind' ? 'WayOfTheWind' : ''}
+                              isKingMoves={KING_MOVE_CARDS.includes(card.card)}
+                              isWindMoves={
+                                !!(
+                                  id === 'WayOfTheWind' &&
+                                  card.wind_moves &&
+                                  card.wind_moves.length > 0
+                                )
+                              }
+                            />
+                          </Box>
+                        ))}
+                      </Marquee>
+                    </Box>
                   </CardContent>
                 )}
               </Card>
