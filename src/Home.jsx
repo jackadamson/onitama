@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Typography } from '@material-ui/core';
+import { Box, Button, Typography, IconButton, Paper } from '@material-ui/core';
+import InfoIcon from '@material-ui/icons/Info';
+import CloseIcon from '@material-ui/icons/Close';
 import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
 import GithubRibbon from './GithubRibbon';
@@ -16,6 +18,7 @@ function Home() {
   useAppUpdater();
 
   const [gameSettings, setGameSettings] = useState(getGameSettings());
+  const [showSettings, setShowSettings] = useState(false); // State to toggle settings visibility
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -94,32 +97,71 @@ function Home() {
           </Button>
         </>
       )}
-      <Box m={1} />
-      <Button
-        component={Link}
-        to="/settings"
-        variant="contained"
-        color="secondary"
-        className={classes.button}
+
+      {/* Settings Button + Info Icon */}
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        width="100%"
+        style={{ marginTop: 16 }}
       >
-        Settings
-      </Button>
+        <Box
+          className={classes.button}
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          style={{
+            width: '100%',
+            maxWidth: '320px',
+          }}
+        >
+          <Button
+            component={Link}
+            to="/settings"
+            variant="contained"
+            color="secondary"
+            style={{
+              flex: 1,
+            }}
+          >
+            Settings
+          </Button>
+          <IconButton
+            onClick={() => setShowSettings(!showSettings)}
+            style={{
+              marginLeft: 8,
+            }}
+          >
+            {showSettings ? <CloseIcon /> : <InfoIcon />}
+          </IconButton>
+        </Box>
 
-      {/* Display Current Game Settings */}
-      <Box mt={0}>
-        <Typography variant="body1">
-          Disabled Card Sets: {disabledCardSetsDisplayNames.join(', ') || 'None'}
-        </Typography>
-
-        {wayOfTheWindEnabled && (
-          <>
+        {/* Conditionally Display Current Game Settings */}
+        {showSettings && (
+          <Paper
+            elevation={3}
+            style={{
+              marginTop: 8,
+              padding: 12,
+              width: 'calc(100% - 32px)',
+              maxWidth: '320px',
+            }}
+          >
             <Typography variant="body1">
-              Number of Wind Cards: {gameSettings.numberOfWindCards ?? 'Not Set'}
+              Disabled Card Sets: {disabledCardSetsDisplayNames.join(', ') || 'None'}
             </Typography>
-            <Typography variant="body1">
-              Force Wind Spirit: {gameSettings.forceWindSpiritInclusion ? 'Yes' : 'No'}
-            </Typography>
-          </>
+            {wayOfTheWindEnabled && (
+              <>
+                <Typography variant="body1">
+                  Number of Wind Cards: {gameSettings.numberOfWindCards ?? 'Random'}
+                </Typography>
+                <Typography variant="body1">
+                  Force Wind Spirit: {gameSettings.forceWindSpiritInclusion ? 'Yes' : 'No'}
+                </Typography>
+              </>
+            )}
+          </Paper>
         )}
       </Box>
     </Box>

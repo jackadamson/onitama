@@ -231,8 +231,10 @@ function Settings() {
                 </InputLabel>
                 <Select
                   labelId="number-of-wow-cards-label"
-                  value={localNumberOfWindCards}
-                  onChange={(event) => setLocalNumberOfWindCards(event.target.value)}
+                  value={localNumberOfWindCards === null ? 'Random' : localNumberOfWindCards}
+                  onChange={(event) =>
+                    setLocalNumberOfWindCards(event.target.value === 'Random' ? null : event.target.value)
+                  }
                   label="Number of Way of the Wind Cards"
                 >
                   <MenuItem value="Random">Random</MenuItem>
