@@ -15,8 +15,8 @@ impl Board {
             red_pawns,
             red_hand,
             spare_card,
-            extra_move_pending,
-            extra_move_card,
+            extra_move_pending: _,
+            extra_move_card: _,
             turn,
         } = self;
 
@@ -212,7 +212,7 @@ impl Board {
             red_pawns,
             red_hand,
             spare_card,
-            extra_move_pending,
+            extra_move_pending: _,
             extra_move_card,
             turn,
         } = self;
@@ -269,7 +269,7 @@ impl Board {
             return Err(format!("Must use {} to move", extra_move_card.unwrap()));
         }
     
-        let (player_king, opponent_king) = match turn {
+        let (player_king, _opponent_king) = match turn {
             Player::Red => (red_king, blue_king),
             Player::Blue => (blue_king, red_king),
         };

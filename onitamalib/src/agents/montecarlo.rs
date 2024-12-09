@@ -319,7 +319,6 @@ fn simulate<R: Rng>(state: GameState, rng: &mut R) -> Option<Player> {
         let game_move = match board.random_legal_move(rng) {
             Some(mv) => mv,
             None => {
-                log::debug!("No valid moves found during simulation. Ending simulation.");
                 return None;
             }
         };
