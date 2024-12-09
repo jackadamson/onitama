@@ -46,7 +46,7 @@ function Home() {
       <Box m={0.5} />
       <Button
         component={Link}
-        to="/help"
+        to="/rules/base-game"
         variant="contained"
         color="secondary"
         className={classes.button}
