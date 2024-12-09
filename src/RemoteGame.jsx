@@ -90,6 +90,7 @@ function RemoteGame({ isAi }) {
         discard={discard}
         lastMove={lastMove}
         connectionStatus={connection}
+        extraMovePending={extraMovePending}
       />
     </>
   );

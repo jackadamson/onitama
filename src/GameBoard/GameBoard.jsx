@@ -11,7 +11,6 @@ import GameTurn from './GameTurn';
 import { CardPropType, PointPropType } from './props';
 import GameScore from './GameScore';
 import KING_MOVE_CARDS from '../constants/SpecialCards';
-import getMoves from '../utils/moveUtils';
 
 function GameBoard({
   src,
@@ -37,6 +36,7 @@ function GameBoard({
   undo,
   score,
   stale,
+  extraMovePending,
 }) {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
@@ -60,6 +60,11 @@ function GameBoard({
       <Box display="flex" justifyContent="center">
         <GameTurn player={player} turn={turn} />
       </Box>
+      {extraMovePending && (
+        <Box textAlign="center" mt={0.5}>
+          <span>Move the Wind Spirit before continuing!</span>
+        </Box>
+      )}
       <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'}>
         <Box position="absolute" top="0" left="0">
           <Button component={Link} to="/">
@@ -88,7 +93,7 @@ function GameBoard({
               moves={spare.moves}
               kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
               windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
-              cardSet={spare.cardSet}  
+              cardSet={spare.cardSet}
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -151,7 +156,7 @@ function GameBoard({
               moves={spare.moves}
               kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
               windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
-              cardSet={spare.cardSet}  
+              cardSet={spare.cardSet}
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -233,6 +238,7 @@ GameBoard.propTypes = {
   undo: PropTypes.func,
   score: PropTypes.number,
   stale: PropTypes.bool,
+  extraMovePending: PropTypes.bool.isRequired,
 };
 
 export default GameBoard;

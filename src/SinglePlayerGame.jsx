@@ -83,6 +83,7 @@ function SinglePlayerGame() {
       discard={discard}
       player={player}
       lastMove={lastMove}
+      extraMovePending={extraMovePending}
     />
   );
 }

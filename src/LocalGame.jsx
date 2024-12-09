@@ -80,6 +80,7 @@ function LocalGame() {
       turn={turn}
       move={move}
       discard={discard}
+      extraMovePending={extraMovePending}
     />
   );
 }

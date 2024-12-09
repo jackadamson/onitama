@@ -107,6 +107,7 @@ function TrainingGame() {
       canUndo={canUndo}
       score={normalized}
       stale={stale}
+      extraMovePending={extraMovePending}
     />
   );
 }
