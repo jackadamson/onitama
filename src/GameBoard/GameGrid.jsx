@@ -27,31 +27,37 @@ function GameGrid({
       <LastMove lastMove={lastMove} redOriented={redOriented} />
       {grid.map((row, y) => (
         <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'} key={y}>
-          {row.map((tile, x) => (
-            <GameSquare
-              tile={tile}
-              x={x}
-              y={y}
-              src={src}
-              setSrc={setSrc}
-              turn={turn}
-              move={move}
-              isValid={isMoveValid(x, y)}
-              key={`${x}-${y}`}
-              lastMove={lastMove}
-              ranking={(dstMoveRankings[`${x},${y}`] || 0) * (redOriented ? 1 : -1)}
-            />
-          ))}
+          {row.map((tile, x) => {
+            const isValid = isMoveValid(x, y);
+           
+            return (
+              <GameSquare
+                tile={tile}
+                x={x}
+                y={y}
+                src={src}
+                setSrc={setSrc}
+                turn={turn}
+                move={move}
+                isValid={isValid}
+                key={`${x}-${y}`}
+                lastMove={lastMove}
+                ranking={(dstMoveRankings[`${x},${y}`] || 0) * (redOriented ? 1 : -1)}
+              />
+            );
+          })}
         </Box>
       ))}
     </Paper>
   );
 }
+
 GameGrid.defaultProps = {
   src: null,
   turn: null,
   lastMove: null,
 };
+
 GameGrid.propTypes = {
   redOriented: PropTypes.bool.isRequired,
   grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,

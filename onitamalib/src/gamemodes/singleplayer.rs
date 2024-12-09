@@ -4,8 +4,8 @@ use serde_cbor::ser;
 use wasm_bindgen::prelude::*;
 
 use crate::gamemodes::base::Game;
-use crate::models::Move;
-use crate::{AiAgent, CardSet, GameEvent, GameMeta, GameView, MoveRequest, Player};
+use crate::models::{Move, GameSettings, GameMeta};
+use crate::{AiAgent, Player, GameEvent, GameView, MoveRequest};
 
 struct PreviousState {
     game: Game,
@@ -45,13 +45,14 @@ impl SinglePlayerGame {
         meta: JsValue,
         difficulty: &str,
         training_mode: bool,
-        disabled_card_sets: JsValue,
+        game_settings: JsValue,
         on_send_view: js_sys::Function,
         on_send_error: js_sys::Function,
         request_ai_move: js_sys::Function,
         request_trainer_ranking: js_sys::Function,
         on_send_event: js_sys::Function,
     ) -> SinglePlayerGame {
+        // Determine player color and AI agent based on difficulty
         let is_red: bool = random();
         let agent = match difficulty {
             "easy" => AiAgent::PureMonteCarlo,
@@ -59,24 +60,34 @@ impl SinglePlayerGame {
             "hard" => AiAgent::HybridMonteCarlo,
             _ => AiAgent::Alphabeta,
         };
-        let player = match is_red {
-            true => Player::Red,
-            false => Player::Blue,
-        };
-        let game = match serde_wasm_bindgen::from_value::<Vec<CardSet>>(disabled_card_sets) {
-            Ok(disabled_card_sets) => {
-                log::info!("Playing with card sets disabled: {:?}", &disabled_card_sets);
-                Game::new_with_disabled_card_sets(disabled_card_sets)
+        let player = if is_red { Player::Red } else { Player::Blue };
+
+        // Log difficulty and player details
+        log::info!("Difficulty level: {}", difficulty);
+        log::info!("Assigned player color: {:?}", player);
+        log::info!("Assigned agent: {:?}", agent);
+
+        // Deserialize GameSettings from JsValue
+        let settings = match serde_wasm_bindgen::from_value::<GameSettings>(game_settings) {
+            Ok(settings) => {
+                settings
             }
             Err(e) => {
-                log::error!("Failed to deserialize Card Sets: {:?}", e);
-                Game::new()
+                log::error!("Failed to deserialize Game Settings: {:?}", e);
+                GameSettings::default()
             }
         };
+
+        // Use the settings to initialize the game
+        let game = Game::new_with_settings(settings.clone());
+
+        // Deserialize metadata
         let meta = match serde_wasm_bindgen::from_value::<GameMeta>(meta) {
             Ok(meta) => meta,
             Err(_) => GameMeta::blank(),
         };
+
+        // Construct the SinglePlayerGame
         let mut game = SinglePlayerGame {
             game,
             meta,
@@ -124,12 +135,13 @@ impl SinglePlayerGame {
             }
         };
     }
+
     fn rank_moves(&mut self) {
         if !self.training_mode {
             return;
         }
         if self.game.get_turn() != Some(self.player) {
-            log::info!("Not players turn (so not ranking moves)");
+            log::info!("Not player's turn (so not ranking moves)");
             return;
         }
         let state = self.game.get_state();
@@ -152,9 +164,10 @@ impl SinglePlayerGame {
         match self.game.get_winner() {
             None => {}
             Some(winner) => {
-                let winner = match winner == self.player {
-                    true => "player".to_string(),
-                    false => "ai".to_string(),
+                let winner = if winner == self.player {
+                    "player".to_string()
+                } else {
+                    "ai".to_string()
                 };
                 let against = format!("{:?}", self.agent);
                 self.send_event(GameEvent::End {
@@ -167,10 +180,12 @@ impl SinglePlayerGame {
         };
         Ok(())
     }
+
     fn send_current_view(&self) {
         let view = GameView::from(&self.game.get_state());
         self.send_view(view);
     }
+
     fn send_view(&self, view: GameView) {
         let view = SinglePlayerView {
             player: self.player,
@@ -187,6 +202,7 @@ impl SinglePlayerGame {
             }
         };
     }
+
     fn send_error(&self, error: String) {
         let error = JsValue::from(error);
         let this = JsValue::null();
@@ -197,6 +213,7 @@ impl SinglePlayerGame {
             }
         };
     }
+
     fn send_event(&self, event: GameEvent) {
         let msg = ser::to_vec(&event).unwrap();
         let msg = serde_bytes::ByteBuf::from(msg);

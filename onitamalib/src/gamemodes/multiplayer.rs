@@ -145,7 +145,7 @@ impl MultiplayerGame {
         };
     }
     pub fn reset(&mut self) {
-        log::info!("Forgeiting");
+        log::info!("Forgetting");
         self.conn_state = ConnectionState::RematchRequested;
         let msg = GameMessage::RequestRematch;
         self.send_msg(msg);

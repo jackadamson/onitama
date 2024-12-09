@@ -3,17 +3,22 @@ import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { Box, makeStyles, Paper, Tooltip } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChessPawn, faChessKing, faSkull, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faChessPawn, faChessKing, faChessQueen, faSkull, faStar } from '@fortawesome/free-solid-svg-icons';
 import Color from 'color';
 import { PointPropType } from './props';
 
 const icons = {
   Empty: null,
+  WindSpirit: <FontAwesomeIcon icon={faChessQueen} color="#B5B4B4" size="3x" />,
   BluePawn: <FontAwesomeIcon icon={faChessPawn} color="#2196f3" size="3x" />,
   BlueKing: <FontAwesomeIcon icon={faChessKing} color="#2196f3" size="3x" />,
   RedPawn: <FontAwesomeIcon icon={faChessPawn} color="#f44336" size="3x" />,
   RedKing: <FontAwesomeIcon icon={faChessKing} color="#f44336" size="3x" />,
 };
+
+// Determine the controller of WindSpirit based on the current player
+const getWindSpiritController = (currentPlayer) => currentPlayer === 'Blue' ? 'Blue' : 'Red';
+
 const useStyles = makeStyles((theme) => ({
   selected: {
     borderColor: theme.palette.primary.main,
@@ -28,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
   },
   lastMove: {
-    // Styling for the squares the were in the last move
+    // Styling for the squares that were in the last move
     // borderColor: `${theme.palette.success.dark}a0`,
   },
   redBase: {
@@ -42,12 +47,15 @@ const useStyles = makeStyles((theme) => ({
     transform: 'translate(-20px, -20px)',
   },
 }));
-const tilePlayer = {
+
+// tilePlayer is now a function that takes the currentPlayer as an argument
+const tilePlayer = (currentPlayer) => ({
   BluePawn: 'Blue',
   BlueKing: 'Blue',
   RedPawn: 'Red',
   RedKing: 'Red',
-};
+  WindSpirit: getWindSpiritController(currentPlayer),
+});
 
 function Skull() {
   const classes = useStyles();
@@ -73,13 +81,18 @@ function Star() {
 
 function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove, ranking }) {
   const classes = useStyles();
-  const player = tilePlayer[tile];
+  
+  // Call tilePlayer with the current turn to get the correct player assignments
+  const currentTilePlayer = tilePlayer(turn);
+  const player = currentTilePlayer[tile];
   const activePlayer = turn === player;
+
   const selected = x === src?.x && y === src?.y;
   const selectable = !selected && Boolean(activePlayer || src);
   const lastSrc = x === lastMove?.src?.x && y === lastMove?.src?.y;
   const lastDst = x === lastMove?.dst?.x && y === lastMove?.dst?.y;
   const moved = lastSrc || lastDst;
+
   return (
     <Paper
       variant="outlined"
@@ -98,10 +111,15 @@ function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove, ra
         [classes.lastMove]: moved && !isValid,
       })}
       onClick={() => {
-        if (activePlayer) {
-          setSrc({ x, y });
-        } else {
+        if (selected) {
+          // Deselect the piece if it's already selected
+          setSrc(null);
+        } else if (src) {
+          // If a source is selected, attempt to move to the clicked square
           move({ x, y });
+        } else if (activePlayer) {
+          // If no source is selected and the clicked square is an active player's piece, select it
+          setSrc({ x, y, type: tile.includes('King') ? 'King' : 'Pawn' }); // Pass the piece type (King or Pawn)
         }
       }}
     >
@@ -111,13 +129,15 @@ function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove, ra
     </Paper>
   );
 }
+
 GameSquare.defaultProps = {
   src: null,
   turn: null,
   lastMove: null,
 };
+
 GameSquare.propTypes = {
-  tile: PropTypes.oneOf(['Empty', 'BluePawn', 'BlueKing', 'RedPawn', 'RedKing']).isRequired,
+  tile: PropTypes.oneOf(['Empty', 'BluePawn', 'BlueKing', 'RedPawn', 'RedKing', 'WindSpirit']).isRequired,
   x: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
   src: PropTypes.shape({

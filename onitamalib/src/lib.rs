@@ -6,7 +6,7 @@ mod board;
 mod cards;
 mod models;
 
-mod agents;
+pub mod agents;
 pub use agents::*;
 
 #[cfg(test)]
