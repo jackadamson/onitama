@@ -55,13 +55,6 @@ function GameBoard({
   // Whether perspective should have red at bottom of screen
   const redOriented = player !== 'Blue';
 
-  // Determine if a king is selected
-  const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
-  const isWindSpiritSelected = src && grid[src.y]?.[src.x]?.includes('Spirit');
-
-  // Updated isMoveValid logic using centralized getMoves
-  const isValidMove = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected);
-
   return (
     <Box height="100vh" display="flex" flexDirection="column">
       <Box display="flex" justifyContent="center">
@@ -119,7 +112,7 @@ function GameBoard({
               inverted={redOriented}
             />
             <GameGrid
-              isMoveValid={(x, y) => isValidMove(x, y)}
+              isMoveValid={isMoveValid}
               move={move}
               src={src}
               setSrc={setSrc}

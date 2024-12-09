@@ -250,6 +250,10 @@ pub enum GameView {
         turn: Player,
         #[serde(rename = "canMove")]
         can_move: bool,
+        #[serde(rename = "extraMovePending")]
+        extra_move_pending: bool,
+        #[serde(rename = "extraMoveCard")]
+        extra_move_card: Option<CardDescription>,
     },
     Finished {
         winner: Player,
@@ -262,6 +266,10 @@ pub enum GameView {
         turn: Player,
         #[serde(rename = "canMove")]
         can_move: bool,
+        #[serde(rename = "extraMovePending")]
+        extra_move_pending: bool,
+        #[serde(rename = "extraMoveCard")]
+        extra_move_card: Option<CardDescription>,
     },
 }
 
@@ -311,6 +319,8 @@ impl From<&GameState> for GameView {
                 spare: to_card(&board.spare_card),
                 turn: board.turn,
                 can_move: board.can_move(),
+                extra_move_pending: board.extra_move_pending,
+                extra_move_card: board.extra_move_card.map(|card| CardDescription::from(card)),
             },
             GameState::Finished { winner, board } => Self::Finished {
                 winner: *winner,
@@ -320,6 +330,8 @@ impl From<&GameState> for GameView {
                 spare: to_card(&board.spare_card),
                 turn: board.turn,
                 can_move: true,
+                extra_move_pending: board.extra_move_pending, // Populate extraMovePending
+                extra_move_card: board.extra_move_card.map(|card| CardDescription::from(card)),
             },
         }
     }

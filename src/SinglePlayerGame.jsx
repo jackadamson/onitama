@@ -56,10 +56,13 @@ function SinglePlayerGame() {
     return <Loading />;
   }
 
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove } = state;
-  const isKingSelected = src?.type === 'King';
-  const isWindSpiritSelected = src?.type === 'Spirit';
-  const isMoveValid = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected);
+  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, extraMovePending } = state;
+  
+  // Determine if a king/spirit is selected
+  const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
+  const isWindSpiritSelected = src && grid[src.y]?.[src.x]?.includes('Spirit');
+  
+  const isMoveValid = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected, extraMovePending );
 
   return (
     <GameBoard
