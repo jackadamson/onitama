@@ -18,7 +18,7 @@ function Home() {
   useAppUpdater();
 
   const [gameSettings, setGameSettings] = useState(getGameSettings());
-  const [showSettings, setShowSettings] = useState(false); // State to toggle settings visibility
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -107,28 +107,27 @@ function Home() {
         style={{ marginTop: 16 }}
       >
         <Box
-          className={classes.button}
           display="flex"
           alignItems="center"
           justifyContent="space-between"
-          style={{
-            width: '100%',
-            maxWidth: '320px',
-          }}
+          width="100%"
+          maxWidth="320px"
         >
           <Button
             component={Link}
             to="/settings"
             variant="contained"
             color="secondary"
+            className={classes.button}
             style={{
-              flex: 1,
+              flexGrow: 1,
             }}
           >
             Settings
           </Button>
           <IconButton
             onClick={() => setShowSettings(!showSettings)}
+            size="small"
             style={{
               marginLeft: 8,
             }}
