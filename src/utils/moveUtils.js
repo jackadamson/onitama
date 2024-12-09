@@ -11,6 +11,8 @@ import KING_MOVE_CARDS from '../constants/SpecialCards';
  */
 
 const getMoves = (src, card, turn, isKingSelected = false, isWindSpiritSelected = false) => {
+  console.log("getMoves called with:", { src, card, turn, isKingSelected, isWindSpiritSelected });
+
   if (!src || !card || !card.card) {
     return () => false;
   }
@@ -19,7 +21,7 @@ const getMoves = (src, card, turn, isKingSelected = false, isWindSpiritSelected 
   const isWayOfTheWindCard = card.cardSet === 'WayOfTheWind';
     // If this is the Wind Spirit and it's a "Way of the Wind" card, return a function that does nothing
   if (isWindSpiritSelected && isWayOfTheWindCard) {
-    return () => false;  // Prevent the Wind Spirit from using the "Way of the Wind" card
+    return () => false; 
   }
 
   // Determine if this is a card that has special moves for a king piece

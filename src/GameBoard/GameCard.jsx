@@ -80,7 +80,7 @@ function GameCard({
     if (enabled && !canMove) {
       discard(name);
     } else if (enabled) {
-      setCard({ card: name, moves, direction, kingMoves, windMoves });
+      setCard({ card: name, moves, direction, kingMoves, windMoves, cardSet });
     }
   };
  
