@@ -101,69 +101,65 @@ function Home() {
       {/* Settings Button + Info Icon */}
       <Box
         display="flex"
-        flexDirection="column"
+        flexDirection="row"
         alignItems="center"
+        justifyContent="center"
         width="100%"
+        maxWidth="320px" // Ensure total width matches other buttons
         style={{ marginTop: 16 }}
       >
-        <Box
+        <Button
+          component={Link}
+          to="/settings"
+          variant="contained"
+          color="secondary"
           className={classes.button}
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
           style={{
-            width: '100%',
+            flexGrow: 1, // Allow the button to grow to fill remaining space
+            maxWidth: 'calc(100% - 48px)', // Subtract IconButton width from total
+          }}
+        >
+          Settings
+        </Button>
+        <IconButton
+          onClick={() => setShowSettings(!showSettings)}
+          size="small"
+          style={{
+            marginLeft: 8, // Small gap between button and icon
+            width: 40, // Fixed width to ensure consistency
+            height: 40, // Matches the button's height
+          }}
+        >
+          {showSettings ? <CloseIcon /> : <InfoIcon />}
+        </IconButton>
+      </Box>
+
+      {/* Conditionally Display Current Game Settings */}
+      {showSettings && (
+        <Paper
+          elevation={3}
+          style={{
+            marginTop: 8,
+            padding: 12,
+            width: 'calc(100% - 32px)',
             maxWidth: '320px',
           }}
         >
-          <Button
-            component={Link}
-            to="/settings"
-            variant="contained"
-            color="secondary"
-            style={{
-              flex: 1,
-            }}
-          >
-            Settings
-          </Button>
-          <IconButton
-            onClick={() => setShowSettings(!showSettings)}
-            style={{
-              marginLeft: 8,
-            }}
-          >
-            {showSettings ? <CloseIcon /> : <InfoIcon />}
-          </IconButton>
-        </Box>
-
-        {/* Conditionally Display Current Game Settings */}
-        {showSettings && (
-          <Paper
-            elevation={3}
-            style={{
-              marginTop: 8,
-              padding: 12,
-              width: 'calc(100% - 32px)',
-              maxWidth: '320px',
-            }}
-          >
-            <Typography variant="body1">
-              Disabled Card Sets: {disabledCardSetsDisplayNames.join(', ') || 'None'}
-            </Typography>
-            {wayOfTheWindEnabled && (
-              <>
-                <Typography variant="body1">
-                  Number of Wind Cards: {gameSettings.numberOfWindCards ?? 'Random'}
-                </Typography>
-                <Typography variant="body1">
-                  Force Wind Spirit: {gameSettings.forceWindSpiritInclusion ? 'Yes' : 'No'}
-                </Typography>
-              </>
-            )}
-          </Paper>
-        )}
-      </Box>
+          <Typography variant="body1">
+            Disabled Card Sets: {disabledCardSetsDisplayNames.join(', ') || 'None'}
+          </Typography>
+          {wayOfTheWindEnabled && (
+            <>
+              <Typography variant="body1">
+                Number of Wind Cards: {gameSettings.numberOfWindCards ?? 'Random'}
+              </Typography>
+              <Typography variant="body1">
+                Force Wind Spirit: {gameSettings.forceWindSpiritInclusion ? 'Yes' : 'No'}
+              </Typography>
+            </>
+          )}
+        </Paper>
+      )}
     </Box>
   );
 }
