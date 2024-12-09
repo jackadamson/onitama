@@ -38,12 +38,6 @@ impl Board {
                 }
             }
 
-            if moves.is_empty() {
-                let mut updated_board = self.clone();
-                updated_board.extra_move_pending = false;
-                return vec![];
-            }
-
             return moves;
         }
         
