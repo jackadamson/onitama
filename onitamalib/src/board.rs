@@ -142,7 +142,7 @@ impl Board {
             }
         }
 
-        let extra_move_pending = self.enable_extra_move(card, dst); // CardSet::WayOfTheWind.cards().contains(&card);
+        let extra_move_pending = self.enable_extra_move(card, src, dst);
         let extra_move_card = if extra_move_pending { Some(card) } else { None };
 
         let player_hand = if !extra_move_pending {
@@ -596,18 +596,35 @@ impl Board {
         false
     }
 
-    fn enable_extra_move(&self, card: Card, dst: Point) -> bool {
+    fn enable_extra_move(&self, card: Card, moved_src: Point, moved_dst: Point) -> bool {
         if !CardSet::WayOfTheWind.cards().contains(&card) {
             return false; // Only "Way of the Wind" cards can trigger extra moves
         }
-
-        // Create a temporary board to check if a valid extra move exists
+    
+        // Create a temporary board representing the updated state after the normal move
         let mut temp_board = self.clone();
-        temp_board.wind_spirit = Some(dst);
+    
+        // Update the board to reflect the normal move of a Pawn or King
+        for pawn in temp_board.player_pawns().iter_mut().chain(temp_board.opponent_pawns().iter_mut()) {
+            if let Some(pos) = pawn {
+                if *pos == moved_src {
+                    *pos = moved_dst;
+                }
+            }
+        }
+    
+        // Update the King position if it was the piece that moved
+        if *temp_board.player_king() == moved_src {
+            temp_board.red_king = if self.turn == Player::Red { moved_dst } else { temp_board.red_king };
+            temp_board.blue_king = if self.turn == Player::Blue { moved_dst } else { temp_board.blue_king };
+        }
+    
+        // Enable the extra move context for the Wind Spirit
         temp_board.extra_move_pending = true;
         temp_board.extra_move_card = Some(card);
-
-        temp_board.can_move() // Return whether the extra move is valid
+    
+        // Check if a valid extra move exists for the Wind Spirit
+        temp_board.can_move()
     }
 
     pub fn to_grid(&self) -> [[GameSquare; 5]; 5] {
