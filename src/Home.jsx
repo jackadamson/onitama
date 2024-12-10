@@ -101,19 +101,21 @@ function Home() {
       {/* Settings Button + Info Icon */}
       <Box
         display="flex"
-        flexDirection="column"
+        flexDirection="row"
         alignItems="center"
-        width="100%"
-        style={{ marginTop: 16 }}
+        justifyContent="center"
+        style={{
+          width: 'calc(100% - 32px)', // Matches the width of other buttons
+          maxWidth: '320px',
+          marginTop: 16,
+        }}
       >
         <Box
-          className={classes.button}
           display="flex"
+          flexDirection="row"
           alignItems="center"
-          justifyContent="space-between"
           style={{
             width: '100%',
-            maxWidth: '320px',
           }}
         >
           <Button
@@ -122,48 +124,52 @@ function Home() {
             variant="contained"
             color="secondary"
             style={{
-              flex: 1,
+              flexGrow: 1, // Button takes all available space
             }}
           >
             Settings
           </Button>
           <IconButton
             onClick={() => setShowSettings(!showSettings)}
+            size="small"
             style={{
-              marginLeft: 8,
+              marginLeft: 8, // Space between button and icon
+              flexShrink: 0, // Prevent icon from shrinking
+              width: 40, // Fixed icon width
+              height: 40, // Fixed icon height
             }}
           >
             {showSettings ? <CloseIcon /> : <InfoIcon />}
           </IconButton>
         </Box>
-
-        {/* Conditionally Display Current Game Settings */}
-        {showSettings && (
-          <Paper
-            elevation={3}
-            style={{
-              marginTop: 8,
-              padding: 12,
-              width: 'calc(100% - 32px)',
-              maxWidth: '320px',
-            }}
-          >
-            <Typography variant="body1">
-              Disabled Card Sets: {disabledCardSetsDisplayNames.join(', ') || 'None'}
-            </Typography>
-            {wayOfTheWindEnabled && (
-              <>
-                <Typography variant="body1">
-                  Number of Wind Cards: {gameSettings.numberOfWindCards ?? 'Random'}
-                </Typography>
-                <Typography variant="body1">
-                  Force Wind Spirit: {gameSettings.forceWindSpiritInclusion ? 'Yes' : 'No'}
-                </Typography>
-              </>
-            )}
-          </Paper>
-        )}
       </Box>
+
+      {/* Conditionally Display Current Game Settings */}
+      {showSettings && (
+        <Paper
+          elevation={3}
+          style={{
+            marginTop: 8,
+            padding: 12,
+            width: 'calc(100% - 32px)',
+            maxWidth: '320px',
+          }}
+        >
+          <Typography variant="body1">
+            Disabled Card Sets: {disabledCardSetsDisplayNames.join(', ') || 'None'}
+          </Typography>
+          {wayOfTheWindEnabled && (
+            <>
+              <Typography variant="body1">
+                Number of Wind Cards: {gameSettings.numberOfWindCards ?? 'Random'}
+              </Typography>
+              <Typography variant="body1">
+                Force Wind Spirit: {gameSettings.forceWindSpiritInclusion ? 'Yes' : 'No'}
+              </Typography>
+            </>
+          )}
+        </Paper>
+      )}
     </Box>
   );
 }
