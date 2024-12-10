@@ -142,7 +142,7 @@ impl Board {
             }
         }
 
-        let extra_move_pending = CardSet::WayOfTheWind.cards().contains(&card);
+        let extra_move_pending = self.enable_extra_move(card, dst); // CardSet::WayOfTheWind.cards().contains(&card);
         let extra_move_card = if extra_move_pending { Some(card) } else { None };
 
         let player_hand = if !extra_move_pending {
@@ -594,6 +594,20 @@ impl Board {
             }
         }
         false
+    }
+
+    fn enable_extra_move(&self, card: Card, dst: Point) -> bool {
+        if !CardSet::WayOfTheWind.cards().contains(&card) {
+            return false; // Only "Way of the Wind" cards can trigger extra moves
+        }
+
+        // Create a temporary board to check if a valid extra move exists
+        let mut temp_board = self.clone();
+        temp_board.wind_spirit = Some(dst);
+        temp_board.extra_move_pending = true;
+        temp_board.extra_move_card = Some(card);
+
+        temp_board.can_move() // Return whether the extra move is valid
     }
 
     pub fn to_grid(&self) -> [[GameSquare; 5]; 5] {
