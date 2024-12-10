@@ -4,43 +4,47 @@ import KING_MOVE_CARDS from '../constants/SpecialCards';
  * Calculates valid moves for a given card and piece.
  * @param {Object} src - The source position ({ x, y }).
  * @param {Object} card - The active card ({ moves, kingMoves, windMoves, cardSet }).
+ * @param {Array} grid - The game board grid to determine piece types and ownership.
  * @param {String} turn - The current turn ('Red' or 'Blue').
- * @param {Boolean} isKingSelected - Whether the selected piece is a King.
- * @param {Boolean} isWindSpiritSelected - Whether the selected piece is the Wind Spirit.
- * @param {Boolean} extraMovePending - Whether and extra move is pending.
+ * @param {Boolean} extraMovePending - Whether an extra move is pending.
  * @returns {Function} A function to validate moves for a given destination.
  */
 
-const getMoves = (src, card, turn, isKingSelected = false, isWindSpiritSelected = false, extraMovePending = false) => {
-
-  if (!src || !card || !card.card) {
+const getMoves = (src, card, grid, turn, extraMovePending = false) => {
+  if (!src || !card || !card.card || !grid[src.y]?.[src.x]) {
     return () => false;
   }
 
-  // Check if the card is a "Way of the Wind" card
-  const isWayOfTheWindCard = card.cardSet === 'WayOfTheWind';
-  // Determine if this is a card that has special moves for a king piece
+  // Get the selected piece from the grid
+  const piece = grid[src.y][src.x];
+
+  // Determine piece attributes
+  const isKing = piece.includes('King');
+  const isWindSpirit = piece.includes('Spirit');
+  const isOpponentKing = isKing && !piece.includes(turn);
+
   const isSpecialCard = KING_MOVE_CARDS.includes(card.card);
 
-  // Get the moves for the card - extraMovePending not implemented
+  // Get the moves for the card
   let moves;
 
-  if (isWindSpiritSelected && isWayOfTheWindCard) {
-    if (extraMovePending) {
-        moves = card.windMoves || [];
-    } else {
-        moves = []; // No valid moves if extraMovePending is false
-    }
-} else if (isKingSelected && isSpecialCard) {
-    moves = card.kingMoves || [];
-} else {
-    moves = card.moves || [];
-}
+  if (isWindSpirit && card.cardSet === 'WayOfTheWind') {
+    moves = extraMovePending ? card.windMoves || [] : [];
+  } else if (isOpponentKing && card.card === 'Kame') {
+    // Hard-coded move: Opponent's King always moves 1 square towards user
+    moves = [{ x: 0, y: -1 }]; // Universal move; direction flipped by `strMoves`
+  } else if (isKing && isSpecialCard) {
+    moves = card.kingMoves || []; // Default King moves
+  } else {
+    moves = card.moves || []; // Default moves for other pieces
+  }
 
   // Calculate the valid move positions based on the current player's turn
-  const strMoves = turn === 'Red'
-    ? moves.map(({ x, y }) => `${src.x + x},${src.y + y}`)
-    : moves.map(({ x, y }) => `${src.x - x},${src.y - y}`);
+  const strMoves = moves.map(({ x, y }) =>
+    turn === 'Red'
+      ? `${src.x + x},${src.y + y}` // Forward for Red
+      : `${src.x - x},${src.y - y}` // Forward for Blue
+  );
 
   return (x, y) => strMoves.includes(`${x},${y}`);
 };

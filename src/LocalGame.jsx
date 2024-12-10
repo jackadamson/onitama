@@ -56,13 +56,8 @@ function LocalGame() {
 
   const { blueCards, redCards, spare, turn, grid, canMove, winner, extraMovePending } = state;
 
-  // Determine if a king is selected
-  const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
-  const isWindSpiritSelected = src && grid[src.y]?.[src.x]?.includes('Spirit');
-
-  // Use the centralized getMoves function
-  const isMoveValid = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected, extraMovePending );
-
+  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending );
+  
   return (
     <GameBoard
       src={src}

@@ -56,16 +56,10 @@ function TrainingGame() {
     return <Loading />;
   }
 
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, canUndo, extraMovePending } =
-    state;
+  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, canUndo, extraMovePending } = state;
 
+  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending );
   
-  const isKingSelected = src && grid[src.y]?.[src.x]?.includes('King');
-  const isWindSpiritSelected = src && grid[src.y]?.[src.x]?.includes('Spirit');
-    
-  // Use the centralized getMoves function
-  const isMoveValid = getMoves(src, card, turn, isKingSelected, isWindSpiritSelected, extraMovePending );
-
   const { max, min, ranksByCardSrc, stale } = moveRankings;
   const dstMoveRankings =
     state && player === turn && ranksByCardSrc && card && src
