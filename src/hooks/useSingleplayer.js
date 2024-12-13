@@ -4,7 +4,7 @@ import { SinglePlayerGame } from '../onitamalib';
 import logger from '../logger';
 import onEvent from '../events';
 import getMeta from '../meta';
-import useGameSettings from './useGameSettings'; 
+import useGameSettings from './useGameSettings';
 
 const useSingleplayer = (difficulty, trainingMode) => {
   const [state, setState] = useState(null);
@@ -72,7 +72,7 @@ const useSingleplayer = (difficulty, trainingMode) => {
       undo: () => game.undo(),
     };
   }, [setState, enqueueSnackbar, difficulty, trainingMode, gameSettings]);
-  
+
   logger.log(state);
   return { state, moveRankings, ...handlers };
 };

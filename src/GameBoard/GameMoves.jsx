@@ -68,7 +68,7 @@ function GameMoves({ moves, inverted, direction, isKingMoves, isWindMoves, isSec
   } else {
     indexesY = [-2, -1, 0, 1, 2];
   }
-      
+
   return (
     <Box className={classes.grid}>
       {indexesY.map((y) => (
@@ -81,25 +81,33 @@ function GameMoves({ moves, inverted, direction, isKingMoves, isWindMoves, isSec
                 key={keyed}
                 className={clsx({
                   [classes.moveCell]: true,
-                  [classes.origin]: x === 0 && y === 0 && !(isKingMoves && isSecondGrid) && !(isWindMoves && isSecondGrid),
-                  [classes.secondGridOrigin]: x === 0 && y === 0 && (isKingMoves || isWindMoves) && isSecondGrid,
-                  [classes.directionBalanced]: accessible && (direction === 'Balanced' || (isWindMoves && isSecondGrid)),
-                  [classes.directionLeft]: accessible && direction === 'Left' && !(isWindMoves && isSecondGrid),
-                  [classes.directionRight]: accessible && direction === 'Right' && !(isWindMoves && isSecondGrid),
+                  [classes.origin]:
+                    x === 0 &&
+                    y === 0 &&
+                    !(isKingMoves && isSecondGrid) &&
+                    !(isWindMoves && isSecondGrid),
+                  [classes.secondGridOrigin]:
+                    x === 0 && y === 0 && (isKingMoves || isWindMoves) && isSecondGrid,
+                  [classes.directionBalanced]:
+                    accessible && (direction === 'Balanced' || (isWindMoves && isSecondGrid)),
+                  [classes.directionLeft]:
+                    accessible && direction === 'Left' && !(isWindMoves && isSecondGrid),
+                  [classes.directionRight]:
+                    accessible && direction === 'Right' && !(isWindMoves && isSecondGrid),
                 })}
               >
-                  {isSecondGrid && (isKingMoves || isWindMoves) && x === 0 && y === 0 && (
-                    <FontAwesomeIcon
-                      icon={isKingMoves ? faChessKing : faChessQueen}
-                      style={{
-                        color: isKingMoves ? 'white' : '#C2C2C2',
-                        fontSize: '10px',
-                        position: 'relative',
-                        margin: 'auto',
-                        transform: inverted ? 'rotate(180deg)' : 'none',
-                      }}
-                    />
-                  )}
+                {isSecondGrid && (isKingMoves || isWindMoves) && x === 0 && y === 0 && (
+                  <FontAwesomeIcon
+                    icon={isKingMoves ? faChessKing : faChessQueen}
+                    style={{
+                      color: isKingMoves ? 'white' : '#C2C2C2',
+                      fontSize: '10px',
+                      position: 'relative',
+                      margin: 'auto',
+                      transform: inverted ? 'rotate(180deg)' : 'none',
+                    }}
+                  />
+                )}
               </Box>
             );
           })}
@@ -121,7 +129,7 @@ GameMoves.propTypes = {
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    })
+    }),
   ).isRequired,
   direction: PropTypes.string.isRequired,
   isKingMoves: PropTypes.bool,

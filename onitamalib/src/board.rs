@@ -645,34 +645,9 @@ impl Board {
         grid
     }
 
-    fn new_from_cards_and_wind_spirit(cards: Vec<Card>, include_wind_spirit: bool) -> Board {
-        let mut cards = cards.into_iter();
-        let pawn_xs: [i8; 4] = [0, 1, 3, 4];
-        Board {
-            wind_spirit: if include_wind_spirit {
-                Some(Point { x: 2, y: 2 })
-            } else {
-                None
-            },
-            blue_king: Point { x: 2, y: 0 },
-            blue_pawns: pawn_xs.map(|x| Some(Point { x, y: 0 })),
-            blue_hand: [cards.next().unwrap(), cards.next().unwrap()],
-            red_king: Point { x: 2, y: 4 },
-            red_pawns: pawn_xs.map(|x| Some(Point { x, y: 4 })), 
-            red_hand: [cards.next().unwrap(), cards.next().unwrap()],
-            spare_card: cards.next().unwrap(),
-            extra_move_pending: false,
-            extra_move_card: None,
-            turn: Player::Red,
-        }
-    }
-
     pub fn new() -> Board {
-        let mut rng = thread_rng();
-        let mut cards: Vec<Card> = Card::into_enum_iter().collect();
-        cards.shuffle(&mut rng);
-
-        Board::new_from_cards_and_wind_spirit(cards, false)
+        let settings = GameSettings::default();
+        Board::new_with_settings(settings)      
     }
 }
 

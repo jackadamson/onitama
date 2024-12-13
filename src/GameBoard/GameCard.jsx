@@ -83,7 +83,7 @@ function GameCard({
       setCard({ card: name, moves, direction, kingMoves, windMoves, cardSet });
     }
   };
- 
+
   return (
     <Paper
       className={clsx({
@@ -96,10 +96,13 @@ function GameCard({
       })}
       onClick={handler}
     >
-      <Typography variant="subtitle1" style={{ fontSize: isKingMoveCard || isWindMoveCard ? '0.75rem' : '1rem' }}>
+      <Typography
+        variant="subtitle1"
+        style={{ fontSize: isKingMoveCard || isWindMoveCard ? '0.75rem' : '1rem' }}
+      >
         {name}
       </Typography>
-      {(isKingMoveCard || isWindMoveCard) ? (
+      {isKingMoveCard || isWindMoveCard ? (
         <div className={classes.movesContainer}>
           {inverted ? (
             <>
@@ -185,19 +188,19 @@ GameCard.propTypes = {
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    })
+    }),
   ).isRequired,
   kingMoves: PropTypes.arrayOf(
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    })
+    }),
   ),
   windMoves: PropTypes.arrayOf(
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    })
+    }),
   ),
   cardSet: PropTypes.string.isRequired,
   spare: PropTypes.bool,

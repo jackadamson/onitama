@@ -419,11 +419,10 @@ pub struct GameSettings {
 }
 
 impl GameSettings {
-    // Default settings for a standard game
     pub fn default() -> Self {
         GameSettings {
-            disabled_card_sets: vec!["WayOfTheWind".to_string()],  // Way Of The Wind card set is disabled by default
-            number_of_wind_cards: Some(2),  // Default to two Way Of The Wind cards
+            disabled_card_sets: vec![], // Default to all card sets
+            number_of_wind_cards: None,  // Default to randomized number of Way Of The Wind cards
             force_wind_spirit_inclusion: false,  // Default to not force Wind Spirit piece inclusion
         }
     }

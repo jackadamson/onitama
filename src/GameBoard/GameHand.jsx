@@ -37,7 +37,7 @@ function GameHand({
           inverted={!inverted}
         />
       )}
-      {cards.map((card, index) => {
+      {cards.map((card) => {
         // Keep the entire card object intact
         const { card: name, moves, direction, kingMoves, windMoves, cardSet } = card;
 
@@ -69,20 +69,20 @@ const CardPropType = PropTypes.shape({
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    })
+    }),
   ).isRequired,
   direction: PropTypes.string.isRequired,
   kingMoves: PropTypes.arrayOf(
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    })
+    }),
   ),
   windMoves: PropTypes.arrayOf(
     PropTypes.shape({
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
-    })
+    }),
   ),
   cardSet: PropTypes.string,
 });

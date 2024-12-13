@@ -56,10 +56,22 @@ function TrainingGame() {
     return <Loading />;
   }
 
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, canUndo, extraMovePending } = state;
+  const {
+    blueCards,
+    redCards,
+    spare,
+    turn,
+    grid,
+    canMove,
+    winner,
+    player,
+    lastMove,
+    canUndo,
+    extraMovePending,
+  } = state;
 
-  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending );
-  
+  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending);
+
   const { max, min, ranksByCardSrc, stale } = moveRankings;
   const dstMoveRankings =
     state && player === turn && ranksByCardSrc && card && src

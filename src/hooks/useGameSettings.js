@@ -25,7 +25,7 @@ const useGameSettings = () => {
       ...updatedSettings,
       // Convert "Random" to null if needed
       numberOfWindCards:
-        updatedSettings.numberOfWindCards === "Random" ? null : updatedSettings.numberOfWindCards,
+        updatedSettings.numberOfWindCards === 'Random' ? null : updatedSettings.numberOfWindCards,
     }));
   };
 

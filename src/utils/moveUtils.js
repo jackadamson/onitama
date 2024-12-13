@@ -40,10 +40,11 @@ const getMoves = (src, card, grid, turn, extraMovePending = false) => {
   }
 
   // Calculate the valid move positions based on the current player's turn
-  const strMoves = moves.map(({ x, y }) =>
-    turn === 'Red'
-      ? `${src.x + x},${src.y + y}` // Forward for Red
-      : `${src.x - x},${src.y - y}` // Forward for Blue
+  const strMoves = moves.map(
+    ({ x, y }) =>
+      turn === 'Red'
+        ? `${src.x + x},${src.y + y}` // Forward for Red
+        : `${src.x - x},${src.y - y}`, // Forward for Blue
   );
 
   return (x, y) => strMoves.includes(`${x},${y}`);

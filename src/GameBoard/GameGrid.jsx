@@ -29,7 +29,7 @@ function GameGrid({
         <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'} key={y}>
           {row.map((tile, x) => {
             const isValid = isMoveValid(x, y);
-           
+
             return (
               <GameSquare
                 tile={tile}

@@ -58,9 +58,21 @@ function RemoteGame({ isAi }) {
     return <Loading />;
   }
 
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, connection, extraMovePending } = state;
+  const {
+    blueCards,
+    redCards,
+    spare,
+    turn,
+    grid,
+    canMove,
+    winner,
+    player,
+    lastMove,
+    connection,
+    extraMovePending,
+  } = state;
 
-  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending );
+  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending);
 
   return (
     <>

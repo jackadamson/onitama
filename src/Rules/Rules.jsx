@@ -12,15 +12,18 @@ function Rules() {
   return (
     <Box m={2}>
       {/* Top Navigation Buttons */}
-      <Box display="flex" justifyContent="flex-start" mb={2} flexWrap="wrap" maxWidth="720px" width="100%" mx="auto">
+      <Box
+        display="flex"
+        justifyContent="flex-start"
+        mb={2}
+        flexWrap="wrap"
+        maxWidth="720px"
+        width="100%"
+        mx="auto"
+      >
         {/* Back to Menu Button */}
         <Box mx={1} mb={1}>
-          <Button
-            component={Link}
-            to="/"
-            variant="outlined"
-            color="secondary"
-          >
+          <Button component={Link} to="/" variant="outlined" color="secondary">
             Back to Menu
           </Button>
         </Box>
@@ -45,23 +48,13 @@ function Rules() {
           <Markdown>{content}</Markdown>
           {/* Bottom Buttons */}
           <Box display="flex" mt={2}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              component={Link}
-              to="/"
-            >
+            <Button variant="outlined" color="secondary" component={Link} to="/">
               Back to Menu
             </Button>
             <Box flexGrow={1} />
             {/* Conditionally Render Play an Easy Game Button */}
             {page === 'base-game' && (
-              <Button
-                variant="contained"
-                color="primary"
-                component={Link}
-                to="/ai/easy"
-              >
+              <Button variant="contained" color="primary" component={Link} to="/ai/easy">
                 Play an Easy Game
               </Button>
             )}

@@ -3,7 +3,13 @@ import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { Box, makeStyles, Paper, Tooltip } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChessPawn, faChessKing, faChessQueen, faSkull, faStar } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChessPawn,
+  faChessKing,
+  faChessQueen,
+  faSkull,
+  faStar,
+} from '@fortawesome/free-solid-svg-icons';
 import Color from 'color';
 import { PointPropType } from './props';
 
@@ -17,7 +23,7 @@ const icons = {
 };
 
 // Determine the controller of WindSpirit based on the current player
-const getWindSpiritController = (currentPlayer) => currentPlayer === 'Blue' ? 'Blue' : 'Red';
+const getWindSpiritController = (currentPlayer) => (currentPlayer === 'Blue' ? 'Blue' : 'Red');
 
 const useStyles = makeStyles((theme) => ({
   selected: {
@@ -81,7 +87,7 @@ function Star() {
 
 function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove, ranking }) {
   const classes = useStyles();
-  
+
   // Call tilePlayer with the current turn to get the correct player assignments
   const currentTilePlayer = tilePlayer(turn);
   const player = currentTilePlayer[tile];
@@ -137,7 +143,8 @@ GameSquare.defaultProps = {
 };
 
 GameSquare.propTypes = {
-  tile: PropTypes.oneOf(['Empty', 'BluePawn', 'BlueKing', 'RedPawn', 'RedKing', 'WindSpirit']).isRequired,
+  tile: PropTypes.oneOf(['Empty', 'BluePawn', 'BlueKing', 'RedPawn', 'RedKing', 'WindSpirit'])
+    .isRequired,
   x: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
   src: PropTypes.shape({

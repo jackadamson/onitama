@@ -56,10 +56,21 @@ function SinglePlayerGame() {
     return <Loading />;
   }
 
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, extraMovePending } = state;
-  
-  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending );
-  
+  const {
+    blueCards,
+    redCards,
+    spare,
+    turn,
+    grid,
+    canMove,
+    winner,
+    player,
+    lastMove,
+    extraMovePending,
+  } = state;
+
+  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending);
+
   return (
     <GameBoard
       src={src}

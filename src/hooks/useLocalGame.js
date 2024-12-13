@@ -3,12 +3,12 @@ import { useSnackbar } from 'notistack';
 import { LocalGame } from '../onitamalib';
 import onEvent from '../events';
 import getMeta from '../meta';
-import useGameSettings from './useGameSettings'; 
+import useGameSettings from './useGameSettings';
 
 const useLocalGame = () => {
   const [state, setState] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
-  
+
   // Use the custom game settings hook
   const [gameSettings] = useGameSettings();
 

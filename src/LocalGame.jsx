@@ -56,8 +56,8 @@ function LocalGame() {
 
   const { blueCards, redCards, spare, turn, grid, canMove, winner, extraMovePending } = state;
 
-  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending );
-  
+  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending);
+
   return (
     <GameBoard
       src={src}

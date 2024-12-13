@@ -49,9 +49,7 @@ function Settings() {
   const [gameSettings, updateGameSettings] = useGameSettings();
 
   // Create local state copies for settings
-  const [localDisabledCardSets, setLocalDisabledCardSets] = useState(
-    gameSettings.disabledCardSets,
-  );
+  const [localDisabledCardSets, setLocalDisabledCardSets] = useState(gameSettings.disabledCardSets);
   const [localNumberOfWindCards, setLocalNumberOfWindCards] = useState(
     gameSettings.numberOfWindCards,
   );
@@ -59,20 +57,22 @@ function Settings() {
     gameSettings.forceWindSpiritInclusion,
   );
   const [marqueeStates, setMarqueeStates] = useState(
-    cardSets.reduce((acc, { id }) => ({ ...acc, [id]: false }), {})
+    cardSets.reduce((acc, { id }) => ({ ...acc, [id]: false }), {}),
   );
 
   // Default settings
-  const defaultDisabledCardSets = ['WayOfTheWind'];
-  const defaultNumberOfWindCards = 2;
+  const defaultDisabledCardSets = [];
+  const defaultNumberOfWindCards = null;
   const defaultForceWindSpiritInclusion = false;
 
   // Determine if settings match defaults
-  const settingsAreDefault = useMemo(() => (
-    JSON.stringify(localDisabledCardSets) === JSON.stringify(defaultDisabledCardSets) &&
-    localNumberOfWindCards === defaultNumberOfWindCards &&
-    localForceWindSpiritInclusion === defaultForceWindSpiritInclusion
-  ), [localDisabledCardSets, localNumberOfWindCards, localForceWindSpiritInclusion]);
+  const settingsAreDefault = useMemo(
+    () =>
+      JSON.stringify(localDisabledCardSets) === JSON.stringify(defaultDisabledCardSets) &&
+      localNumberOfWindCards === defaultNumberOfWindCards &&
+      localForceWindSpiritInclusion === defaultForceWindSpiritInclusion,
+    [localDisabledCardSets, localNumberOfWindCards, localForceWindSpiritInclusion],
+  );
 
   // Toggle card set in local state
   const toggleCardSet = (toggledId) => {
@@ -109,8 +109,8 @@ function Settings() {
   );
 
   const wayOfTheWindEnabled = enabledCardSetIds.includes('WayOfTheWind');
-  const otherEnabledCardSets = cardSets.filter(({ id }) =>
-    !localDisabledCardSets.includes(id) && id !== 'WayOfTheWind',
+  const otherEnabledCardSets = cardSets.filter(
+    ({ id }) => !localDisabledCardSets.includes(id) && id !== 'WayOfTheWind',
   );
   const totalEnabledCardCount = enabledCardSetIds.reduce((accumulator, id) => {
     const cardSet = cardSets.find((setItem) => setItem.id === id);
@@ -150,7 +150,8 @@ function Settings() {
           <Box my={2} />
           <Typography variant="h5">Card Sets</Typography>
           <Typography variant="body1">
-            Turn sets of cards on or off (currently only works for Single Player and Local Multiplayer)
+            Turn sets of cards on or off (currently only works for Single Player and Local
+            Multiplayer)
           </Typography>
           {errorMessage}
           {cardSets.map(({ id, name, cards }) => (
@@ -186,11 +187,7 @@ function Settings() {
                 {marqueeStates[id] && (
                   <CardContent className={styles.marqueeContainer}>
                     <Box style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
-                      <Marquee
-                        speed={25}
-                        play={cards.length > 4 || !largeScreen}
-                        pauseOnClick
-                      >
+                      <Marquee speed={25} play={cards.length > 4 || !largeScreen} pauseOnClick>
                         {cards.map((card) => (
                           <Box mx={1} key={card.card}>
                             <GameCard
@@ -233,7 +230,9 @@ function Settings() {
                   labelId="number-of-wow-cards-label"
                   value={localNumberOfWindCards === null ? 'Random' : localNumberOfWindCards}
                   onChange={(event) =>
-                    setLocalNumberOfWindCards(event.target.value === 'Random' ? null : event.target.value)
+                    setLocalNumberOfWindCards(
+                      event.target.value === 'Random' ? null : event.target.value,
+                    )
                   }
                   label="Number of Way of the Wind Cards"
                 >
