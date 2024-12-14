@@ -10,6 +10,7 @@ import GameHand from './GameHand';
 import GameTurn from './GameTurn';
 import { CardPropType, PointPropType } from './props';
 import GameScore from './GameScore';
+import KING_MOVE_CARDS from '../constants/SpecialCards';
 
 function GameBoard({
   src,
@@ -35,24 +36,35 @@ function GameBoard({
   undo,
   score,
   stale,
+  extraMovePending,
 }) {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
+
   useEffect(() => {
     if (!winner) {
       setMinimizedGameOver(false);
     }
-  }, [winner, setMinimizedGameOver]);
+  }, [winner]);
+
   const hideSideSpare = useMediaQuery(theme.breakpoints.down('sm'));
+
   // Whether it's the player's turn, always true if local multiplayer
   const playerTurn = player ? player === turn : true;
+
   // Whether perspective should have red at bottom of screen
   const redOriented = player !== 'Blue';
+
   return (
     <Box height="100vh" display="flex" flexDirection="column">
       <Box display="flex" justifyContent="center">
         <GameTurn player={player} turn={turn} />
       </Box>
+      {extraMovePending && (
+        <Box textAlign="center" mt={0.5}>
+          <span>Move the Wind Spirit before continuing!</span>
+        </Box>
+      )}
       <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'}>
         <Box position="absolute" top="0" left="0">
           <Button component={Link} to="/">
@@ -79,6 +91,9 @@ function GameBoard({
               spare
               inverted={redOriented}
               moves={spare.moves}
+              kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
+              windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
+              cardSet={spare.cardSet}
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -89,6 +104,7 @@ function GameBoard({
         </Box>
         <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1}>
           <Box display="flex" flexDirection={redOriented ? 'column' : 'column-reverse'}>
+            {/* Passing Blue Cards to GameHand */}
             <GameHand
               setCard={setCard}
               selectedCard={card}
@@ -111,6 +127,7 @@ function GameBoard({
               dstMoveRankings={dstMoveRankings || {}}
               redOriented={redOriented}
             />
+            {/* Passing Red Cards to GameHand */}
             <GameHand
               setCard={setCard}
               selectedCard={card}
@@ -137,6 +154,9 @@ function GameBoard({
               spare
               inverted={!redOriented}
               moves={spare.moves}
+              kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
+              windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
+              cardSet={spare.cardSet}
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -174,8 +194,9 @@ function GameBoard({
     </Box>
   );
 }
+
+// Re-adding defaultProps for non-required props
 GameBoard.defaultProps = {
-  card: null,
   src: null,
   winner: null,
   reset: null,
@@ -183,11 +204,13 @@ GameBoard.defaultProps = {
   lastMove: null,
   dstMoveRankings: null,
   connectionStatus: null,
+  card: null,
   canUndo: null,
   undo: null,
   score: null,
   stale: true,
 };
+
 GameBoard.propTypes = {
   src: PointPropType,
   setSrc: PropTypes.func.isRequired,
@@ -215,6 +238,7 @@ GameBoard.propTypes = {
   undo: PropTypes.func,
   score: PropTypes.number,
   stale: PropTypes.bool,
+  extraMovePending: PropTypes.bool.isRequired,
 };
 
 export default GameBoard;
