@@ -1,6 +1,7 @@
 use crate::CardSet;
 use enum_iterator::IntoEnumIterator;
 use rand::prelude::*;
+use std::collections::HashSet;
 
 use crate::models::{Board, Card, GameSquare, GameSettings, GameState, Move, Player, Point};
 
@@ -296,8 +297,15 @@ impl Board {
         // Separate "Way of the Wind" cards
         let mut way_of_the_wind_cards = Vec::new();
         let mut other_cards = Vec::new();
+
+        let disabled_card_sets: HashSet<CardSet> = settings
+            .disabled_card_sets
+            .iter()
+            .filter_map(|s| std::str::FromStr::from_str(s).ok())
+            .collect();
+
         for card_set in CardSet::into_enum_iter() {
-            if !settings.disabled_card_sets.contains(&card_set.to_string()) {
+            if !disabled_card_sets.contains(&card_set) {
                 if card_set == CardSet::WayOfTheWind {
                     way_of_the_wind_cards.extend(card_set.cards());
                 } else {
@@ -604,12 +612,14 @@ impl Board {
 
 impl GameState {
     pub fn new() -> GameState {
+        log::info!("GameState::new() called");
         GameState::Playing {
-            board: Board::new(),
+            board: Board::new_with_settings(GameSettings::default()),
         }
     }
 
     pub fn new_with_settings(settings: GameSettings) -> GameState {
+        log::info!("GameState::new_with_settings() called with settings: {:?}", settings);
         GameState::Playing {
             board: Board::new_with_settings(settings),
         }

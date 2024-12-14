@@ -6,30 +6,24 @@ import { Link } from 'react-router-dom';
 import useStyles from './menuStyles';
 import GithubRibbon from './GithubRibbon';
 import { useAppUpdater } from './updateManager';
+import useGameSettings from './hooks/useGameSettings';
 import getCardSetDisplayName from './utils/cardSetNames';
-
-const getGameSettings = () => {
-  const storedSettings = localStorage.getItem('game_settings');
-  return storedSettings ? JSON.parse(storedSettings) : {};
-};
 
 function Home() {
   const classes = useStyles();
   useAppUpdater();
 
-  const [gameSettings, setGameSettings] = useState(getGameSettings());
+  const [gameSettings, setGameSettings] = useGameSettings();
   const [showSettings, setShowSettings] = useState(false); // State to toggle settings visibility
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setGameSettings(getGameSettings());
+      setGameSettings(JSON.parse(localStorage.getItem('game_settings') || '{}'));
     };
     window.addEventListener('storage', handleStorageChange);
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [setGameSettings]);
 
   const wayOfTheWindEnabled = !gameSettings.disabledCardSets?.includes('WayOfTheWind');
 

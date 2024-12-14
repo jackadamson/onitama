@@ -12,8 +12,8 @@ pub struct Game {
 impl Game {
     /// Create a new game with default settings
     pub fn new() -> Game {
-        let default_settings = GameSettings::default();
-        Game::new_with_settings(default_settings)
+        let settings = GameSettings::default();
+        Game::new_with_settings(settings)
     }
 
     /// Create a new game with custom settings
