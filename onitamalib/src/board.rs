@@ -66,13 +66,13 @@ impl Board {
             Player::Blue => -raw_delta,
         };
 
-        let moving_king = *player_king == src;
+        let moving_king = *player_king == Some(src);
         let moves = card.moves(moving_king, false);
         if !moves.contains(&delta) {
             return Err("Move not valid for card".to_string());
         }
 
-        if move_wind_spirit && (dst == *red_king || dst == *blue_king) {
+        if move_wind_spirit && (Some(dst) == *red_king || Some(dst) == *blue_king) {
             return Err("Wind Spirit cannot move onto a Master!".to_string());
         }
 
@@ -104,7 +104,7 @@ impl Board {
         };
 
         // Update king position if it moved
-        let new_king_pos = if moving_king { dst } else { *player_king };
+        let new_king_pos = if moving_king { Some(dst) } else { *player_king };
 
         // Wind spirit might have moved
         let new_wind_spirit = if move_wind_spirit { Some(dst) } else { *wind_spirit };
@@ -140,7 +140,7 @@ impl Board {
         };
 
         // Check if this move finishes the game
-        if dst == *opponent_king || (moving_king && dst == goal_square) {
+        if Some(dst) == *opponent_king || (moving_king && dst == goal_square) {
             return Ok(GameState::Finished {
                 winner: *turn,
                 board: updated_board,
@@ -233,7 +233,7 @@ impl Board {
         if !moves.contains(&delta) {
             return Err("Move not valid for card".to_string());
         }
-        if dst == *red_king || dst == *blue_king {
+        if Some(dst) == *red_king || Some(dst) == *blue_king {
             return Err("Wind Spirit cannot move onto a Master!".to_string());
         }
     
@@ -276,7 +276,7 @@ impl Board {
             },
         };
     
-        if player_king == goal_square {
+        if player_king == Some(goal_square) {
             return Ok(GameState::Finished {
                 winner: *turn,
                 board: updated_board,
@@ -377,7 +377,7 @@ impl Board {
             } else {
                 None
             },
-            blue_king: Point { x: 2, y: 0 },
+            blue_king: Some(Point { x: 2, y: 0 }),
             blue_pawns: [
                 Some(Point { x: 0, y: 0 }),
                 Some(Point { x: 1, y: 0 }),
@@ -385,7 +385,7 @@ impl Board {
                 Some(Point { x: 4, y: 0 }),
             ],
             blue_hand: player_hand_blue,
-            red_king: Point { x: 2, y: 4 },
+            red_king: Some(Point { x: 2, y: 4 }),
             red_pawns: [
                 Some(Point { x: 0, y: 4 }),
                 Some(Point { x: 1, y: 4 }),
@@ -417,7 +417,7 @@ impl Board {
                             Player::Blue => -raw_delta,
                         };
                         let dst = wind_spirit_pos + delta;
-                        if dst.in_bounds() && ![self.red_king, self.blue_king].contains(&dst) {
+                        if dst.in_bounds() && ![self.red_king, self.blue_king].contains(&Some(dst)) {
                             return true;
                         }
                     }
@@ -428,11 +428,11 @@ impl Board {
 
         // Normal move check
         let player_pieces = self.player_pieces();
-        let opponent_kings = [self.red_king, self.blue_king];
+        let kings = [self.red_king, self.blue_king];
 
         for src in player_pieces.iter().filter_map(|&p| p) {
             for &card in self.player_hand() {
-                let is_king = *self.player_king() == src;
+                let is_king = self.player_king() == Some(src);
                 let is_spirit = self.wind_spirit() == Some(src);
 
                 // Wind Spirit cannot use WayOfTheWind card
@@ -456,7 +456,7 @@ impl Board {
                         // Can't move onto your own piece, unless Wind Spirit is swapping
                         if !player_pieces.contains(&Some(dst)) || is_spirit {
                             // Wind Spirit cant move onto a Master
-                            if !(is_spirit && opponent_kings.contains(&dst)) {
+                            if !(is_spirit && kings.contains(&Some(dst))) {
                                 return true;
                             }
                         }
@@ -475,10 +475,12 @@ impl Board {
         for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p) {
             grid[y as usize][x as usize] = GameSquare::RedPawn;
         }
-        let Point { x, y } = self.red_king;
-        grid[y as usize][x as usize] = GameSquare::RedKing;
-        let Point { x, y } = self.blue_king;
-        grid[y as usize][x as usize] = GameSquare::BlueKing;
+        if let Some(Point { x, y }) = self.red_king {
+            grid[y as usize][x as usize] = GameSquare::RedKing;
+        }
+        if let Some(Point { x, y }) = self.blue_king {
+            grid[y as usize][x as usize] = GameSquare::BlueKing;
+        }
         if let Some(Point { x, y }) = self.wind_spirit {
             grid[y as usize][x as usize] = GameSquare::WindSpirit;
         }
@@ -513,22 +515,22 @@ impl Board {
         }
     }
 
-    pub fn player_king(&self) -> &Point {
+    pub fn player_king(&self) -> Option<Point> {
         match self.turn {
-            Player::Red => &self.red_king,
-            Player::Blue => &self.blue_king,
+            Player::Red => self.red_king,
+            Player::Blue => self.blue_king,
         }
     }
 
-    pub fn opponent_king(&self) -> &Point {
+    pub fn opponent_king(&self) -> Option<Point> {
         match self.turn.invert() {
-            Player::Red => &self.red_king,
-            Player::Blue => &self.blue_king,
+            Player::Red => self.red_king,
+            Player::Blue => self.blue_king,
         }
     }
 
     pub fn player_pieces(&self) -> Vec<Option<Point>> {
-        let mut pieces = vec![Some(*self.player_king())];
+        let mut pieces = vec![self.player_king()];
         pieces.extend(self.player_pawns().iter().copied());
         if let Some(ws) = self.wind_spirit {
             pieces.push(Some(ws));
@@ -537,7 +539,7 @@ impl Board {
     }
 
     pub fn opponent_pieces(&self) -> Vec<Option<Point>> {
-        let mut pieces = vec![Some(*self.opponent_king())];
+        let mut pieces = vec![self.opponent_king()];
         pieces.extend(self.opponent_pawns().iter().copied());
         pieces
     }
@@ -561,9 +563,12 @@ impl Board {
         }
 
         // Update the King if it moved
-        if *temp_board.player_king() == moved_src {
-            temp_board.red_king = if self.turn == Player::Red { moved_dst } else { temp_board.red_king };
-            temp_board.blue_king = if self.turn == Player::Blue { moved_dst } else { temp_board.blue_king };
+        if temp_board.player_king() == Some(moved_src) {
+            if self.turn == Player::Red {
+                temp_board.red_king = Some(moved_dst);
+            } else {
+                temp_board.blue_king = Some(moved_dst);
+            }
         }
 
         temp_board.extra_move_pending = true;

@@ -1,4 +1,4 @@
-use crate::models::{Board, Move, Player, CardSet};
+use crate::models::{Board, Move, Player, Point, CardSet};
 use rand::prelude::*;
 
 impl Board {
@@ -8,8 +8,10 @@ impl Board {
         let wind_spirit_pos = self.wind_spirit();
         let red_king_pos = self.red_king;
         let blue_king_pos = self.blue_king;
-        let opponent_kings = [red_king_pos, blue_king_pos];
-
+        let kings: Vec<Point> = [red_king_pos, blue_king_pos]    
+             .iter()
+            .filter_map(|&king| king)
+            .collect();
         if self.extra_move_pending {
             let mut moves = vec![];
             if let Some(wind_spirit_pos) = self.wind_spirit() {
@@ -22,10 +24,10 @@ impl Board {
                     let dst = wind_spirit_pos + offset;
 
                     if dst.in_bounds()
-                        && (!self.player_pieces().contains(&Some(dst)) || opponent_kings.contains(&dst))
+                        && (!self.player_pieces().contains(&Some(dst)) || kings.contains(&dst))
                     {
                         // Prevent Wind Spirit from moving onto a King
-                        if opponent_kings.contains(&dst) {
+                        if kings.contains(&dst) {
                             continue;
                         }
 
@@ -47,7 +49,7 @@ impl Board {
 
                 let is_wind_spirit = Some(src) == wind_spirit_pos;
 
-                let is_king = src == *self.player_king();
+                let is_king = self.player_king() == Some(src);
 
                 let cached_moves: Vec<_> = card.moves(is_king, false);
 
@@ -66,7 +68,7 @@ impl Board {
                     if dst.in_bounds() && (!pieces.contains(&Some(dst)) || is_wind_spirit) {
 
                         // Prevent Wind Spirit from moving onto a King
-                        if is_wind_spirit && opponent_kings.contains(&dst) {
+                        if is_wind_spirit && kings.contains(&dst) {
                             continue;
                         }
 
