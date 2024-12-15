@@ -30,9 +30,16 @@ function GameGrid({
           {row.map((tile, x) => {
             const isValid = isMoveValid(x, y);
 
+            // Extract type and revealed for Ninja tiles
+            const tileType =
+              typeof tile === 'object' && tile !== null ? Object.keys(tile)[0] : tile;
+            const revealed =
+              typeof tile === 'object' && tile !== null ? tile[tileType]?.revealed ?? true : true;
+
             return (
               <GameSquare
-                tile={tile}
+                tile={tileType}
+                revealed={revealed}
                 x={x}
                 y={y}
                 src={src}

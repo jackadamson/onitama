@@ -203,9 +203,11 @@ pub struct Board {
     pub wind_spirit: Option<Point>,
     pub blue_king: Option<Point>,
     pub blue_pawns: [Option<Point>; 4],
+    pub blue_ninjas: [Option<(Point, bool)>; 2],
     pub blue_hand: [Card; 2],
     pub red_king: Option<Point>,
     pub red_pawns: [Option<Point>; 4],
+    pub red_ninjas: [Option<(Point, bool)>; 2],
     pub red_hand: [Card; 2],
     pub spare_card: Card,
     pub extra_move_pending: bool,
@@ -232,8 +234,10 @@ pub enum GameSquare {
     WindSpirit,
     RedKing,
     RedPawn,
+    RedNinja { revealed: bool },
     BlueKing,
     BluePawn,
+    BlueNinja { revealed: bool },
     Empty,
 }
 
@@ -416,6 +420,9 @@ pub struct GameSettings {
     pub disabled_card_sets: Vec<String>,  // List of disabled card sets by name
     pub number_of_wind_cards: Option<usize>,  // Number of Way Of The Wind cards to include in the game
     pub force_wind_spirit_inclusion: bool,  // Force the inclusion of the Wind Spirit piece
+    pub enable_light_and_shadow: bool, // Enable Light and Shadow Expansion
+    pub force_light_and_shadow: bool, // Force Light and Shadow expansion use
+    pub light_and_shadow_mode: Option<String>, // Force specific Light and Shadow mode, or None for randomized
 }
 
 impl GameSettings {
@@ -424,6 +431,9 @@ impl GameSettings {
             disabled_card_sets: vec![], // Default to all card sets
             number_of_wind_cards: None,  // Default to randomized number of Way Of The Wind cards
             force_wind_spirit_inclusion: false,  // Default to not force Wind Spirit piece inclusion
+            enable_light_and_shadow: true, // Default to enabling Light and Shadow expansion
+            force_light_and_shadow: false, // Default to 5% of games being Light or Shadow
+            light_and_shadow_mode: None, // Default to randomizing Light or Shadow as the mode
         }
     }
 }

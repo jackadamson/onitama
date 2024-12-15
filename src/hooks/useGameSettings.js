@@ -7,9 +7,12 @@ const useGameSettings = () => {
     return storedSettings
       ? JSON.parse(storedSettings)
       : {
-          disabledCardSets: ['WayOfTheWind'],
-          numberOfWindCards: 2, // Default is 2, not null
+          disabledCardSets: [],
+          numberOfWindCards: null,
           forceWindSpiritInclusion: false,
+          enableLightAndShadow: true,
+          forceLightAndShadow: false,
+          lightAndShadowMode: 'Random',
         };
   });
 

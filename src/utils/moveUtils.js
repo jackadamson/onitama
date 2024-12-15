@@ -16,7 +16,10 @@ const getMoves = (src, card, grid, turn, extraMovePending = false) => {
   }
 
   // Get the selected piece from the grid
-  const piece = grid[src.y][src.x];
+  let piece = grid[src.y][src.x];
+  if (typeof piece === 'object') {
+    [piece] = Object.keys(piece);
+  }
 
   // Determine piece attributes
   const isKing = piece.includes('King');

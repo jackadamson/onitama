@@ -78,7 +78,14 @@ impl Board {
         }
 
         // If a non-Wind Spirit piece tries to move onto your own piece, that's invalid
-        if player_pieces.contains(&Some(dst)) && !(move_wind_spirit && self.player_pawns().contains(&Some(dst))) {
+        if player_pieces.contains(&Some(dst))
+            && !(move_wind_spirit
+                && (self.player_pawns().contains(&Some(dst))
+                    || self.player_ninjas()
+                        .iter()
+                        .filter_map(|ninja| ninja.map(|(point, _)| point))
+                        .any(|point| point == dst)))
+        {
             return Err("Destination occupied by your piece".to_string());
         }
 
@@ -88,9 +95,11 @@ impl Board {
             Player::Blue => Point { x: 2, y: 4 },
         };
 
-        // Move/swap pawns
+        // Move/swap pieces
         let mut player_pawns = self.player_pawns();
         let mut opponent_pawns = self.opponent_pawns();
+        let mut player_ninjas = self.player_ninjas();
+        let mut opponent_ninjas = self.opponent_ninjas();
         move_or_swap_pawns(&mut player_pawns, &mut opponent_pawns, src, dst, move_wind_spirit);
 
         // Check if we can enable extra move
@@ -116,9 +125,11 @@ impl Board {
                 wind_spirit: new_wind_spirit,
                 blue_king: *blue_king,
                 blue_pawns: opponent_pawns,
+                blue_ninjas: opponent_ninjas,
                 blue_hand: *blue_hand,
                 red_king: new_king_pos,
                 red_pawns: player_pawns,
+                red_ninjas: player_ninjas,
                 red_hand: player_hand,
                 spare_card: if extra_pending { *spare_card } else { card },
                 extra_move_pending: extra_pending,
@@ -129,9 +140,11 @@ impl Board {
                 wind_spirit: new_wind_spirit,
                 blue_king: new_king_pos,
                 blue_pawns: player_pawns,
+                blue_ninjas: player_ninjas,
                 blue_hand: player_hand,
                 red_king: *red_king,
                 red_pawns: opponent_pawns,
+                red_ninjas: opponent_ninjas,
                 red_hand: *red_hand,
                 spare_card: if extra_pending { *spare_card } else { card },
                 extra_move_pending: extra_pending,
@@ -141,7 +154,7 @@ impl Board {
         };
 
         // Check if this move finishes the game
-        if Some(dst) == *opponent_king || (moving_king && dst == goal_square) {
+        if Some(dst) == *opponent_king || (moving_king && dst == goal_square) || self.opponent_pieces().is_empty() {
             return Ok(GameState::Finished {
                 winner: *turn,
                 board: updated_board,
@@ -178,9 +191,11 @@ impl Board {
                     wind_spirit: *wind_spirit,
                     blue_king: *blue_king,
                     blue_pawns: self.blue_pawns,
+                    blue_ninjas: self.blue_ninjas,
                     blue_hand,
                     red_king: *red_king,
                     red_pawns: self.red_pawns,
+                    red_ninjas: self.red_ninjas,
                     red_hand,
                     spare_card: card,
                     extra_move_pending: false,
@@ -215,11 +230,6 @@ impl Board {
             Player::Blue => (blue_king, red_king),
         };
     
-        let goal_square = match turn {
-            Player::Red => Point { x: 2, y: 0 },
-            Player::Blue => Point { x: 2, y: 4 },
-        };
-    
         if out_of_bounds(dst) {
             return Err("Destination is out of bounds".to_string());
         }
@@ -242,6 +252,8 @@ impl Board {
 
         let mut player_pawns = self.player_pawns();
         let mut opponent_pawns = self.opponent_pawns();
+        let mut player_ninjas = self.player_ninjas();
+        let mut opponent_ninjas = self.opponent_ninjas();
         move_or_swap_pawns(&mut player_pawns, &mut opponent_pawns, src, dst, true);
     
         let wind_spirit = Some(dst);
@@ -253,9 +265,11 @@ impl Board {
                 wind_spirit,
                 blue_king: *blue_king,
                 blue_pawns: opponent_pawns,
+                blue_ninjas: opponent_ninjas,
                 blue_hand: *blue_hand,
                 red_king: player_king,
                 red_pawns: player_pawns,
+                red_ninjas: player_ninjas,
                 red_hand: player_hand,
                 spare_card: card,
                 extra_move_pending: false,
@@ -266,9 +280,11 @@ impl Board {
                 wind_spirit,
                 blue_king: player_king,
                 blue_pawns: player_pawns,
+                blue_ninjas: player_ninjas,
                 blue_hand: player_hand,
                 red_king: *red_king,
                 red_pawns: opponent_pawns,
+                red_ninjas: opponent_ninjas,
                 red_hand: *red_hand,
                 spare_card: card,
                 extra_move_pending: false,
@@ -277,19 +293,28 @@ impl Board {
             },
         };
     
-        if player_king == Some(goal_square) {
-            return Ok(GameState::Finished {
-                winner: *turn,
-                board: updated_board,
-            });
-        }
-    
         Ok(GameState::Playing { board: updated_board })
     }
 
     pub fn new_with_settings(settings: GameSettings) -> Board { 
         let mut rng = thread_rng();
-    
+        
+        // Determine if the Light and Shadow expansion should be used
+        let include_light_and_shadow = settings.force_light_and_shadow
+            || (settings.enable_light_and_shadow && rng.gen_bool(0.05));
+
+        let selected_mode = if include_light_and_shadow {
+            settings.light_and_shadow_mode.clone().unwrap_or_else(|| {
+                if rng.gen_bool(0.7) {
+                    "Shadow".to_string()
+                } else {
+                    "Light".to_string()
+                }
+            })
+        } else {
+            "None".to_string() // Or handle the case where Light and Shadow is not included
+        };
+
         // Decide if Wind Spirit is included
         let include_wind_spirit = !settings.disabled_card_sets.contains(&"WayOfTheWind".to_string())
             && (settings.force_wind_spirit_inclusion || rng.gen_bool(0.25));
@@ -379,7 +404,7 @@ impl Board {
             _ => unreachable!(),
         };
 
-        Board {
+        let mut board = Board {
             wind_spirit: if include_wind_spirit {
                 Some(Point { x: 2, y: 2 })
             } else {
@@ -392,6 +417,7 @@ impl Board {
                 Some(Point { x: 3, y: 0 }),
                 Some(Point { x: 4, y: 0 }),
             ],
+            blue_ninjas: [None, None],
             blue_hand: player_hand_blue,
             red_king: Some(Point { x: 2, y: 4 }),
             red_pawns: [
@@ -400,12 +426,33 @@ impl Board {
                 Some(Point { x: 3, y: 4 }),
                 Some(Point { x: 4, y: 4 }),
             ],
+            red_ninjas: [None, None],
             red_hand: player_hand_red,
             spare_card,
             extra_move_pending: false,
             extra_move_card: None,
             turn: Player::Red,
+        };
+
+        // Overwrite board for Light and Shadow modes
+        if selected_mode == "Light" {
+            // Overwrite for Light mode
+            board.blue_pawns = [None, None, None, None]; // Shadow Master has no Pawns
+            board.blue_king = None; // Shadow Master has no King
+            board.blue_ninjas = [
+                Some((Point { x: 1, y: 0 }, false)),
+                Some((Point { x: 3, y: 0 }, false)),
+            ];
+        } else if selected_mode == "Shadow" {
+            // Overwrite for Shadow mode
+            board.red_pawns = [None, None, Some(Point { x: 0, y: 4 }), Some(Point { x: 4, y: 4 })];
+            board.red_ninjas = [Some((Point { x: 1, y: 4 }, false)), None]; // One Ninja for Red
+            board.blue_pawns = [None, None, Some(Point { x: 0, y: 0 }), Some(Point { x: 4, y: 0 })];
+            board.blue_ninjas = [Some((Point { x: 3, y: 0 }, false)), None]; // One Ninja for Blue
         }
+
+        return board;
+
     }
 
     pub fn new() -> Board {
@@ -483,6 +530,16 @@ impl Board {
         for Point { x, y } in self.red_pawns.iter().filter_map(|p| *p) {
             grid[y as usize][x as usize] = GameSquare::RedPawn;
         }
+        for ninja in self.blue_ninjas.iter().filter_map(|n| *n) {
+            let Point { x, y } = ninja.0; // Extract Point
+            let revealed = ninja.1;      // Extract revealed status
+            grid[y as usize][x as usize] = GameSquare::BlueNinja { revealed };
+        }
+        for ninja in self.red_ninjas.iter().filter_map(|n| *n) {
+            let Point { x, y } = ninja.0; // Extract Point
+            let revealed = ninja.1;      // Extract revealed status
+            grid[y as usize][x as usize] = GameSquare::RedNinja { revealed };
+        }
         if let Some(Point { x, y }) = self.red_king {
             grid[y as usize][x as usize] = GameSquare::RedKing;
         }
@@ -523,6 +580,21 @@ impl Board {
         }
     }
 
+    pub fn player_ninjas(&self) -> [Option<(Point, bool)>; 2] {
+        match self.turn {
+            Player::Red => self.red_ninjas,
+            Player::Blue => self.blue_ninjas,
+        }
+    }
+
+    pub fn opponent_ninjas(&self) -> [Option<(Point, bool)>; 2] {
+        match self.turn.invert() {
+            Player::Red => self.red_ninjas,
+            Player::Blue => self.blue_ninjas,
+        }
+    }
+
+
     pub fn player_king(&self) -> Option<Point> {
         match self.turn {
             Player::Red => self.red_king,
@@ -540,6 +612,7 @@ impl Board {
     pub fn player_pieces(&self) -> Vec<Option<Point>> {
         let mut pieces = vec![self.player_king()];
         pieces.extend(self.player_pawns().iter().copied());
+        pieces.extend(self.player_ninjas().iter().map(|ninja| ninja.map(|(point, _)| point)));
         if let Some(ws) = self.wind_spirit {
             pieces.push(Some(ws));
         }
@@ -549,6 +622,7 @@ impl Board {
     pub fn opponent_pieces(&self) -> Vec<Option<Point>> {
         let mut pieces = vec![self.opponent_king()];
         pieces.extend(self.opponent_pawns().iter().copied());
+        pieces.extend(self.opponent_ninjas().iter().map(|ninja| ninja.map(|(point, _)| point)));
         pieces
     }
 
@@ -597,9 +671,11 @@ impl Board {
                 wind_spirit: self.wind_spirit,
                 blue_king: self.blue_king,
                 blue_pawns: self.blue_pawns,
+                blue_ninjas: self.blue_ninjas,
                 blue_hand,
                 red_king: self.red_king,
                 red_pawns: self.red_pawns,
+                red_ninjas: self.red_ninjas,
                 red_hand,
                 spare_card: card,
                 extra_move_pending: false,

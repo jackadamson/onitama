@@ -5,6 +5,7 @@ import { Box, makeStyles, Paper, Tooltip } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faChessPawn,
+  faChessKnight,
   faChessKing,
   faChessQueen,
   faSkull,
@@ -17,8 +18,10 @@ const icons = {
   Empty: null,
   WindSpirit: <FontAwesomeIcon icon={faChessQueen} color="#B5B4B4" size="3x" />,
   BluePawn: <FontAwesomeIcon icon={faChessPawn} color="#2196f3" size="3x" />,
+  BlueNinja: <FontAwesomeIcon icon={faChessKnight} color="#2196f3" size="3x" />,
   BlueKing: <FontAwesomeIcon icon={faChessKing} color="#2196f3" size="3x" />,
   RedPawn: <FontAwesomeIcon icon={faChessPawn} color="#f44336" size="3x" />,
+  RedNinja: <FontAwesomeIcon icon={faChessKnight} color="#f44336" size="3x" />,
   RedKing: <FontAwesomeIcon icon={faChessKing} color="#f44336" size="3x" />,
 };
 
@@ -58,7 +61,9 @@ const useStyles = makeStyles((theme) => ({
 const tilePlayer = (currentPlayer) => ({
   BluePawn: 'Blue',
   BlueKing: 'Blue',
+  BlueNinja: 'Blue',
   RedPawn: 'Red',
+  RedNinja: 'Red',
   RedKing: 'Red',
   WindSpirit: getWindSpiritController(currentPlayer),
 });
@@ -85,7 +90,7 @@ function Star() {
   );
 }
 
-function GameSquare({ tile, x, y, src, setSrc, turn, move, isValid, lastMove, ranking }) {
+function GameSquare({ tile, revealed, x, y, src, setSrc, turn, move, isValid, lastMove, ranking }) {
   const classes = useStyles();
 
   // Call tilePlayer with the current turn to get the correct player assignments
@@ -143,8 +148,17 @@ GameSquare.defaultProps = {
 };
 
 GameSquare.propTypes = {
-  tile: PropTypes.oneOf(['Empty', 'BluePawn', 'BlueKing', 'RedPawn', 'RedKing', 'WindSpirit'])
-    .isRequired,
+  tile: PropTypes.oneOf([
+    'Empty',
+    'BluePawn',
+    'BlueNinja',
+    'BlueKing',
+    'RedPawn',
+    'RedNinja',
+    'RedKing',
+    'WindSpirit',
+  ]).isRequired,
+  revealed: PropTypes.bool.isRequired,
   x: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
   src: PropTypes.shape({
