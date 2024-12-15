@@ -34,7 +34,7 @@ function GameGrid({
             const tileType =
               typeof tile === 'object' && tile !== null ? Object.keys(tile)[0] : tile;
             const revealed =
-              typeof tile === 'object' && tile !== null ? tile[tileType]?.revealed ?? true : true;
+              typeof tile === 'object' && tile !== null ? (tile[tileType]?.revealed ?? true) : true;
 
             return (
               <GameSquare

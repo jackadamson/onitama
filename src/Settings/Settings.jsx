@@ -334,8 +334,12 @@ function Settings() {
                         </InputLabel>
                         <Select
                           labelId="light-and-shadow-mode-label"
-                          value={localLightAndShadowMode}
-                          onChange={(event) => setLocalLightAndShadowMode(event.target.value)}
+                          value={localLightAndShadowMode || 'Random'}
+                          onChange={(event) =>
+                            setLocalLightAndShadowMode(
+                              event.target.value === 'Random' ? null : event.target.value,
+                            )
+                          }
                           label="Light and Shadow Mode"
                         >
                           <MenuItem value="Random">Random</MenuItem>

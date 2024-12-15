@@ -33,20 +33,20 @@ function Home() {
 
   const lightAndShadowEnabled = gameSettings.enableLightAndShadow;
   const lightAndShadowForced = gameSettings.forceLightAndShadow;
-  const lightAndShadowMode = gameSettings.lightAndShadowMode;
+  const currentLightAndShadowMode = gameSettings.lightAndShadowMode;
 
   const getLightAndShadowText = () => {
     if (lightAndShadowEnabled) {
       if (!lightAndShadowForced) {
         return 'Light and Shadow Expansion Enabled';
       }
-      if (lightAndShadowMode === 'Random') {
+      if (currentLightAndShadowMode === null) {
         return 'All games will be Light or Shadow games';
       }
-      if (lightAndShadowMode === 'Light') {
+      if (currentLightAndShadowMode === 'Light') {
         return 'All games will be Way of the Light games';
       }
-      if (lightAndShadowMode === 'Shadow') {
+      if (currentLightAndShadowMode === 'Shadow') {
         return 'All games will be Way of the Shadow games';
       }
     }

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 
 const DEFAULT_GAME_SETTINGS = {
   disabledCardSets: [],
-  numberOfWindCards: null,
+  numberOfWindCards: null, // null for Random
   forceWindSpiritInclusion: false,
   enableLightAndShadow: true,
   forceLightAndShadow: false,
-  lightAndShadowMode: 'Random',
+  lightAndShadowMode: null, // null for Random
 };
 
 const useGameSettings = () => {
@@ -29,6 +29,8 @@ const useGameSettings = () => {
       // Convert "Random" to null if needed
       numberOfWindCards:
         updatedSettings.numberOfWindCards === 'Random' ? null : updatedSettings.numberOfWindCards,
+      lightAndShadowMode:
+        updatedSettings.lightAndShadowMode === 'Random' ? null : updatedSettings.lightAndShadowMode,
     }));
   };
 
