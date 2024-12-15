@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 
+const DEFAULT_GAME_SETTINGS = {
+  disabledCardSets: [],
+  numberOfWindCards: null,
+  forceWindSpiritInclusion: false,
+  enableLightAndShadow: true,
+  forceLightAndShadow: false,
+  lightAndShadowMode: 'Random',
+};
+
 const useGameSettings = () => {
   // Initialize settings from localStorage or use default values
   const [gameSettings, setGameSettings] = useState(() => {
     const storedSettings = localStorage.getItem('game_settings');
-    return storedSettings
-      ? JSON.parse(storedSettings)
-      : {
-          disabledCardSets: [],
-          numberOfWindCards: null,
-          forceWindSpiritInclusion: false,
-          enableLightAndShadow: true,
-          forceLightAndShadow: false,
-          lightAndShadowMode: 'Random',
-        };
+    return storedSettings ? JSON.parse(storedSettings) : DEFAULT_GAME_SETTINGS;
   });
 
   // Update settings in local storage whenever they change
@@ -32,7 +32,8 @@ const useGameSettings = () => {
     }));
   };
 
-  return [gameSettings, updateGameSettings];
+  return [gameSettings, updateGameSettings, DEFAULT_GAME_SETTINGS];
 };
 
+export { DEFAULT_GAME_SETTINGS };
 export default useGameSettings;

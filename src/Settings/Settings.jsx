@@ -26,7 +26,7 @@ import Marquee from 'react-fast-marquee';
 import { listCardSets } from '../onitamalib';
 import GameCard from '../GameBoard/GameCard';
 import KING_MOVE_CARDS from '../constants/SpecialCards';
-import useGameSettings from '../hooks/useGameSettings';
+import useGameSettings, { DEFAULT_GAME_SETTINGS } from '../hooks/useGameSettings';
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -56,22 +56,37 @@ function Settings() {
   const [localForceWindSpiritInclusion, setLocalForceWindSpiritInclusion] = useState(
     gameSettings.forceWindSpiritInclusion,
   );
+  const [localEnableLightAndShadow, setLocalEnableLightAndShadow] = useState(
+    gameSettings.enableLightAndShadow,
+  );
+  const [localForceLightAndShadow, setLocalForceLightAndShadow] = useState(
+    gameSettings.forceLightAndShadow,
+  );
+  const [localLightAndShadowMode, setLocalLightAndShadowMode] = useState(
+    gameSettings.lightAndShadowMode || 'Random',
+  );
   const [marqueeStates, setMarqueeStates] = useState(
     cardSets.reduce((acc, { id }) => ({ ...acc, [id]: false }), {}),
   );
 
-  // Default settings
-  const defaultDisabledCardSets = [];
-  const defaultNumberOfWindCards = null;
-  const defaultForceWindSpiritInclusion = false;
-
-  // Determine if settings match defaults
+  // Check if current settings match defaults
   const settingsAreDefault = useMemo(
     () =>
-      JSON.stringify(localDisabledCardSets) === JSON.stringify(defaultDisabledCardSets) &&
-      localNumberOfWindCards === defaultNumberOfWindCards &&
-      localForceWindSpiritInclusion === defaultForceWindSpiritInclusion,
-    [localDisabledCardSets, localNumberOfWindCards, localForceWindSpiritInclusion],
+      JSON.stringify(localDisabledCardSets) ===
+        JSON.stringify(DEFAULT_GAME_SETTINGS.disabledCardSets) &&
+      localNumberOfWindCards === DEFAULT_GAME_SETTINGS.numberOfWindCards &&
+      localForceWindSpiritInclusion === DEFAULT_GAME_SETTINGS.forceWindSpiritInclusion &&
+      localEnableLightAndShadow === DEFAULT_GAME_SETTINGS.enableLightAndShadow &&
+      localForceLightAndShadow === DEFAULT_GAME_SETTINGS.forceLightAndShadow &&
+      localLightAndShadowMode === DEFAULT_GAME_SETTINGS.lightAndShadowMode,
+    [
+      localDisabledCardSets,
+      localNumberOfWindCards,
+      localForceWindSpiritInclusion,
+      localEnableLightAndShadow,
+      localForceLightAndShadow,
+      localLightAndShadowMode,
+    ],
   );
 
   // Toggle card set in local state
@@ -84,9 +99,12 @@ function Settings() {
   };
 
   const resetSettings = () => {
-    setLocalDisabledCardSets(defaultDisabledCardSets);
-    setLocalNumberOfWindCards(defaultNumberOfWindCards);
-    setLocalForceWindSpiritInclusion(defaultForceWindSpiritInclusion);
+    setLocalDisabledCardSets(DEFAULT_GAME_SETTINGS.disabledCardSets);
+    setLocalNumberOfWindCards(DEFAULT_GAME_SETTINGS.numberOfWindCards);
+    setLocalForceWindSpiritInclusion(DEFAULT_GAME_SETTINGS.forceWindSpiritInclusion);
+    setLocalEnableLightAndShadow(DEFAULT_GAME_SETTINGS.enableLightAndShadow);
+    setLocalForceLightAndShadow(DEFAULT_GAME_SETTINGS.forceLightAndShadow);
+    setLocalLightAndShadowMode(DEFAULT_GAME_SETTINGS.lightAndShadowMode);
   };
 
   const handleBackToMenu = () => {
@@ -95,6 +113,9 @@ function Settings() {
       disabledCardSets: localDisabledCardSets,
       numberOfWindCards: localNumberOfWindCards,
       forceWindSpiritInclusion: localForceWindSpiritInclusion,
+      enableLightAndShadow: localEnableLightAndShadow,
+      forceLightAndShadow: localForceLightAndShadow,
+      lightAndShadowMode: localLightAndShadowMode,
     });
 
     // Delay navigation slightly to ensure state is updated
@@ -140,6 +161,19 @@ function Settings() {
 
   const toggleMarquee = (id) => {
     setMarqueeStates((prevState) => ({ ...prevState, [id]: !prevState[id] }));
+  };
+
+  const getLightAndShadowText = () => {
+    if (localForceLightAndShadow) {
+      if (localLightAndShadowMode === 'Light') {
+        return 'All games will be Way of the Light games.';
+      }
+      if (localLightAndShadowMode === 'Shadow') {
+        return 'All games will be Way of the Shadow games.';
+      }
+      return 'All games will be either Light or Shadow games.';
+    }
+    return 'Games will be Light or Shadow 5% of the time.';
   };
 
   return (
@@ -203,13 +237,7 @@ function Settings() {
                               spare
                               cardSet={id === 'WayOfTheWind' ? 'WayOfTheWind' : ''}
                               isKingMoves={KING_MOVE_CARDS.includes(card.card)}
-                              isWindMoves={
-                                !!(
-                                  id === 'WayOfTheWind' &&
-                                  card.wind_moves &&
-                                  card.wind_moves.length > 0
-                                )
-                              }
+                              isWindMoves={!!(id === 'WayOfTheWind' && card.wind_moves?.length > 0)}
                             />
                           </Box>
                         ))}
@@ -220,6 +248,7 @@ function Settings() {
               </Card>
             </Box>
           ))}
+          {/* Way of the Wind settings */}
           {wayOfTheWindEnabled && (
             <Box my={2}>
               <FormControl variant="outlined" fullWidth>
@@ -260,6 +289,66 @@ function Settings() {
               </Box>
             </Box>
           )}
+          {/* Light and Shadow settings */}
+          <Box my={2}>
+            <Card variant="outlined" className={styles.card}>
+              <CardHeader
+                title={
+                  <Box onClick={() => setLocalEnableLightAndShadow(!localEnableLightAndShadow)}>
+                    Light and Shadow
+                  </Box>
+                }
+                action={
+                  <IconButton
+                    aria-label={
+                      localEnableLightAndShadow
+                        ? 'Disable Light and Shadow'
+                        : 'Enable Light and Shadow'
+                    }
+                    onClick={() => setLocalEnableLightAndShadow(!localEnableLightAndShadow)}
+                  >
+                    {localEnableLightAndShadow ? <EnabledIcon /> : <DisabledIcon />}
+                  </IconButton>
+                }
+              />
+              {localEnableLightAndShadow && (
+                <CardContent>
+                  <Typography variant="body1">{getLightAndShadowText()}</Typography>
+                  <Box mt={2}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={localForceLightAndShadow}
+                          onChange={() => setLocalForceLightAndShadow(!localForceLightAndShadow)}
+                          color="primary"
+                        />
+                      }
+                      label="Force Light and Shadow"
+                    />
+                  </Box>
+                  {localForceLightAndShadow && (
+                    <Box mt={2}>
+                      <FormControl variant="outlined" fullWidth>
+                        <InputLabel id="light-and-shadow-mode-label">
+                          Light and Shadow Mode
+                        </InputLabel>
+                        <Select
+                          labelId="light-and-shadow-mode-label"
+                          value={localLightAndShadowMode}
+                          onChange={(event) => setLocalLightAndShadowMode(event.target.value)}
+                          label="Light and Shadow Mode"
+                        >
+                          <MenuItem value="Random">Random</MenuItem>
+                          <MenuItem value="Shadow">Shadow</MenuItem>
+                          <MenuItem value="Light">Light</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Box>
+                  )}
+                </CardContent>
+              )}
+            </Card>
+          </Box>
           <Box mt={3} display="flex" justifyContent="space-between">
             <Button
               variant="contained"
