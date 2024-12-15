@@ -55,6 +55,9 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
     transform: 'translate(-20px, -20px)',
   },
+  hiddenNinja: {
+    opacity: 0.5, // Apply transparency
+  },
 }));
 
 // tilePlayer is now a function that takes the currentPlayer as an argument
@@ -111,7 +114,9 @@ function GameSquare({
   const tileOwner = currentTilePlayer[tile]; // Determine who owns the piece
   const isPlayerPiece = tileOwner === player; // Check if it's the current player's piece
 
-  const shouldRenderNinja = tile.includes('Ninja') && (isPlayerPiece || revealed); // Only render if it's the player's Ninja or it's revealed
+  // Always render the player's own Ninja; otherwise, render based on revealed status
+  const shouldRenderNinja =
+    tile.includes('Ninja') && (isPlayerPiece || (!isPlayerPiece && revealed));
 
   const selected = x === src?.x && y === src?.y;
   const selectable = !selected && Boolean(tileOwner === turn || src);
@@ -148,7 +153,11 @@ function GameSquare({
     >
       {ranking < -1000000 && <Skull />}
       {ranking > 1000000 && <Star />}
-      {tile.includes('Ninja') && shouldRenderNinja && icons[tile]}{' '}
+      {tile.includes('Ninja') && shouldRenderNinja && (
+        <Box className={clsx({ [classes.hiddenNinja]: !revealed && isPlayerPiece })}>
+          {icons[tile]}
+        </Box>
+      )}
       {/* Conditionally render Ninja */}
       {!tile.includes('Ninja') && icons[tile]} {/* Render other pieces normally */}
     </Paper>

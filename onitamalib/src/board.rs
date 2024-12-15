@@ -128,7 +128,7 @@ impl Board {
         let new_wind_spirit = if move_wind_spirit { Some(dst) } else { *wind_spirit };
 
         // Build the updated board
-        let updated_board = match turn {
+        let mut updated_board = match turn {
             Player::Red => Board {
                 wind_spirit: new_wind_spirit,
                 blue_king: *blue_king,
@@ -276,7 +276,7 @@ impl Board {
         let player_king = *player_king;
   
         // Construct the updated board after the extra move
-        let updated_board = match turn {
+        let mut updated_board = match turn {
             Player::Red => Board {
                 wind_spirit,
                 blue_king: *blue_king,
@@ -610,6 +610,24 @@ impl Board {
         }
     }
 
+    fn hide_ninjas(&mut self, player: Player) {
+        match player {
+            Player::Red => {
+                for ninja in self.red_ninjas.iter_mut() {
+                    if let Some((_, revealed)) = ninja {
+                        *revealed = false;
+                    }
+                }
+            }
+            Player::Blue => {
+                for ninja in self.blue_ninjas.iter_mut() {
+                    if let Some((_, revealed)) = ninja {
+                        *revealed = false;
+                    }
+                }
+            }
+        }
+    }
 
     pub fn player_king(&self) -> Option<Point> {
         match self.turn {
@@ -752,6 +770,10 @@ fn replace_card(hand: &[Card; 2], used: Card, spare: Card) -> [Card; 2] {
     ]
 }
 
+fn out_of_bounds(point: Point) -> bool {
+    point.x < 0 || point.x > 4 || point.y < 0 || point.y > 4
+}
+
 fn move_or_swap_pieces(
     player_pawns: &mut [Option<Point>; 4],
     opponent_pawns: &mut [Option<Point>; 4],
@@ -761,83 +783,165 @@ fn move_or_swap_pieces(
     dst: Point,
     wind_spirit_moving: bool,
 ) {
-    let mut pawn_captured = false;
-
-    // Handle player pawns
-    for pawn in player_pawns.iter_mut() {
-        match pawn {
-            None => {}
-            Some(pawn_pos) if *pawn_pos == src => {
-                *pawn_pos = dst; // Move player's pawn
-            }
-            Some(pawn_pos) if *pawn_pos == dst && wind_spirit_moving => {
-                *pawn_pos = src; // Swap positions with Wind Spirit
-            }
-            _ => {}
-        }
+    struct Occupant {
+        is_player_side: bool,
+        is_ninja: bool,
+        index: usize,
+        revealed: bool,
     }
 
-    // Handle opponent pawns
-    for pawn in opponent_pawns.iter_mut() {
-        match pawn {
-            None => {}
-            Some(pawn_pos) if *pawn_pos == dst => {
-                if wind_spirit_moving {
-                    *pawn_pos = src; // Swap with Wind Spirit
-                } else {
-                    *pawn = None; // Capture opponent pawn
-                    pawn_captured = true; // Set the flag for capturing
+    let mut occupant: Option<Occupant> = None;
+
+    // Check player pawns
+    for (i, pawn) in player_pawns.iter().enumerate() {
+        if pawn.map_or(false, |p| p == dst) {
+            occupant = Some(Occupant {
+                is_player_side: true,
+                is_ninja: false,
+                index: i,
+                revealed: false,
+            });
+            break;
+        }
+    }
+    // Check opponent pawns
+    if occupant.is_none() {
+        for (i, pawn) in opponent_pawns.iter().enumerate() {
+            if pawn.map_or(false, |p| p == dst) {
+                occupant = Some(Occupant {
+                    is_player_side: false,
+                    is_ninja: false,
+                    index: i,
+                    revealed: false,
+                });
+                break;
+            }
+        }
+    }
+    // Check player ninjas
+    if occupant.is_none() {
+        for (i, ninja) in player_ninjas.iter().enumerate() {
+            if let Some((pos, rev)) = ninja {
+                if *pos == dst {
+                    occupant = Some(Occupant {
+                        is_player_side: true,
+                        is_ninja: true,
+                        index: i,
+                        revealed: *rev,
+                    });
+                    break;
                 }
             }
-            _ => {}
         }
     }
-
-    // Handle player ninjas
-    for ninja in player_ninjas.iter_mut() {
-        match ninja {
-            None => {}
-            Some((ninja_pos, revealed)) if *ninja_pos == src => {
-                *ninja_pos = dst; // Move player's Ninja
-
-                // Reveal if capturing an opponent's Ninja or Pawn
-                if pawn_captured
-                    || opponent_ninjas.iter().any(|n| matches!(n, Some((p, _)) if *p == dst))
-                {
-                    *revealed = true; // Reveal the Ninja after capturing
+    // Check opponent ninjas
+    if occupant.is_none() {
+        for (i, ninja) in opponent_ninjas.iter().enumerate() {
+            if let Some((pos, rev)) = ninja {
+                if *pos == dst {
+                    occupant = Some(Occupant {
+                        is_player_side: false,
+                        is_ninja: true,
+                        index: i,
+                        revealed: *rev,
+                    });
+                    break;
                 }
             }
-            Some((ninja_pos, revealed)) if *ninja_pos == dst && wind_spirit_moving => {
-                *ninja_pos = src; // Swap positions with Wind Spirit
-                *revealed = true; // Reveal Ninja when swapped
-            }
-            _ => {}
         }
     }
 
-    // Handle opponent ninjas
-    for ninja in opponent_ninjas.iter_mut() {
-        match ninja {
-            None => {}
-            Some((ninja_pos, revealed)) if *ninja_pos == dst => {
-                if wind_spirit_moving {
-                    *ninja_pos = src; // Swap with Wind Spirit
-                    *revealed = true; // Reveal Ninja when swapped
+    let mut mover_is_pawn = None;  // stores index if it's a player pawn
+    let mut mover_is_ninja = None; // stores (index, revealed)
+    
+    for (i, pawn) in player_pawns.iter().enumerate() {
+        if pawn.map_or(false, |p| p == src) {
+            mover_is_pawn = Some(i);
+            break;
+        }
+    }
+    for (i, ninja) in player_ninjas.iter().enumerate() {
+        if let Some((pos, rev)) = ninja {
+            if *pos == src {
+                mover_is_ninja = Some((i, *rev));
+                break;
+            }
+        }
+    }
+
+    let mut captured_something = false;
+    let mut skip_move = false; // for hidden vs hidden ninjas
+
+    if let Some(occ) = occupant {
+        let occupant_is_enemy = !occ.is_player_side; 
+        let occupant_is_hidden_ninja = occ.is_ninja && !occ.revealed;
+
+        if occupant_is_enemy {
+            // Occupant is an enemy piece
+            if wind_spirit_moving {
+                // Wind Spirit swap
+                if occ.is_ninja {
+                    // occupant = enemy ninja -> reveal occupant
+                    let (_, old_reveal) = opponent_ninjas[occ.index].unwrap();
+                    opponent_ninjas[occ.index] = Some((src, true /* occupant revealed on swap */));
                 } else {
-                    // If no Wind Spirit, check for interaction with player's Ninjas
-                    if player_ninjas.iter().any(|n| matches!(n, Some((p, false)) if *p == dst)) {
-                        // Do nothing for two hidden Ninjas coexisting
+                    // occupant = enemy pawn
+                    opponent_pawns[occ.index] = Some(src);
+                }
+            } else {
+                // Attempting capture
+                let mover_is_hidden_ninja = mover_is_ninja.map_or(false, |(_, rev)| !rev);
+                if occ.is_ninja {
+                    // hidden vs hidden ninjas => skip capture
+                    if mover_is_hidden_ninja && occupant_is_hidden_ninja {
+                        skip_move = true;
                     } else {
-                        // Ninja is captured when another piece moves onto it
-                        *ninja = None;
+                        // normal capture
+                        opponent_ninjas[occ.index] = None;
+                        captured_something = true;
                     }
+                } else {
+                    // occupant is a pawn
+                    opponent_pawns[occ.index] = None;
+                    captured_something = true;
                 }
             }
-            _ => {}
+        } else {
+            // Occupant is our own piece
+            if wind_spirit_moving {
+                // Swap occupant with src
+                if occ.is_ninja {
+                    let (_, old_rev) = player_ninjas[occ.index].unwrap();
+                    // occupant ninja gets revealed on swap
+                    player_ninjas[occ.index] = Some((src, true));
+                } else {
+                    // occupant is player's pawn
+                    player_pawns[occ.index] = Some(src);
+                }
+            }
+            // else: can't capture your own piece, do nothing
+        }
+    }
+
+    if !skip_move {
+        // If mover is a pawn
+        if let Some(i) = mover_is_pawn {
+            player_pawns[i] = Some(dst);
+        }
+        // If mover is a ninja
+        if let Some((i, was_revealed)) = mover_is_ninja {
+            let (old_pos, _) = player_ninjas[i].unwrap();
+
+            // Reveal if captured something or if it was part of a wind spirit move
+            let new_reveal = was_revealed || captured_something || wind_spirit_moving;
+
+            player_ninjas[i] = Some((dst, new_reveal));
         }
     }
 }
 
-fn out_of_bounds(point: Point) -> bool {
-    point.x < 0 || point.x > 4 || point.y < 0 || point.y > 4
-}
+
+
+
+
+
