@@ -106,16 +106,12 @@ function GameSquare({
 }) {
   const classes = useStyles();
 
-  // Ownership based on the player viewing the board
-    const tileOwner = (() => {
-        if (tile.includes('Blue')) return 'Blue';
-        if (tile.includes('Red')) return 'Red';
-        return null;
-    })();
-  const isViewerPiece = tileOwner === player; // Check if the tile belongs to the viewing player
+  // Call tilePlayer with the current turn to get the correct player assignments
+  const currentTilePlayer = tilePlayer(turn);
+  const tileOwner = currentTilePlayer[tile]; // Determine who owns the piece
+  const isPlayerPiece = tileOwner === player; // Check if it's the current player's piece
 
-  // Render Ninja only if it's the viewer's Ninja or revealed
-  const shouldRenderNinja = tile.includes('Ninja') && (isViewerPiece || revealed);
+  const shouldRenderNinja = tile.includes('Ninja') && (isPlayerPiece || revealed); // Only render if it's the player's Ninja or it's revealed
 
   const selected = x === src?.x && y === src?.y;
   const selectable = !selected && Boolean(tileOwner === turn || src);
