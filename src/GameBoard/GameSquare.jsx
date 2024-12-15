@@ -90,16 +90,35 @@ function Star() {
   );
 }
 
-function GameSquare({ tile, revealed, x, y, src, setSrc, turn, move, isValid, lastMove, ranking }) {
+function GameSquare({
+  tile,
+  revealed,
+  x,
+  y,
+  src,
+  setSrc,
+  turn,
+  player, // Add player prop
+  move,
+  isValid,
+  lastMove,
+  ranking,
+}) {
   const classes = useStyles();
 
-  // Call tilePlayer with the current turn to get the correct player assignments
-  const currentTilePlayer = tilePlayer(turn);
-  const player = currentTilePlayer[tile];
-  const activePlayer = turn === player;
+  // Ownership based on the player viewing the board
+    const tileOwner = (() => {
+        if (tile.includes('Blue')) return 'Blue';
+        if (tile.includes('Red')) return 'Red';
+        return null;
+    })();
+  const isViewerPiece = tileOwner === player; // Check if the tile belongs to the viewing player
+
+  // Render Ninja only if it's the viewer's Ninja or revealed
+  const shouldRenderNinja = tile.includes('Ninja') && (isViewerPiece || revealed);
 
   const selected = x === src?.x && y === src?.y;
-  const selectable = !selected && Boolean(activePlayer || src);
+  const selectable = !selected && Boolean(tileOwner === turn || src);
   const lastSrc = x === lastMove?.src?.x && y === lastMove?.src?.y;
   const lastDst = x === lastMove?.dst?.x && y === lastMove?.dst?.y;
   const moved = lastSrc || lastDst;
@@ -123,20 +142,19 @@ function GameSquare({ tile, revealed, x, y, src, setSrc, turn, move, isValid, la
       })}
       onClick={() => {
         if (selected) {
-          // Deselect the piece if it's already selected
-          setSrc(null);
+          setSrc(null); // Deselect if already selected
         } else if (src) {
-          // If a source is selected, attempt to move to the clicked square
-          move({ x, y });
-        } else if (activePlayer) {
-          // If no source is selected and the clicked square is an active player's piece, select it
-          setSrc({ x, y, type: tile.includes('King') ? 'King' : 'Pawn' }); // Pass the piece type (King or Pawn)
+          move({ x, y }); // Attempt to move to the clicked square
+        } else if (tileOwner === turn) {
+          setSrc({ x, y, type: tile.includes('King') ? 'King' : 'Pawn' }); // Select the piece
         }
       }}
     >
       {ranking < -1000000 && <Skull />}
       {ranking > 1000000 && <Star />}
-      {icons[tile]}
+      {tile.includes('Ninja') && shouldRenderNinja && icons[tile]}{' '}
+      {/* Conditionally render Ninja */}
+      {!tile.includes('Ninja') && icons[tile]} {/* Render other pieces normally */}
     </Paper>
   );
 }
@@ -145,6 +163,7 @@ GameSquare.defaultProps = {
   src: null,
   turn: null,
   lastMove: null,
+  player: null,
 };
 
 GameSquare.propTypes = {
@@ -167,6 +186,7 @@ GameSquare.propTypes = {
   }),
   setSrc: PropTypes.func.isRequired,
   turn: PropTypes.oneOf(['Red', 'Blue', null]),
+  player: PropTypes.oneOf(['Red', 'Blue', null]),
   move: PropTypes.func.isRequired,
   isValid: PropTypes.bool.isRequired,
   lastMove: PropTypes.shape({

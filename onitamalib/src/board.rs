@@ -100,7 +100,15 @@ impl Board {
         let mut opponent_pawns = self.opponent_pawns();
         let mut player_ninjas = self.player_ninjas();
         let mut opponent_ninjas = self.opponent_ninjas();
-        move_or_swap_pawns(&mut player_pawns, &mut opponent_pawns, src, dst, move_wind_spirit);
+        move_or_swap_pieces(
+            &mut player_pawns,
+            &mut opponent_pawns,
+            &mut player_ninjas,
+            &mut opponent_ninjas,
+            src,
+            dst,
+            move_wind_spirit,
+        );
 
         // Check if we can enable extra move
         let extra_pending = self.enable_extra_move(card, src, dst);
@@ -154,7 +162,7 @@ impl Board {
         };
 
         // Check if this move finishes the game
-        if Some(dst) == *opponent_king || (moving_king && dst == goal_square) || self.opponent_pieces().is_empty() {
+        if Some(dst) == *opponent_king || (moving_king && dst == goal_square) || !updated_board.has_remaining_pieces(turn.invert()) {
             return Ok(GameState::Finished {
                 winner: *turn,
                 board: updated_board,
@@ -254,7 +262,15 @@ impl Board {
         let mut opponent_pawns = self.opponent_pawns();
         let mut player_ninjas = self.player_ninjas();
         let mut opponent_ninjas = self.opponent_ninjas();
-        move_or_swap_pawns(&mut player_pawns, &mut opponent_pawns, src, dst, true);
+        move_or_swap_pieces(
+            &mut player_pawns,
+            &mut opponent_pawns,
+            &mut player_ninjas,
+            &mut opponent_ninjas,
+            src,
+            dst,
+            true,
+        );
     
         let wind_spirit = Some(dst);
         let player_king = *player_king;
@@ -630,6 +646,21 @@ impl Board {
         self.wind_spirit
     }
 
+     fn has_remaining_pieces(&self, player: Player) -> bool {
+        match player {
+            Player::Red => {
+                self.red_king.is_some()
+                    || self.red_pawns.iter().any(Option::is_some)
+                    || self.red_ninjas.iter().any(Option::is_some)
+            }
+            Player::Blue => {
+                self.blue_king.is_some()
+                    || self.blue_pawns.iter().any(Option::is_some)
+                    || self.blue_ninjas.iter().any(Option::is_some)
+            }
+        }
+    }
+
     fn enable_extra_move(&self, card: Card, moved_src: Point, moved_dst: Point) -> bool {
         if !CardSet::WayOfTheWind.cards().contains(&card) {
             return false;
@@ -721,34 +752,85 @@ fn replace_card(hand: &[Card; 2], used: Card, spare: Card) -> [Card; 2] {
     ]
 }
 
-fn move_or_swap_pawns(
+fn move_or_swap_pieces(
     player_pawns: &mut [Option<Point>; 4],
     opponent_pawns: &mut [Option<Point>; 4],
+    player_ninjas: &mut [Option<(Point, bool)>; 2],
+    opponent_ninjas: &mut [Option<(Point, bool)>; 2],
     src: Point,
     dst: Point,
-    wind_spirit_moving: bool
+    wind_spirit_moving: bool,
 ) {
+    let mut pawn_captured = false;
+
+    // Handle player pawns
     for pawn in player_pawns.iter_mut() {
         match pawn {
             None => {}
             Some(pawn_pos) if *pawn_pos == src => {
-                *pawn_pos = dst;
+                *pawn_pos = dst; // Move player's pawn
             }
             Some(pawn_pos) if *pawn_pos == dst && wind_spirit_moving => {
-                *pawn_pos = src;
+                *pawn_pos = src; // Swap positions with Wind Spirit
             }
             _ => {}
         }
     }
 
+    // Handle opponent pawns
     for pawn in opponent_pawns.iter_mut() {
         match pawn {
             None => {}
             Some(pawn_pos) if *pawn_pos == dst => {
                 if wind_spirit_moving {
-                    *pawn_pos = src;
+                    *pawn_pos = src; // Swap with Wind Spirit
                 } else {
-                    *pawn = None;
+                    *pawn = None; // Capture opponent pawn
+                    pawn_captured = true; // Set the flag for capturing
+                }
+            }
+            _ => {}
+        }
+    }
+
+    // Handle player ninjas
+    for ninja in player_ninjas.iter_mut() {
+        match ninja {
+            None => {}
+            Some((ninja_pos, revealed)) if *ninja_pos == src => {
+                *ninja_pos = dst; // Move player's Ninja
+
+                // Reveal if capturing an opponent's Ninja or Pawn
+                if pawn_captured
+                    || opponent_ninjas.iter().any(|n| matches!(n, Some((p, _)) if *p == dst))
+                {
+                    *revealed = true; // Reveal the Ninja after capturing
+                }
+            }
+            Some((ninja_pos, revealed)) if *ninja_pos == dst && wind_spirit_moving => {
+                *ninja_pos = src; // Swap positions with Wind Spirit
+                *revealed = true; // Reveal Ninja when swapped
+            }
+            _ => {}
+        }
+    }
+
+    // Handle opponent ninjas
+    for ninja in opponent_ninjas.iter_mut() {
+        match ninja {
+            None => {}
+            Some((ninja_pos, revealed)) if *ninja_pos == dst => {
+                if wind_spirit_moving {
+                    *ninja_pos = src; // Swap with Wind Spirit
+                    *revealed = true; // Reveal Ninja when swapped
+                } else {
+                    // If no Wind Spirit, check for interaction with player's Ninjas
+                    if player_ninjas.iter().any(|n| matches!(n, Some((p, false)) if *p == dst)) {
+                        // Do nothing for two hidden Ninjas coexisting
+                    } else {
+                        // Ninja is captured when another piece moves onto it
+                        *ninja = None;
+                    }
                 }
             }
             _ => {}

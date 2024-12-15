@@ -126,6 +126,7 @@ function GameBoard({
               lastMove={lastMove}
               dstMoveRankings={dstMoveRankings || {}}
               redOriented={redOriented}
+              player-={player}
             />
             {/* Passing Red Cards to GameHand */}
             <GameHand

@@ -35,18 +35,18 @@ module.exports = override(
     return config;
   },
   (config) => {
-    config.resolve.alias.onitamalib = path.resolve(__dirname, 'src/onitamalib/index.js')
+    config.resolve.alias.onitamalib = path.resolve(__dirname, 'src/onitamalib/index.js');
     config.module.rules.forEach((rule) => {
       (rule.oneOf || []).forEach((oneOf) => {
         if (oneOf.type === 'asset/resource') {
           oneOf.exclude.push(wasmExtensionRegExp);
         }
-      })
-    })
+      });
+    });
     config.experiments = {
       syncWebAssembly: true,
       topLevelAwait: true,
-    }
+    };
     return config;
   },
   (config) => {

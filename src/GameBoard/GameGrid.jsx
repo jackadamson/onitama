@@ -16,6 +16,7 @@ function GameGrid({
   lastMove,
   redOriented,
   dstMoveRankings,
+  player,
 }) {
   return (
     <Paper
@@ -50,6 +51,7 @@ function GameGrid({
                 key={`${x}-${y}`}
                 lastMove={lastMove}
                 ranking={(dstMoveRankings[`${x},${y}`] || 0) * (redOriented ? 1 : -1)}
+                player={player}
               />
             );
           })}
@@ -82,6 +84,7 @@ GameGrid.propTypes = {
     src: PointPropType.isRequired,
   }),
   dstMoveRankings: PropTypes.objectOf(PropTypes.number).isRequired,
+  player: PropTypes.oneOf(['Red', 'Blue', null]).isRequired,
 };
 
 export default GameGrid;
