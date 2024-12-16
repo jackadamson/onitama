@@ -5,7 +5,7 @@ import ReactMarkdown from 'markdown-to-jsx';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography, Link } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChessQueen } from '@fortawesome/free-solid-svg-icons';
+import { faChessQueen, faChessKnight } from '@fortawesome/free-solid-svg-icons';
 
 const styles = (theme) => ({
   listItem: {
@@ -21,8 +21,8 @@ const styles = (theme) => ({
 });
 
 // Custom component for WindSpiritIcon
-function WindSpiritIcon({ size }) {
-  let iconSize = '2x'; // Default size
+function WindSpiritIcon({ size = 'medium' }) {
+  let iconSize = '2x';
   if (size === 'small') iconSize = '1x';
   if (size === 'large') iconSize = '3x';
 
@@ -33,44 +33,37 @@ function WindSpiritIcon({ size }) {
   );
 }
 
+// Custom component for NinjaIcon
+function NinjaIcon({ size = 'medium', color = 'red', hidden = false }) {
+  let iconSize = '2x';
+  if (size === 'small') iconSize = '1x';
+  if (size === 'large') iconSize = '3x';
+
+  const colorMap = {
+    red: '#f44336',
+    blue: '#2196f3',
+  };
+
+  const opacity = hidden ? 0.5 : 1;
+
+  return (
+    <span style={{ display: 'inline-block', textAlign: 'center', margin: '8px', opacity }}>
+      <FontAwesomeIcon icon={faChessKnight} color={colorMap[color] || '#f44336'} size={iconSize} />
+    </span>
+  );
+}
+
 const options = {
   overrides: {
-    h1: {
-      component: Typography,
-      props: {
-        gutterBottom: true,
-        variant: 'h4',
-      },
-    },
-    h2: {
-      component: Typography,
-      props: {
-        gutterBottom: true,
-        variant: 'h5',
-      },
-    },
-    h3: {
-      component: Typography,
-      props: {
-        gutterBottom: true,
-        variant: 'h6',
-      },
-    },
+    h1: { component: Typography, props: { gutterBottom: true, variant: 'h4' } },
+    h2: { component: Typography, props: { gutterBottom: true, variant: 'h5' } },
+    h3: { component: Typography, props: { gutterBottom: true, variant: 'h6' } },
     h4: {
       component: Typography,
-      props: {
-        gutterBottom: true,
-        variant: 'caption',
-        paragraph: true,
-      },
+      props: { gutterBottom: true, variant: 'caption', paragraph: true },
     },
-    p: {
-      component: Typography,
-      props: { paragraph: true },
-    },
-    a: {
-      component: Link,
-    },
+    p: { component: Typography, props: { paragraph: true } },
+    a: { component: Link },
     img: {
       component: withStyles(styles)(({ classes, alt, src }) => (
         <img alt={alt || ''} src={src} className={classes.image} />
@@ -83,32 +76,29 @@ const options = {
         </li>
       )),
     },
+    WindSpiritIcon: { component: WindSpiritIcon },
+    NinjaIcon: { component: NinjaIcon },
   },
 };
 
 function Markdown({ children }) {
-  // Render processed Markdown content
   const renderContent = () => {
     // Process placeholders in the raw content
-    const processedContent = children.replace(
-      /\[WindSpiritIcon(?: size="(small|medium|large)")?\]/g,
-      (_, size = 'medium') => {
-        // Render the WindSpiritIcon directly into ReactMarkdown
-        const iconSize = size;
-        return `<WindSpiritIcon size="${iconSize}" />`;
-      },
-    );
+    const processedContent = children
+      .replace(
+        /\[WindSpiritIcon(?: size="(small|medium|large)")?\]/g,
+        (_, size = 'medium') => `<WindSpiritIcon size="${size}" />`,
+      )
+      .replace(
+        /\[NinjaIcon(?: size="(small|medium|large)")?(?: color="(red|blue)")?(?: hidden)?\]/g,
+        (_, size = 'medium', color = 'red') =>
+          `<NinjaIcon size="${size}" color="${color}" hidden="${!!_.includes('hidden')}" />`,
+      );
 
     return (
       <ReactMarkdown
         options={{
           ...options,
-          overrides: {
-            ...options.overrides,
-            WindSpiritIcon: {
-              component: WindSpiritIcon,
-            },
-          },
         }}
       >
         {processedContent}

@@ -1,6 +1,7 @@
 import boardScreenshot from './screenshots/board.png';
 import cardScreenshot from './screenshots/card.png';
 import WindMoveCardScreenshot from './screenshots/wind-move-card.png';
+import ShadowBoardScreenshot from './screenshots/way-of-the-shadow-board.png';
 
 export const rulesData = [
   {
@@ -74,34 +75,34 @@ If a player moves their **king** to the **starting square** of the opponent (the
     content: `
 # Way of the Wind
 
-In the Way of the Wind expansion, a neutral Wind Spirit piece and new special move cards are used.
+In the Way of the Wind expansion, a neutral **Wind Spirit** piece and new special move cards are introduced.
 
 ## Setup
 
 The board and player pieces are set up the same as in the base game.
 
-In the center square, there is a new neutral piece called the **Wind Spirit**. 
+In the center square, there is a new neutral piece called the **Wind Spirit**.
 
 <div style="text-align: center; margin: 16px 0;">
   [WindSpiritIcon size="large"]
 </div>
 
-The game uses 5 cards as normal, but each player will start with one Wind Spirit move card.
+The game uses 5 cards as normal but can also include special Wind Spirit move cards.
 
 ![Wind Spirit Move Card Example](${WindMoveCardScreenshot})
 
 ## Playing the Game
 
-Play proceeds as in the normal game with these changes:
+Play proceeds as in the normal game, with the following changes:
 
 - When using a regular move card, you may use it to move one of your pieces or the **Wind Spirit**[WindSpiritIcon size="small"]
-- If you use a Wind Spirit move card to move, first you move one of your pieces according to the top grid, then you **must** move the Wind Spirit (if able) using one of the moves on the bottom grid.
+- If you use a Wind Spirit move card, you first move one of your other pieces according to the top grid, then you **must** move the Wind Spirit (if able) using one of the moves on the bottom grid.
 
 ![Wind Spirit Move Card Example](${WindMoveCardScreenshot})
 
 ## Moving the Wind Spirit
 
-The **Wind Spirit** moves like any other piece when using a move card. 
+The **Wind Spirit** moves like any other piece when using a move card.
 
 - If the Wind Spirit lands on a Pawn (friendly or enemy), it does not capture it. Instead, they **swap places**.
 - The Wind Spirit cannot move into the same space as a King.
@@ -109,11 +110,73 @@ The **Wind Spirit** moves like any other piece when using a move card.
 
 ## Alternate Setup
 
-You can adjust the setup for the Wind Spirit game using the settings menu.
+By default, 25% of games will include the Wind Spirit, and the number of Wind Spirit move cards is determined randomly with a weighted distribution.
+
+You can adjust the setup for the Wind Spirit game using the settings menu:
 
 - This allows you to force the Wind Spirit into every game.
-- You can also adjust the number of Wind Spirit move cards in the game.
+- You can also specify the exact number of Wind Spirit move cards in the game.
+- If you do not want to play with the Wind Spirit at all, you can simply disable the Way of the Wind card set.
+
     `,
+  },
+  {
+    path: '/rules/way-of-the-shadow',
+    label: 'Way of the Shadow',
+    content: `
+# Way of the Shadow
+
+The **Light and Shadow** expansion introduces a new piece: the **Ninja**, capable of secret movements and surprise attacks.
+
+<div style="text-align: center; margin: 16px 0;">
+  [NinjaIcon size="large"]
+</div>
+
+In the *Way of the Shadow* each player deploys their own Ninja.
+
+## Setup
+
+![Way of the Shadow Board](${ShadowBoardScreenshot})
+
+The board and player pieces are set up as follows:
+
+- Each player uses **2 Pawns**, which are placed in the far corners of their side of the board, with their **King** in their **Base**.  
+- The **Ninja** is placed *randomly* in one of the spaces adjacent to the **King**, and begins the game hidden.
+
+<div style="text-align: center; margin: 16px 0;">
+  [NinjaIcon size="large" hidden]
+</div>
+
+## Playing the Game
+
+Play proceeds similarly to the base game, but with the following changes:
+
+### Movement
+
+- After using a move card with another piece, players may move their **Ninja** [NinjaIcon size="small"] using the same move card.
+- Moving the **Ninja** is optional, but if you have a move card that can be used by another piece, you must move that piece first.
+- Ninjas remain hidden [NinjaIcon size="small" hidden] unless revealed [NinjaIcon size="small"], and become hidden again at the start of your next turn.
+- Two hidden Ninjas can occupy the same space.
+
+### Capturing a Ninja with Your Other Pieces
+
+- If one of your Pawns or your King moves onto an opponent's Ninja, whether hidden [NinjaIcon size="small" color="blue" hidden] or revealed [NinjaIcon size="small" color="blue"], it is captured.
+
+### Capturing with Your Ninja
+
+- To capture a Pawn or a revealed Ninja, move your Ninja to a space occupied by that piece. This will reveal your Ninja.
+- To capture your opponent's hidden Ninja, first reveal your Ninja by clicking on it, then move it to the square where you think your opponent's Ninja is. If the Ninja is there, it will be captured. Your Ninja will remain revealed until your next turn whether their Ninja was there or not.
+
+## Alternate Setup
+
+By default, 5% of games will be either Light or Shadow games, with Shadow games being much more common.
+
+You can adjust this in the settings.
+
+- You can force every game to use the Light and Shadow Expansion.
+- You can make every game either a *Way of the Shadow* or *Way of the Light* game.
+- If you do not want to play with the Light and Shadow expansion, you can simply disable it.
+  `,
   },
 ];
 
