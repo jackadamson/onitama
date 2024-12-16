@@ -452,19 +452,26 @@ impl Board {
 
         // Overwrite board for Light and Shadow modes
         if selected_mode == "Light" {
-            // Overwrite for Light mode
             board.blue_pawns = [None, None, None, None]; // Shadow Master has no Pawns
             board.blue_king = None; // Shadow Master has no King
+
+            // Randomize Ninja placement until Player placement is implemented
+            let mut x_positions = vec![0, 1, 2, 3, 4];
+            x_positions.shuffle(&mut rng);
+
             board.blue_ninjas = [
-                Some((Point { x: 1, y: 0 }, false)),
-                Some((Point { x: 3, y: 0 }, false)),
+                Some((Point { x: x_positions[0], y: 0 }, false)),
+                Some((Point { x: x_positions[1], y: 0 }, false)),
             ];
         } else if selected_mode == "Shadow" {
-            // Overwrite for Shadow mode
+            // Randomize Ninja placement until Player placement is implemented
+            let red_ninja_x = if rng.gen_bool(0.5) { 1 } else { 3 };
+            let blue_ninja_x = if rng.gen_bool(0.5) { 1 } else { 3 };
+
             board.red_pawns = [None, None, Some(Point { x: 0, y: 4 }), Some(Point { x: 4, y: 4 })];
-            board.red_ninjas = [Some((Point { x: 1, y: 4 }, false)), None]; // One Ninja for Red
+            board.red_ninjas = [Some((Point { x: red_ninja_x, y: 4 }, false)), None]; // One Ninja for Red
             board.blue_pawns = [None, None, Some(Point { x: 0, y: 0 }), Some(Point { x: 4, y: 0 })];
-            board.blue_ninjas = [Some((Point { x: 3, y: 0 }, false)), None]; // One Ninja for Blue
+            board.blue_ninjas = [Some((Point { x: blue_ninja_x, y: 0 }, false)), None]; // One Ninja for Blue
         }
 
         return board;
