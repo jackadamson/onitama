@@ -10,7 +10,23 @@ const useLocalGame = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   // Use the custom game settings hook
-  const [gameSettings] = useGameSettings();
+  const [originalGameSettings] = useGameSettings();
+
+  // Override enableLightAndShadow and related settings
+  const gameSettings = useMemo(() => {
+    if (originalGameSettings.enableLightAndShadow) {
+      enqueueSnackbar('Light and Shadow expansion not currently supported in Local Multiplayer', {
+        variant: 'warning',
+      });
+    }
+
+    return {
+      ...originalGameSettings,
+      enableLightAndShadow: false,
+      forceLightAndShadow: false,
+      lightAndShadowMode: null,
+    };
+  }, [originalGameSettings, enqueueSnackbar]);
 
   const handlers = useMemo(() => {
     const onError = (err) => enqueueSnackbar(err, { variant: 'error', persist: false });
