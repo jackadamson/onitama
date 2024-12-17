@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { Box, makeStyles, Paper, Tooltip } from '@material-ui/core';
@@ -25,26 +25,16 @@ const icons = {
   RedKing: <FontAwesomeIcon icon={faChessKing} color="#f44336" size="3x" />,
 };
 
-// Determine the controller of WindSpirit based on the current player
 const getWindSpiritController = (currentPlayer) => (currentPlayer === 'Blue' ? 'Blue' : 'Red');
 
 const useStyles = makeStyles((theme) => ({
-  selected: {
-    borderColor: theme.palette.primary.main,
-  },
-  valid: {
-    borderColor: theme.palette.secondary.dark,
-  },
+  selected: { borderColor: theme.palette.primary.main },
+  valid: { borderColor: theme.palette.secondary.dark },
   selectable: {
-    '&:hover': {
-      borderColor: theme.palette.primary.main,
-    },
+    '&:hover': { borderColor: theme.palette.primary.main },
     cursor: 'pointer',
   },
-  lastMove: {
-    // Styling for the squares that were in the last move
-    // borderColor: `${theme.palette.success.dark}a0`,
-  },
+  lastMove: {},
   redBase: {
     backgroundColor: Color(theme.palette.background.paper).mix(Color('#f44336'), 0.1).hex(),
   },
@@ -60,7 +50,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// tilePlayer is now a function that takes the currentPlayer as an argument
 const tilePlayer = (currentPlayer) => ({
   BluePawn: 'Blue',
   BlueKing: 'Blue',
@@ -101,20 +90,19 @@ function GameSquare({
   src,
   setSrc,
   turn,
-  player, // Add player prop
+  player,
   move,
   isValid,
   lastMove,
   ranking,
 }) {
   const classes = useStyles();
+  const [tempRevealed, setTempRevealed] = useState(false); // Local temporary reveal state
 
-  // Call tilePlayer with the current turn to get the correct player assignments
   const currentTilePlayer = tilePlayer(turn);
-  const tileOwner = currentTilePlayer[tile]; // Determine who owns the piece
-  const isPlayerPiece = tileOwner === player; // Check if it's the current player's piece
+  const tileOwner = currentTilePlayer[tile];
+  const isPlayerPiece = tileOwner === player;
 
-  // Always render the player's own Ninja; otherwise, render based on revealed status
   const shouldRenderNinja =
     tile.includes('Ninja') && (isPlayerPiece || (!isPlayerPiece && revealed));
 
@@ -123,6 +111,11 @@ function GameSquare({
   const lastSrc = x === lastMove?.src?.x && y === lastMove?.src?.y;
   const lastDst = x === lastMove?.dst?.x && y === lastMove?.dst?.y;
   const moved = lastSrc || lastDst;
+
+  // Reset tempRevealed when src (selected piece) or turn changes
+  useEffect(() => {
+    setTempRevealed(false);
+  }, [src, turn]);
 
   return (
     <Paper
@@ -143,23 +136,37 @@ function GameSquare({
       })}
       onClick={() => {
         if (selected) {
-          setSrc(null); // Deselect if already selected
+          setSrc(null);
+          setTempRevealed(false); // Reset temporary reveal on deselect
         } else if (src) {
-          move({ x, y }); // Attempt to move to the clicked square
+          move({ x, y });
+          setTempRevealed(false); // Reset temporary reveal after any move
         } else if (tileOwner === turn) {
-          setSrc({ x, y, type: tile.includes('King') ? 'King' : 'Pawn' }); // Select the piece
+          setSrc({ x, y, type: tile.includes('King') ? 'King' : 'Pawn' });
+          setTempRevealed(false); // Reset if another piece is selected
+        } else {
+          setTempRevealed(false); // Reset if clicking an invalid square
+        }
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        if (tile.includes('Ninja') && isPlayerPiece && !revealed) {
+          setTempRevealed(true); // Temporarily reveal the Ninja locally
         }
       }}
     >
       {ranking < -1000000 && <Skull />}
       {ranking > 1000000 && <Star />}
       {tile.includes('Ninja') && shouldRenderNinja && (
-        <Box className={clsx({ [classes.hiddenNinja]: !revealed && isPlayerPiece })}>
+        <Box
+          className={clsx({
+            [classes.hiddenNinja]: !revealed && !tempRevealed && isPlayerPiece,
+          })}
+        >
           {icons[tile]}
         </Box>
       )}
-      {/* Conditionally render Ninja */}
-      {!tile.includes('Ninja') && icons[tile]} {/* Render other pieces normally */}
+      {!tile.includes('Ninja') && icons[tile]}
     </Paper>
   );
 }
