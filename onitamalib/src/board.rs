@@ -876,7 +876,13 @@ fn move_or_swap_pieces(
         player_pawns[i] = Some(dst);
     }
     if let Some((i, was_revealed)) = mover_is_ninja {
-        player_ninjas[i] = Some((dst, captured_something || wind_spirit_moving || was_revealed));
+        let new_revealed_state = captured_something || wind_spirit_moving || was_revealed;
+        player_ninjas[i] = Some((dst, new_revealed_state));
+
+        // Explicitly hide the mover Ninja if it didn't capture or swap
+        if !captured_something && !wind_spirit_moving {
+            player_ninjas[i] = Some((dst, false));
+        }
     }
 
     // Hide ninjas that didnt perform a revealing action

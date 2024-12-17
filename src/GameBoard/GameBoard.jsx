@@ -215,7 +215,9 @@ GameBoard.defaultProps = {
 GameBoard.propTypes = {
   src: PointPropType,
   setSrc: PropTypes.func.isRequired,
-  grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
+  grid: PropTypes.arrayOf(
+    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
+  ).isRequired,
   winner: PropTypes.oneOf(['Red', 'Blue', null]),
   reset: PropTypes.func,
   turn: PropTypes.oneOf(['Red', 'Blue']).isRequired,

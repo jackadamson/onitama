@@ -12,12 +12,33 @@ const useStyles = makeStyles(() => ({
   },
 }));
 const radToDeg = 180 / Math.PI;
-function LastMove({ lastMove, redOriented }) {
+function LastMove({ lastMove, redOriented, grid, player }) {
   const classes = useStyles();
   if (!lastMove) {
     return null;
   }
+
   const { src, dst } = lastMove;
+
+  const isHiddenNinja = (currentPlayer) => {
+    const tile = grid[dst.y]?.[dst.x];
+    if (!tile) return false;
+
+    if (typeof tile === 'string') {
+      return tile.includes('Ninja') && !tile.includes(currentPlayer);
+    }
+
+    const tileType = Object.keys(tile)[0];
+    const revealed = tile[tileType]?.revealed ?? true;
+    const owner = tile[tileType]?.owner || ''; // Assume owner exists in tile
+    return tileType.includes('Ninja') && !revealed && owner !== currentPlayer;
+  };
+
+  // Suppress rendering if hidden Ninja is present
+  if (isHiddenNinja(player)) {
+    return null;
+  }
+
   const deltaX = dst.x - src.x;
   const deltaY = dst.y - src.y;
   const angle = Math.atan2(deltaY, deltaX) * radToDeg;
@@ -54,10 +75,14 @@ LastMove.defaultProps = {
 };
 LastMove.propTypes = {
   redOriented: PropTypes.bool.isRequired,
+  grid: PropTypes.arrayOf(
+    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
+  ).isRequired,
   lastMove: PropTypes.shape({
     dst: PointPropType.isRequired,
     src: PointPropType.isRequired,
   }),
+  player: PropTypes.string.isRequired,
 };
 
 export default LastMove;

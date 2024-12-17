@@ -25,7 +25,7 @@ function GameGrid({
       flexDirection={redOriented ? 'column' : 'column-reverse'}
       my={2}
     >
-      <LastMove lastMove={lastMove} redOriented={redOriented} />
+      <LastMove lastMove={lastMove} redOriented={redOriented} grid={grid} player={turn} />
       {grid.map((row, y) => (
         <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'} key={y}>
           {row.map((tile, x) => {
@@ -69,7 +69,9 @@ GameGrid.defaultProps = {
 
 GameGrid.propTypes = {
   redOriented: PropTypes.bool.isRequired,
-  grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
+  grid: PropTypes.arrayOf(
+    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
+  ).isRequired,
   isMoveValid: PropTypes.func.isRequired,
   src: PropTypes.shape({
     x: PropTypes.number.isRequired,
