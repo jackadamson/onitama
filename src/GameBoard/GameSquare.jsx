@@ -136,12 +136,21 @@ function GameSquare({
       })}
       onClick={() => {
         if (selected) {
-          setSrc(null);
+          setSrc(null); // Deselect the piece
           setTempRevealed(false); // Reset temporary reveal on deselect
         } else if (src) {
-          move({ x, y });
-          setTempRevealed(false); // Reset temporary reveal after any move
+          // If src is selected, handle the movement for the selected piece
+          if (tile.includes('WindSpirit') && tileOwner === turn) {
+            // Allow the Wind Spirit to move onto any square (including one with the player's piece)
+            move({ x, y });
+            setTempRevealed(false); // Reset temporary reveal after the move
+          } else {
+            // Default movement behavior for other pieces
+            move({ x, y });
+            setTempRevealed(false); // Reset temporary reveal after the move
+          }
         } else if (tileOwner === turn) {
+          // If no piece is selected, select the current piece
           setSrc({ x, y, type: tile.includes('King') ? 'King' : 'Pawn' });
           setTempRevealed(false); // Reset if another piece is selected
         } else {
