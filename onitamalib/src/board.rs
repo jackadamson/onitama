@@ -15,14 +15,14 @@ impl Board {
             red_king,
             red_hand,
             spare_card,
-            extra_move_pending,
+            wind_move_pending,
             turn,
             ..
         } = self;
 
-        // If there's an extra move pending, route to try_extra_move
-        if *extra_move_pending {
-            return self.try_extra_move(game_move);
+        // If there's an wind move pending, route to try_wind_move
+        if *wind_move_pending {
+            return self.try_wind_move(game_move);
         }
 
         // Identify current and opponent kings
@@ -111,12 +111,12 @@ impl Board {
             reveal_ninja,
         );
 
-        // Check if we can enable extra move
-        let extra_pending = self.enable_extra_move(card, src, dst);
-        let em_card = if extra_pending { Some(card) } else { None };
+        // Check if we can enable wind move
+        let wind_pending = self.enable_wind_move(card, src, dst);
+        let em_card = if wind_pending { Some(card) } else { None };
 
-        // If no extra move, we replace the used card with the spare
-        let player_hand = if !extra_pending {
+        // If no wind move, we replace the used card with the spare
+        let player_hand = if !wind_pending {
             replace_card(self.player_hand(), card, *spare_card)
         } else {
             *self.player_hand()
@@ -140,10 +140,10 @@ impl Board {
                 red_pawns: player_pawns,
                 red_ninjas: player_ninjas,
                 red_hand: player_hand,
-                spare_card: if extra_pending { *spare_card } else { card },
-                extra_move_pending: extra_pending,
-                extra_move_card: em_card,
-                turn: if extra_pending { Player::Red } else { Player::Blue },
+                spare_card: if wind_pending { *spare_card } else { card },
+                wind_move_pending: wind_pending,
+                wind_move_card: em_card,
+                turn: if wind_pending { Player::Red } else { Player::Blue },
             },
             Player::Blue => Board {
                 wind_spirit: new_wind_spirit,
@@ -155,10 +155,10 @@ impl Board {
                 red_pawns: opponent_pawns,
                 red_ninjas: opponent_ninjas,
                 red_hand: *red_hand,
-                spare_card: if extra_pending { *spare_card } else { card },
-                extra_move_pending: extra_pending,
-                extra_move_card: em_card,
-                turn: if extra_pending { Player::Blue } else { Player::Red },
+                spare_card: if wind_pending { *spare_card } else { card },
+                wind_move_pending: wind_pending,
+                wind_move_card: em_card,
+                turn: if wind_pending { Player::Blue } else { Player::Red },
             },
         };
 
@@ -173,7 +173,7 @@ impl Board {
         Ok(GameState::Playing { board: updated_board })
     }
 
-    fn try_extra_move(&self, game_move: Move) -> Result<GameState, String> {
+    fn try_wind_move(&self, game_move: Move) -> Result<GameState, String> {
          let Board {
             wind_spirit,
             blue_king,
@@ -181,14 +181,14 @@ impl Board {
             red_king,
             red_hand,
             spare_card,
-            extra_move_card,
+            wind_move_card,
             turn,
             ..
         } = self;
 
-        // If no valid moves exist for extra move, auto-discard
+        // If no valid moves exist for wind move, auto-discard
         if !self.can_move() {
-            let card = extra_move_card.unwrap();
+            let card = wind_move_card.unwrap();
             let player_hand = replace_card(self.player_hand(), card, *spare_card);
             let (red_hand, blue_hand) = match turn {
                 Player::Red => (player_hand, *blue_hand),
@@ -207,8 +207,8 @@ impl Board {
                     red_ninjas: self.red_ninjas,
                     red_hand,
                     spare_card: card,
-                    extra_move_pending: false,
-                    extra_move_card: None,
+                    wind_move_pending: false,
+                    wind_move_card: None,
                     turn: turn.invert(),
                 },
             });
@@ -218,7 +218,7 @@ impl Board {
             Move::Move { card, src, dst, .. } => (card, src, dst),
             Move::Discard { card } => {
                 let mut updated_board = self.clone();
-                updated_board.extra_move_pending = false;
+                updated_board.wind_move_pending = false;
                 return updated_board.try_move(Move::Discard { card });
             }
         };
@@ -230,8 +230,8 @@ impl Board {
         if src != *wind_spirit_pos {
             return Err("You must move the Wind Spirit".to_string());
         }
-        if card != extra_move_card.unwrap() {
-            return Err(format!("Must use {} to move", extra_move_card.unwrap()));
+        if card != wind_move_card.unwrap() {
+            return Err(format!("Must use {} to move", wind_move_card.unwrap()));
         }
     
         let (player_king, _opponent_king) = match turn {
@@ -277,7 +277,7 @@ impl Board {
         let wind_spirit = Some(dst);
         let player_king = *player_king;
   
-        // Construct the updated board after the extra move
+        // Construct the updated board after the wind move
         let updated_board = match turn {
             Player::Red => Board {
                 wind_spirit,
@@ -290,8 +290,8 @@ impl Board {
                 red_ninjas: player_ninjas,
                 red_hand: player_hand,
                 spare_card: card,
-                extra_move_pending: false,
-                extra_move_card: None,
+                wind_move_pending: false,
+                wind_move_card: None,
                 turn: Player::Blue,
             },
             Player::Blue => Board {
@@ -305,8 +305,8 @@ impl Board {
                 red_ninjas: opponent_ninjas,
                 red_hand: *red_hand,
                 spare_card: card,
-                extra_move_pending: false,
-                extra_move_card: None,
+                wind_move_pending: false,
+                wind_move_card: None,
                 turn: Player::Red,
             },
         };
@@ -447,8 +447,8 @@ impl Board {
             red_ninjas: [None, None],
             red_hand: player_hand_red,
             spare_card,
-            extra_move_pending: false,
-            extra_move_card: None,
+            wind_move_pending: false,
+            wind_move_card: None,
             turn: Player::Red,
         };
 
@@ -486,12 +486,12 @@ impl Board {
     }
 
     pub fn can_move(&self) -> bool {
-        // If an extra move is pending, only the Wind Spirit can move using the extra_move_card
-        if self.extra_move_pending {
+        // If an wind move is pending, only the Wind Spirit can move using the wind_move_card
+        if self.wind_move_pending {
             if let Some(wind_spirit_pos) = self.wind_spirit() {
-                if let Some(extra_card) = self.extra_move_card {
+                if let Some(wind_card) = self.wind_move_card {
                     // Attempt all wind moves
-                    for &raw_delta in extra_card.moves(false, true).iter() {
+                    for &raw_delta in wind_card.moves(false, true).iter() {
                         let delta = match self.turn {
                             Player::Red => raw_delta,
                             Player::Blue => -raw_delta,
@@ -669,7 +669,7 @@ impl Board {
         }
     }
 
-    fn enable_extra_move(&self, card: Card, moved_src: Point, moved_dst: Point) -> bool {
+    fn enable_wind_move(&self, card: Card, moved_src: Point, moved_dst: Point) -> bool {
         if !CardSet::WayOfTheWind.cards().contains(&card) {
             return false;
         }
@@ -692,8 +692,8 @@ impl Board {
             }
         }
 
-        temp_board.extra_move_pending = true;
-        temp_board.extra_move_card = Some(card);
+        temp_board.wind_move_pending = true;
+        temp_board.wind_move_card = Some(card);
         temp_board.can_move()
     }
 
@@ -717,8 +717,8 @@ impl Board {
                 red_ninjas: self.red_ninjas,
                 red_hand,
                 spare_card: card,
-                extra_move_pending: false,
-                extra_move_card: None,
+                wind_move_pending: false,
+                wind_move_card: None,
                 turn: self.turn.invert(),
             },
         })

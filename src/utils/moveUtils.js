@@ -6,11 +6,11 @@ import KING_MOVE_CARDS from '../constants/SpecialCards';
  * @param {Object} card - The active card ({ moves, kingMoves, windMoves, cardSet }).
  * @param {Array} grid - The game board grid to determine piece types and ownership.
  * @param {String} turn - The current turn ('Red' or 'Blue').
- * @param {Boolean} extraMovePending - Whether an extra move is pending.
+ * @param {Boolean} windMovePending - Whether an wind move is pending.
  * @returns {Function} A function to validate moves for a given destination.
  */
 
-const getMoves = (src, card, grid, turn, extraMovePending = false) => {
+const getMoves = (src, card, grid, turn, windMovePending = false) => {
   if (!src || !card || !card.card || !grid[src.y]?.[src.x]) {
     return () => false;
   }
@@ -32,7 +32,7 @@ const getMoves = (src, card, grid, turn, extraMovePending = false) => {
   let moves;
 
   if (isWindSpirit && card.cardSet === 'WayOfTheWind') {
-    moves = extraMovePending ? card.windMoves || [] : [];
+    moves = windMovePending ? card.windMoves || [] : [];
   } else if (isOpponentKing && card.card === 'Kame') {
     // Hard-coded move: Opponent's King always moves 1 square towards user
     moves = [{ x: 0, y: -1 }]; // Universal move; direction flipped by `strMoves`

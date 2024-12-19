@@ -73,10 +73,10 @@ function TrainingGame() {
     player,
     lastMove,
     canUndo,
-    extraMovePending,
+    windMovePending,
   } = state;
 
-  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending);
+  const isMoveValid = getMoves(src, card, grid, turn, windMovePending);
 
   const { max, min, ranksByCardSrc, stale } = moveRankings;
   const dstMoveRankings =
@@ -119,7 +119,7 @@ function TrainingGame() {
       canUndo={canUndo}
       score={normalized}
       stale={stale}
-      extraMovePending={extraMovePending}
+      windMovePending={windMovePending}
     />
   );
 }

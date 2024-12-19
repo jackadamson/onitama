@@ -72,10 +72,10 @@ function SinglePlayerGame() {
     winner,
     player,
     lastMove,
-    extraMovePending,
+    windMovePending,
   } = state;
 
-  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending);
+  const isMoveValid = getMoves(src, card, grid, turn, windMovePending);
 
   return (
     <GameBoard
@@ -96,7 +96,7 @@ function SinglePlayerGame() {
       discard={discard}
       player={player}
       lastMove={lastMove}
-      extraMovePending={extraMovePending}
+      windMovePending={windMovePending}
     />
   );
 }

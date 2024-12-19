@@ -60,9 +60,9 @@ function LocalGame() {
     return <Loading />;
   }
 
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, extraMovePending } = state;
+  const { blueCards, redCards, spare, turn, grid, canMove, winner, windMovePending } = state;
 
-  const isMoveValid = getMoves(src, card, grid, turn, extraMovePending);
+  const isMoveValid = getMoves(src, card, grid, turn, windMovePending);
 
   return (
     <GameBoard
@@ -81,7 +81,7 @@ function LocalGame() {
       turn={turn}
       move={move}
       discard={discard}
-      extraMovePending={extraMovePending}
+      windMovePending={windMovePending}
     />
   );
 }

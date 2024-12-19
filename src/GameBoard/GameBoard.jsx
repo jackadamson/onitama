@@ -36,7 +36,7 @@ function GameBoard({
   undo,
   score,
   stale,
-  extraMovePending,
+  windMovePending,
 }) {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
@@ -60,7 +60,7 @@ function GameBoard({
       <Box display="flex" justifyContent="center">
         <GameTurn player={player} turn={turn} />
       </Box>
-      {extraMovePending && (
+      {windMovePending && (
         <Box textAlign="center" mt={0.5}>
           <span>Move the Wind Spirit before continuing!</span>
         </Box>
@@ -241,7 +241,7 @@ GameBoard.propTypes = {
   undo: PropTypes.func,
   score: PropTypes.number,
   stale: PropTypes.bool,
-  extraMovePending: PropTypes.bool.isRequired,
+  windMovePending: PropTypes.bool.isRequired,
 };
 
 export default GameBoard;

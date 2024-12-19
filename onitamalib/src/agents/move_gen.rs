@@ -12,11 +12,11 @@ impl Board {
              .iter()
             .filter_map(|&king| king)
             .collect();
-        if self.extra_move_pending {
+        if self.wind_move_pending {
             let mut moves = vec![];
             if let Some(wind_spirit_pos) = self.wind_spirit() {
-                let extra_card = self.extra_move_card.unwrap();
-                for offset in extra_card.moves(false, true) {
+                let wind_card = self.wind_move_card.unwrap();
+                for offset in wind_card.moves(false, true) {
                     let offset = match self.turn {
                         Player::Red => offset,
                         Player::Blue => -offset,
@@ -32,7 +32,7 @@ impl Board {
                         }
 
                         moves.push(Move::Move {
-                            card: extra_card,
+                            card: wind_card,
                             src: wind_spirit_pos,
                             dst,
                             reveal_ninja: false
