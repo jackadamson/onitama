@@ -2,7 +2,8 @@ use std::cmp;
 
 use instant::{Duration, Instant};
 
-use crate::models::{GameState, Move, Player};
+use crate::models::{GameState, Move, Player, Point};
+use crate::agents::ninja_logic;
 
 const MAX_DEPTH: u16 = 50;
 
@@ -167,19 +168,43 @@ fn minimax(state: &GameState, depth: u16, mut alpha: i64, mut beta: i64) -> i64 
             return state.basic_value();
         }
     };
-    let mut value = match board.turn {
+    // Clone and randomize hidden Ninja positions
+    let mut randomized_state = ninja_logic::randomize_hidden_ninjas(state.clone());
+
+    // Generate possible hidden Ninja positions for the opponent
+    let opponent_hidden_ninjas: Vec<Point> = board
+        .opponent_ninjas()
+        .iter()
+        .filter_map(|ninja| ninja.as_ref().filter(|(_, revealed)| !*revealed).map(|(pos, _)| *pos))
+        .collect();
+
+    let potential_positions = ninja_logic::possible_ninja_positions(&board, opponent_hidden_ninjas);
+
+    // Replace Ninja positions in the randomized state
+    ninja_logic::randomize_ninjas_with_positions(&mut randomized_state, &potential_positions);
+
+    // Extract the updated board from the randomized state
+    let updated_board = match &randomized_state {
+        GameState::Playing { board } => board,
+        GameState::Finished { .. } => {
+            return randomized_state.basic_value();
+        }
+    };
+
+    let mut value = match updated_board.turn {
         Player::Red => i64::MIN,
         Player::Blue => i64::MAX,
     };
-    let legal_moves = board.legal_moves().into_iter();
+
+    let legal_moves = updated_board.legal_moves().into_iter();
     for game_move in legal_moves {
-        let state = board.try_move(game_move).expect("illegal move generated");
-        let next_val = minimax(&state, depth - 1, alpha, beta);
-        value = match board.turn {
+        let next_state = updated_board.try_move(game_move).expect("illegal move generated");
+        let next_val = minimax(&next_state, depth - 1, alpha, beta);
+        value = match updated_board.turn {
             Player::Red => cmp::max(value, next_val),
             Player::Blue => cmp::min(value, next_val),
         };
-        match board.turn {
+        match updated_board.turn {
             Player::Red if value >= beta => {
                 break;
             }

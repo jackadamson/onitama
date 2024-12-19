@@ -4,6 +4,7 @@ use instant::{Duration, Instant};
 use rand::prelude::*;
 
 use crate::{alphabeta, Board, GameState, Move, Player};
+use crate::agents::ninja_logic;
 
 pub fn hybrid_montecarlo_agent(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
     log::debug!("Game State: {:?}", state);
@@ -308,7 +309,7 @@ pub fn pure_montecarlo_agent(state: &GameState, duration: Duration) -> Option<(M
 }
 
 fn simulate<R: Rng>(state: GameState, rng: &mut R) -> Option<Player> {
-    let mut state = state;
+    let mut state = ninja_logic::randomize_hidden_ninjas(state);
     for _ in 0..1000 {
         let board = match state {
             GameState::Playing { board } => board,
