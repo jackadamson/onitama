@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { Box, makeStyles, Paper, Tooltip } from '@material-ui/core';
@@ -97,7 +97,6 @@ function GameSquare({
   ranking,
 }) {
   const classes = useStyles();
-  const [tempRevealed, setTempRevealed] = useState(false); // Local temporary reveal state
 
   const currentTilePlayer = tilePlayer(turn);
   const tileOwner = currentTilePlayer[tile];
@@ -111,11 +110,6 @@ function GameSquare({
   const lastSrc = x === lastMove?.src?.x && y === lastMove?.src?.y;
   const lastDst = x === lastMove?.dst?.x && y === lastMove?.dst?.y;
   const moved = lastSrc || lastDst;
-
-  // Reset tempRevealed when src (selected piece) or turn changes
-  useEffect(() => {
-    setTempRevealed(false);
-  }, [src, turn]);
 
   return (
     <Paper
@@ -137,30 +131,29 @@ function GameSquare({
       onClick={() => {
         if (selected) {
           setSrc(null); // Deselect the piece
-          setTempRevealed(false); // Reset temporary reveal on deselect
         } else if (src) {
           // If src is selected, handle the movement for the selected piece
           if (tile.includes('WindSpirit') && tileOwner === turn) {
             // Allow the Wind Spirit to move onto any square (including one with the player's piece)
-            move({ x, y });
-            setTempRevealed(false); // Reset temporary reveal after the move
+            move({ x, y, revealNinja: false });
           } else {
             // Default movement behavior for other pieces
-            move({ x, y });
-            setTempRevealed(false); // Reset temporary reveal after the move
+            move({ x, y, revealNinja: false });
           }
         } else if (tileOwner === turn) {
           // If no piece is selected, select the current piece
-          setSrc({ x, y, type: tile.includes('King') ? 'King' : 'Pawn' });
-          setTempRevealed(false); // Reset if another piece is selected
-        } else {
-          setTempRevealed(false); // Reset if clicking an invalid square
+          setSrc({ x, y, tile, revealed });
         }
       }}
       onContextMenu={(e) => {
         e.preventDefault();
-        if (tile.includes('Ninja') && isPlayerPiece && !revealed) {
-          setTempRevealed(true); // Temporarily reveal the Ninja locally
+
+        // Ensure src is set and represents a valid starting square
+        if (src) {
+          // Cross-reference src (starting square) instead of the destination (current square)
+          if (src.tile.includes('Ninja') && !src.revealed) {
+            move({ x, y, revealNinja: true }); // Trigger reveal move to the destination square
+          }
         }
       }}
     >
@@ -169,7 +162,7 @@ function GameSquare({
       {tile.includes('Ninja') && shouldRenderNinja && (
         <Box
           className={clsx({
-            [classes.hiddenNinja]: !revealed && !tempRevealed && isPlayerPiece,
+            [classes.hiddenNinja]: !revealed && isPlayerPiece,
           })}
         >
           {icons[tile]}
@@ -204,6 +197,17 @@ GameSquare.propTypes = {
   src: PropTypes.shape({
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
+    tile: PropTypes.oneOf([
+      'Empty',
+      'BluePawn',
+      'BlueNinja',
+      'BlueKing',
+      'RedPawn',
+      'RedNinja',
+      'RedKing',
+      'WindSpirit',
+    ]).isRequired,
+    revealed: PropTypes.bool.isRequired,
   }),
   setSrc: PropTypes.func.isRequired,
   turn: PropTypes.oneOf(['Red', 'Blue', null]),

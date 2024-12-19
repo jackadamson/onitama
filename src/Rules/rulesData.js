@@ -166,7 +166,7 @@ Play proceeds similarly to the base game, but with the following changes:
 ### Capturing with Your Ninja
 
 - To capture a Pawn or a revealed Ninja, move your Ninja to a space occupied by that piece. This will reveal your Ninja.
-- To capture your opponent's hidden Ninja, first reveal your Ninja (right click or tap and hold on mobile), then move it to the square where you think your opponent's Ninja is. If the Ninja is there, it will be captured. Your Ninja will remain revealed until your next turn whether their Ninja was there or not.
+- To capture your opponent's hidden Ninja, select your hidden Ninja and right-click (or tap and hold on mobile) on the square where you believe their Ninja is located. If the opponent's Ninja is there, it will be captured. Regardless of success, your Ninja will remain revealed until the start of your next turn.
 
 ## Alternate Setup
 

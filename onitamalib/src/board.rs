@@ -35,8 +35,8 @@ impl Board {
         let player_pieces = self.player_pieces();
 
         // Parse the move
-        let (card, src, dst) = match game_move {
-            Move::Move { card, src, dst } => (card, src, dst),
+        let (card, src, dst, reveal_ninja) = match game_move {
+            Move::Move { card, src, dst, reveal_ninja } => (card, src, dst, reveal_ninja),
             Move::Discard { card } => {
                 // Only discard if no valid moves exist
                 if self.can_move() {
@@ -108,6 +108,7 @@ impl Board {
             src,
             dst,
             move_wind_spirit,
+            reveal_ninja,
         );
 
         // Check if we can enable extra move
@@ -213,8 +214,8 @@ impl Board {
             });
         }
     
-        let (card, src, dst) = match game_move {
-            Move::Move { card, src, dst } => (card, src, dst),
+        let (card, src, dst, ..) = match game_move {
+            Move::Move { card, src, dst, .. } => (card, src, dst),
             Move::Discard { card } => {
                 let mut updated_board = self.clone();
                 updated_board.extra_move_pending = false;
@@ -270,6 +271,7 @@ impl Board {
             src,
             dst,
             true,
+            false,
         );
     
         let wind_spirit = Some(dst);
@@ -770,8 +772,8 @@ fn move_or_swap_pieces(
     src: Point,
     dst: Point,
     wind_spirit_moving: bool,
+    reveal_ninja:bool,
 ) {
-    #[allow(dead_code)]
     struct Occupant {
         is_player_side: bool,
         is_ninja: bool,
@@ -833,7 +835,7 @@ fn move_or_swap_pieces(
         .iter()
         .enumerate()
         .find(|(_, ninja)| ninja.map_or(false, |(pos, _)| pos == src))
-        .map(|(i, ninja)| (i, ninja.unwrap().1)); // Extract index and revealed state
+        .map(|(i, ninja)| (i, ninja.unwrap().1 || reveal_ninja)); // Extract index and revealed state
 
     let mut captured_something = false;
 
@@ -876,11 +878,11 @@ fn move_or_swap_pieces(
         player_pawns[i] = Some(dst);
     }
     if let Some((i, was_revealed)) = mover_is_ninja {
-        let new_revealed_state = captured_something || wind_spirit_moving || was_revealed;
+        let new_revealed_state = captured_something || wind_spirit_moving || was_revealed || reveal_ninja;
         player_ninjas[i] = Some((dst, new_revealed_state));
 
-        // Explicitly hide the mover Ninja if it didn't capture or swap
-        if !captured_something && !wind_spirit_moving {
+        // Explicitly hide the mover Ninja if it didn't capture or swap and wasn't revealed on purpose
+        if !captured_something && !wind_spirit_moving && !reveal_ninja {
             player_ninjas[i] = Some((dst, false));
         }
     }

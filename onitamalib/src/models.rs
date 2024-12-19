@@ -218,7 +218,7 @@ pub struct Board {
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 #[serde(tag = "type")]
 pub enum Move {
-    Move { card: Card, src: Point, dst: Point },
+    Move { card: Card, src: Point, dst: Point, reveal_ninja: bool },
     Discard { card: Card },
 }
 

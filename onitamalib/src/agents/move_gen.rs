@@ -35,6 +35,7 @@ impl Board {
                             card: extra_card,
                             src: wind_spirit_pos,
                             dst,
+                            reveal_ninja: false
                         });
                     }
                 }
@@ -83,6 +84,7 @@ impl Board {
                             card: *card,
                             src,
                             dst,
+                            reveal_ninja: false,
                         });
                     }
                 }

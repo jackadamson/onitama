@@ -14,7 +14,7 @@ function TrainingGame() {
   const [src, setSrc] = useState(null);
 
   const move = useCallback(
-    (dst) => {
+    ({ x, y, revealNinja }) => {
       if (!card || !src) {
         return;
       }
@@ -22,7 +22,13 @@ function TrainingGame() {
         enqueueSnackbar('Game loading, try again', { variant: 'warning' });
         return;
       }
-      const action = { card: card.card, src, dst, type: 'Move' };
+      const action = {
+        card: card.card,
+        src,
+        dst: { x, y },
+        reveal_ninja: revealNinja,
+        type: 'Move',
+      };
       const error = playMove(action);
       if (error) {
         enqueueSnackbar(error, { variant: 'error' });
