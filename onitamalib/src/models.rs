@@ -170,7 +170,7 @@ impl ToString for CardSet {
         match &self {
             CardSet::Base => "Base Game".to_string(),
             CardSet::SenseiPath => "Sensei's Path".to_string(),
-            CardSet::PromotionalPack => "Promotional Cards".to_string(),
+            CardSet::PromotionalPack => "Promotional".to_string(),
             CardSet::WayOfTheWind => "Way of the Wind".to_string(),
         }
     }
@@ -422,7 +422,7 @@ impl FromStr for CardSet {
         match input {
             "Base" | "Base Game" => Ok(CardSet::Base),
             "SenseiPath" | "Sensei's Path" => Ok(CardSet::SenseiPath),
-            "PromotionalPack" | "Promotional Cards" => Ok(CardSet::PromotionalPack),
+            "PromotionalPack" | "Promotional" => Ok(CardSet::PromotionalPack),
             "WayOfTheWind" | "Way of the Wind" => Ok(CardSet::WayOfTheWind),
             _ => Err(()),
         }

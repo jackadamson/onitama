@@ -17,9 +17,15 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'center',
     fontSize: '2.5rem',
     fontWeight: 'bold',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    whiteSpace: 'normal',
+    wordWrap: 'break-word',
+    lineHeight: 1.2,
+    overflow: 'visible',
+    paddingTop: '50px',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '2rem',
+      paddingTop: '70px',
+    },
   },
   button: {
     width: 'calc(100% - 32px)',

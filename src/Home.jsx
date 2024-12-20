@@ -26,9 +26,13 @@ function Home() {
   }, [setGameSettings]);
 
   const wayOfTheWindEnabled = !gameSettings.disabledCardSets?.includes('WayOfTheWind');
+  const wayOfTheWindForced = gameSettings.forceWindSpiritInclusion;
+  const currentWindMoveCards = gameSettings.numberOfWindCards;
 
   const disabledCardSetsDisplayNames = gameSettings.disabledCardSets
-    ? gameSettings.disabledCardSets.map((setId) => getCardSetDisplayName(setId))
+    ? gameSettings.disabledCardSets
+        .filter((setId) => setId !== 'WayOfTheWind')
+        .map((setId) => getCardSetDisplayName(setId))
     : [];
 
   const lightAndShadowEnabled = gameSettings.enableLightAndShadow;
@@ -38,17 +42,37 @@ function Home() {
   const getLightAndShadowText = () => {
     if (lightAndShadowEnabled) {
       if (!lightAndShadowForced) {
-        return 'Light and Shadow Expansion Enabled';
+        return 'The Light and Shadow expansion is enabled.';
       }
       if (currentLightAndShadowMode === null) {
-        return 'All games will be Light or Shadow games';
+        return 'All games will be Light or Shadow games.';
       }
       if (currentLightAndShadowMode === 'Light') {
-        return 'All games will be Way of the Light games';
+        return 'All games will be Way of the Light games.';
       }
       if (currentLightAndShadowMode === 'Shadow') {
-        return 'All games will be Way of the Shadow games';
+        return 'All games will be Way of the Shadow games.';
       }
+    }
+    return null;
+  };
+
+  const getWayOfTheWindText = () => {
+    if (wayOfTheWindEnabled) {
+      if (!wayOfTheWindForced) {
+        if (currentWindMoveCards !== null) {
+          return `The Way of the Wind expansion is enabled with ${currentWindMoveCards} Wind Move ${
+            currentWindMoveCards === 1 ? 'card' : 'cards'
+          }.`;
+        }
+        return 'The Way of the Wind expansion is enabled.';
+      }
+      if (currentWindMoveCards === null) {
+        return 'All games will use the Way of the Wind expansion.';
+      }
+      return `All games will use the Way of the Wind expansion with ${currentWindMoveCards} Wind Move ${
+        currentWindMoveCards === 1 ? 'card' : 'cards'
+      }.`;
     }
     return null;
   };
@@ -171,19 +195,18 @@ function Home() {
             maxWidth: '320px',
           }}
         >
-          <Typography variant="body1">
-            Disabled Card Sets: {disabledCardSetsDisplayNames.join(', ') || 'None'}
-          </Typography>
-          {wayOfTheWindEnabled && (
-            <>
-              <Typography variant="body1">
-                Number of Wind Cards: {gameSettings.numberOfWindCards ?? 'Random'}
-              </Typography>
-              <Typography variant="body1">
-                Force Wind Spirit: {gameSettings.forceWindSpiritInclusion ? 'Yes' : 'No'}
-              </Typography>
-            </>
+          {disabledCardSetsDisplayNames.length > 0 && (
+            <Typography variant="body1">
+              {disabledCardSetsDisplayNames.length === 1
+                ? disabledCardSetsDisplayNames[0]
+                : `${disabledCardSetsDisplayNames.slice(0, -1).join(', ')} and ${
+                    disabledCardSetsDisplayNames[disabledCardSetsDisplayNames.length - 1]
+                  }`}{' '}
+              {disabledCardSetsDisplayNames.length === 1 ? 'card set is' : 'card sets are'}{' '}
+              disabled.
+            </Typography>
           )}
+          {wayOfTheWindEnabled && <Typography variant="body1">{getWayOfTheWindText()}</Typography>}
           {lightAndShadowEnabled && (
             <Typography variant="body1">{getLightAndShadowText()}</Typography>
           )}

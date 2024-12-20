@@ -5,7 +5,7 @@ const getCardSetDisplayName = (cardSet) => {
     case 'SenseiPath':
       return "Sensei's Path";
     case 'PromotionalPack':
-      return 'Promotional Cards';
+      return 'Promotional';
     case 'WayOfTheWind':
       return 'Way of the Wind';
     default:
