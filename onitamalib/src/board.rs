@@ -16,12 +16,13 @@ impl Board {
             red_hand,
             spare_card,
             wind_move_pending,
+            shadow_mode,
             turn,
             ..
         } = self;
 
         // If there's an wind move pending, route to try_wind_move
-        if *wind_move_pending {
+        if *wind_move_pending && !self.ninja_move_pending {
             return self.try_wind_move(game_move);
         }
 
@@ -38,10 +39,30 @@ impl Board {
         let (card, src, dst, reveal_ninja) = match game_move {
             Move::Move { card, src, dst, reveal_ninja } => (card, src, dst, reveal_ninja),
             Move::Discard { card } => {
-                // Only discard if no valid moves exist
+                if self.ninja_move_pending && self.can_move() {
+                    if Some(card) != self.ninja_move_card {
+                        return Err("Invalid card to discard during Ninja move phase.".to_string());
+                    }
+
+                    // Create a new board with ninja_move_pending set to false
+                    let mut updated_board = self.clone();
+                    updated_board.ninja_move_pending = false;
+
+                    // If wind_move_pending is false, discard the card
+                    if !updated_board.wind_move_pending {
+                        return updated_board.discard_card(card);
+                    }
+
+                    // Otherwise, return the updated board without discarding
+                    updated_board.ninja_move_card = None;
+                    return Ok(GameState::Playing { board: updated_board });
+                }
+
+                // If not during Ninja move phase, ensure no moves exist
                 if self.can_move() {
                     return Err("Valid moves exist".to_string());
                 }
+
                 return self.discard_card(card);
             }
         };
@@ -53,6 +74,26 @@ impl Board {
         if !player_pieces.contains(&Some(src)) {
             return Err("No piece at source".to_string());
         }
+
+        // Check if this is a Way of the Shadow game and if the piece is a Ninja
+        if *shadow_mode && self.is_ninja(src) && self.can_move() && !self.ninja_move_pending {
+            return Err("You must move another piece before moving your Ninja!".to_string());
+        }
+
+        // Check if ninja_move_pending is true and the piece is not a Ninja
+        if self.ninja_move_pending {
+            if !self.is_ninja(src) {
+                return Err("Only the Ninja can move now.".to_string());
+            }
+            if let Some(ninja_card) = self.ninja_move_card {
+                if Some(card) != Some(ninja_card) {
+                    return Err(format!("Must use the {} card for the Ninja move.", ninja_card));
+                }
+            } else {
+                return Err("Ninja move card is not set during ninja_move_pending.".to_string());
+            }
+        }
+
         let move_wind_spirit = wind_spirit.map_or(false, |ws| ws == src);
         if move_wind_spirit && CardSet::WayOfTheWind.cards().contains(&card) {
             return Err("Wind Spirit cannot use a Way of the Wind card to move".to_string());
@@ -111,12 +152,28 @@ impl Board {
             reveal_ninja,
         );
 
+        let mut ninja_pending = self.ninja_move_pending;
+        let mut ninja_card = self.ninja_move_card;
+
+        if *shadow_mode && self.has_ninja() {
+            if self.is_ninja(src) {
+                // Reset ninja_move_pending and ninja_move_card if a Ninja is moved
+                ninja_pending = false;
+                ninja_card = None;
+            } else {
+                // Use enable_ninja_move to check and set pending Ninja move
+                ninja_pending = self.enable_ninja_move(card, src, dst);
+                ninja_card = if ninja_pending { Some(card) } else { None };
+            }
+        }
+
+
         // Check if we can enable wind move
         let wind_pending = self.enable_wind_move(card, src, dst);
-        let em_card = if wind_pending { Some(card) } else { None };
+        let wind_card = if wind_pending { Some(card) } else { None };
 
         // If no wind move, we replace the used card with the spare
-        let player_hand = if !wind_pending {
+        let player_hand = if !wind_pending && !ninja_pending {
             replace_card(self.player_hand(), card, *spare_card)
         } else {
             *self.player_hand()
@@ -140,10 +197,13 @@ impl Board {
                 red_pawns: player_pawns,
                 red_ninjas: player_ninjas,
                 red_hand: player_hand,
-                spare_card: if wind_pending { *spare_card } else { card },
+                spare_card: if wind_pending || ninja_pending { *spare_card } else { card },
                 wind_move_pending: wind_pending,
-                wind_move_card: em_card,
-                turn: if wind_pending { Player::Red } else { Player::Blue },
+                wind_move_card: wind_card,
+                shadow_mode: *shadow_mode,
+                ninja_move_pending: ninja_pending,
+                ninja_move_card: ninja_card,
+                turn: if wind_pending || ninja_pending { Player::Red } else { Player::Blue },
             },
             Player::Blue => Board {
                 wind_spirit: new_wind_spirit,
@@ -155,10 +215,13 @@ impl Board {
                 red_pawns: opponent_pawns,
                 red_ninjas: opponent_ninjas,
                 red_hand: *red_hand,
-                spare_card: if wind_pending { *spare_card } else { card },
+                spare_card: if wind_pending || ninja_pending { *spare_card } else { card },
                 wind_move_pending: wind_pending,
-                wind_move_card: em_card,
-                turn: if wind_pending { Player::Blue } else { Player::Red },
+                wind_move_card: wind_card,
+                shadow_mode: *shadow_mode,
+                ninja_move_pending: ninja_pending,
+                ninja_move_card: ninja_card,
+                turn: if wind_pending || ninja_pending { Player::Blue } else { Player::Red },
             },
         };
 
@@ -209,6 +272,9 @@ impl Board {
                     spare_card: card,
                     wind_move_pending: false,
                     wind_move_card: None,
+                    shadow_mode: self.shadow_mode,
+                    ninja_move_pending: false,
+                    ninja_move_card: None,
                     turn: turn.invert(),
                 },
             });
@@ -292,6 +358,9 @@ impl Board {
                 spare_card: card,
                 wind_move_pending: false,
                 wind_move_card: None,
+                shadow_mode: self.shadow_mode,
+                ninja_move_pending: false,
+                ninja_move_card: None,
                 turn: Player::Blue,
             },
             Player::Blue => Board {
@@ -307,6 +376,9 @@ impl Board {
                 spare_card: card,
                 wind_move_pending: false,
                 wind_move_card: None,
+                shadow_mode: self.shadow_mode,
+                ninja_move_pending: false,
+                ninja_move_card: None,
                 turn: Player::Red,
             },
         };
@@ -449,6 +521,9 @@ impl Board {
             spare_card,
             wind_move_pending: false,
             wind_move_card: None,
+            shadow_mode: false,
+            ninja_move_pending: false,
+            ninja_move_card: None,
             turn: Player::Red,
         };
 
@@ -466,6 +541,8 @@ impl Board {
                 Some((Point { x: x_positions[1], y: 0 }, false)),
             ];
         } else if selected_mode == "Shadow" {
+            board.shadow_mode = true;    
+
             // Randomize Ninja placement until Player placement is implemented
             let red_ninja_x = if rng.gen_bool(0.5) { 1 } else { 3 };
             let blue_ninja_x = if rng.gen_bool(0.5) { 1 } else { 3 };
@@ -486,24 +563,49 @@ impl Board {
     }
 
     pub fn can_move(&self) -> bool {
-        // If an wind move is pending, only the Wind Spirit can move using the wind_move_card
+        // If a Ninja move is pending, only the Ninja can move
+        if self.ninja_move_pending {
+            if let Some(ninja_card) = self.ninja_move_card {
+                let player_ninjas = self.player_ninjas();
+                for (ninja_pos, _) in player_ninjas.iter().filter_map(|&ninja| ninja) {
+                    for &raw_delta in ninja_card.moves(false, false).iter() {
+                        let delta = match self.turn {
+                            Player::Red => raw_delta,
+                            Player::Blue => -raw_delta,
+                        };
+                        let dst = ninja_pos + delta;
+
+                        if dst.in_bounds()
+                            && !self.player_pieces().contains(&Some(dst))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false; // No valid moves for Ninjas
+        }
+
+        // If a wind move is pending, only the Wind Spirit can move using the wind_move_card
         if self.wind_move_pending {
             if let Some(wind_spirit_pos) = self.wind_spirit() {
                 if let Some(wind_card) = self.wind_move_card {
-                    // Attempt all wind moves
                     for &raw_delta in wind_card.moves(false, true).iter() {
                         let delta = match self.turn {
                             Player::Red => raw_delta,
                             Player::Blue => -raw_delta,
                         };
                         let dst = wind_spirit_pos + delta;
-                        if dst.in_bounds() && ![self.red_king, self.blue_king].contains(&Some(dst)) {
+
+                        if dst.in_bounds()
+                            && ![self.red_king, self.blue_king].contains(&Some(dst))
+                        {
                             return true;
                         }
                     }
                 }
             }
-            return false;
+            return false; // No valid moves for Wind Spirit
         }
 
         // Normal move check
@@ -513,12 +615,19 @@ impl Board {
         for src in player_pieces.iter().filter_map(|&p| p) {
             for &card in self.player_hand() {
                 let is_king = self.player_king() == Some(src);
-                let is_spirit = self.wind_spirit() == Some(src);
+                let is_wind_spirit = self.wind_spirit() == Some(src);
+                let is_ninja = self.is_ninja(src);
 
-                // Wind Spirit cannot use WayOfTheWind card
-                if is_spirit && CardSet::WayOfTheWind.cards().contains(&card) {
+                // Skip Ninja moves during shadow_mode
+                if self.shadow_mode && is_ninja {
                     continue;
                 }
+
+                // Wind Spirit cannot use WayOfTheWind card for normal moves
+                if is_wind_spirit && CardSet::WayOfTheWind.cards().contains(&card) {
+                    continue;
+                }
+
                 for &raw_delta in card.moves(is_king, false).iter() {
                     let delta = match self.turn {
                         Player::Red => raw_delta,
@@ -527,16 +636,16 @@ impl Board {
                     let dst = src + delta;
 
                     if dst.in_bounds() {
-                        // Can't move onto the wind spirit position
+                        // Can't move onto the Wind Spirit
                         if let Some(ws) = self.wind_spirit() {
                             if dst == ws {
                                 continue;
                             }
                         }
                         // Can't move onto your own piece, unless Wind Spirit is swapping
-                        if !player_pieces.contains(&Some(dst)) || is_spirit {
-                            // Wind Spirit cant move onto a Master
-                            if !(is_spirit && kings.contains(&Some(dst))) {
+                        if !player_pieces.contains(&Some(dst)) || is_wind_spirit {
+                            // Wind Spirit can't move onto a Master
+                            if !(is_wind_spirit && kings.contains(&Some(dst))) {
                                 return true;
                             }
                         }
@@ -544,7 +653,8 @@ impl Board {
                 }
             }
         }
-        false
+
+        false // No valid moves found
     }
 
     pub fn to_grid(&self) -> [[GameSquare; 5]; 5] {
@@ -619,6 +729,14 @@ impl Board {
         }
     }
 
+    pub fn is_ninja(&self, src: Point) -> bool {
+        self.player_ninjas().iter().any(|ninja| ninja.map(|(point, _)| point) == Some(src))
+    }
+
+    pub fn has_ninja(&self) -> bool {
+        self.player_ninjas().iter().any(|ninja| ninja.is_some())
+    }
+
     pub fn player_king(&self) -> Option<Point> {
         match self.turn {
             Player::Red => self.red_king,
@@ -654,7 +772,7 @@ impl Board {
         self.wind_spirit
     }
 
-     fn has_remaining_pieces(&self, player: Player) -> bool {
+    fn has_remaining_pieces(&self, player: Player) -> bool {
         match player {
             Player::Red => {
                 self.red_king.is_some()
@@ -697,6 +815,38 @@ impl Board {
         temp_board.can_move()
     }
 
+    fn enable_ninja_move(&self, card: Card, moved_src: Point, moved_dst: Point) -> bool {
+    if !self.shadow_mode || !self.has_ninja() {
+        return false; // Only enable Ninja move in Shadow mode with Ninjas present
+    }
+
+    // Clone the board to simulate the state after the move
+    let mut temp_board = self.clone();
+    for pawn in temp_board.player_pawns().iter_mut().chain(temp_board.opponent_pawns().iter_mut()) {
+        if let Some(pos) = pawn {
+            if *pos == moved_src {
+                *pos = moved_dst; // Update the pawn's position
+            }
+        }
+    }
+
+    // Update the King if it moved
+    if temp_board.player_king() == Some(moved_src) {
+        if self.turn == Player::Red {
+            temp_board.red_king = Some(moved_dst);
+        } else {
+            temp_board.blue_king = Some(moved_dst);
+        }
+    }
+
+    // Temporarily set ninja_move_pending and ninja_move_card
+    temp_board.ninja_move_pending = true;
+    temp_board.ninja_move_card = Some(card);
+
+    // Check if a Ninja can move with the given card
+    temp_board.can_move()
+}
+
     // Helper that discards a card
     fn discard_card(&self, card: Card) -> Result<GameState, String> {
         let player_hand = replace_card(self.player_hand(), card, self.spare_card);
@@ -719,6 +869,9 @@ impl Board {
                 spare_card: card,
                 wind_move_pending: false,
                 wind_move_card: None,
+                shadow_mode: self.shadow_mode,
+                ninja_move_pending: false,
+                ninja_move_card: None,
                 turn: self.turn.invert(),
             },
         })

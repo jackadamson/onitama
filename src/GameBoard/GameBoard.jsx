@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Box, Button, useMediaQuery, useTheme } from '@material-ui/core';
+import { Box, Button, Typography, useMediaQuery, useTheme } from '@material-ui/core';
 import UndoIcon from '@material-ui/icons/Undo';
 import GameOver from './GameOver';
 import GameCard from './GameCard';
@@ -37,6 +37,8 @@ function GameBoard({
   score,
   stale,
   windMovePending,
+  ninjaMovePending,
+  ninjaMoveCard,
 }) {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
@@ -60,9 +62,37 @@ function GameBoard({
       <Box display="flex" justifyContent="center">
         <GameTurn player={player} turn={turn} />
       </Box>
-      {windMovePending && (
+      {windMovePending && !ninjaMovePending && (
         <Box textAlign="center" mt={0.5}>
           <span>Move the Wind Spirit before continuing!</span>
+        </Box>
+      )}
+      {ninjaMovePending && (
+        <Box textAlign="center" mt={0.5}>
+          <Typography
+            component="span"
+            variant="body2"
+            style={{ verticalAlign: 'middle', fontSize: '0.875rem' }}
+          >
+            You can move your Ninja or{' '}
+          </Typography>
+          <Button
+            variant="text"
+            color="primary"
+            size="small"
+            style={{
+              padding: 0,
+              minWidth: 'auto',
+              fontSize: '0.875rem',
+              textTransform: 'none',
+              verticalAlign: 'baseline',
+            }}
+            onClick={() => {
+              discard(ninjaMoveCard.card);
+            }}
+          >
+            PASS
+          </Button>
         </Box>
       )}
       <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'}>
@@ -123,7 +153,7 @@ function GameBoard({
               setSrc={setSrc}
               grid={grid}
               turn={turn}
-              lastMove={lastMove}
+              lastMove={lastMove || { src: null, dst: null }}
               dstMoveRankings={dstMoveRankings || {}}
               redOriented={redOriented}
               player={player}
@@ -210,6 +240,7 @@ GameBoard.defaultProps = {
   undo: null,
   score: null,
   stale: true,
+  ninjaMoveCard: null,
 };
 
 GameBoard.propTypes = {
@@ -242,6 +273,8 @@ GameBoard.propTypes = {
   score: PropTypes.number,
   stale: PropTypes.bool,
   windMovePending: PropTypes.bool.isRequired,
+  ninjaMovePending: PropTypes.bool.isRequired,
+  ninjaMoveCard: CardPropType,
 };
 
 export default GameBoard;

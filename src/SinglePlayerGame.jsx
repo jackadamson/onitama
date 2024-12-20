@@ -73,9 +73,19 @@ function SinglePlayerGame() {
     player,
     lastMove,
     windMovePending,
+    ninjaMovePending,
+    ninjaMoveCard,
   } = state;
 
-  const isMoveValid = getMoves(src, card, grid, turn, windMovePending);
+  const isMoveValid = getMoves(
+    src,
+    card,
+    grid,
+    turn,
+    windMovePending,
+    ninjaMovePending,
+    ninjaMoveCard,
+  );
 
   return (
     <GameBoard
@@ -97,6 +107,8 @@ function SinglePlayerGame() {
       player={player}
       lastMove={lastMove}
       windMovePending={windMovePending}
+      ninjaMovePending={ninjaMovePending}
+      ninjaMoveCard={ninjaMoveCard}
     />
   );
 }

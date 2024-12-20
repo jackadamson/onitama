@@ -14,7 +14,7 @@ const useStyles = makeStyles(() => ({
 const radToDeg = 180 / Math.PI;
 function LastMove({ lastMove, redOriented, grid, player }) {
   const classes = useStyles();
-  if (!lastMove) {
+  if (!lastMove || !lastMove.src || !lastMove.dst) {
     return null;
   }
 

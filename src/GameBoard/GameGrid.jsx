@@ -25,7 +25,12 @@ function GameGrid({
       flexDirection={redOriented ? 'column' : 'column-reverse'}
       my={2}
     >
-      <LastMove lastMove={lastMove} redOriented={redOriented} grid={grid} player={turn} />
+      <LastMove
+        lastMove={lastMove || { src: null, dst: null }}
+        redOriented={redOriented}
+        grid={grid}
+        player={turn}
+      />
       {grid.map((row, y) => (
         <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'} key={y}>
           {row.map((tile, x) => {

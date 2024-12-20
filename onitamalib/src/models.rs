@@ -212,6 +212,9 @@ pub struct Board {
     pub spare_card: Card,
     pub wind_move_pending: bool,
     pub wind_move_card: Option<Card>,
+    pub shadow_mode: bool,
+    pub ninja_move_pending: bool,
+    pub ninja_move_card: Option<Card>,
     pub turn: Player,
 }
 
@@ -258,6 +261,10 @@ pub enum GameView {
         wind_move_pending: bool,
         #[serde(rename = "windMoveCard")]
         wind_move_card: Option<CardDescription>,
+        #[serde(rename = "ninjaMovePending")]
+        ninja_move_pending: bool,
+        #[serde(rename = "ninjaMoveCard")]
+        ninja_move_card: Option<CardDescription>,
     },
     Finished {
         winner: Player,
@@ -274,6 +281,10 @@ pub enum GameView {
         wind_move_pending: bool,
         #[serde(rename = "windMoveCard")]
         wind_move_card: Option<CardDescription>,
+        #[serde(rename = "ninjaMovePending")]
+        ninja_move_pending: bool,
+        #[serde(rename = "ninjaMoveCard")]
+        ninja_move_card: Option<CardDescription>,
     },
 }
 
@@ -325,6 +336,8 @@ impl From<&GameState> for GameView {
                 can_move: board.can_move(),
                 wind_move_pending: board.wind_move_pending,
                 wind_move_card: board.wind_move_card.map(|card| CardDescription::from(card)),
+                ninja_move_pending: board.ninja_move_pending,
+                ninja_move_card: board.ninja_move_card.map(|card| CardDescription::from(card)),
             },
             GameState::Finished { winner, board } => Self::Finished {
                 winner: *winner,
@@ -334,8 +347,10 @@ impl From<&GameState> for GameView {
                 spare: to_card(&board.spare_card),
                 turn: board.turn,
                 can_move: true,
-                wind_move_pending: board.wind_move_pending, // Populate windMovePending
+                wind_move_pending: board.wind_move_pending,
                 wind_move_card: board.wind_move_card.map(|card| CardDescription::from(card)),
+                ninja_move_pending: board.ninja_move_pending,
+                ninja_move_card: board.ninja_move_card.map(|card| CardDescription::from(card)),
             },
         }
     }

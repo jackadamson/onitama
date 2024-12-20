@@ -76,9 +76,19 @@ function RemoteGame({ isAi }) {
     lastMove,
     connection,
     windMovePending,
+    ninjaMovePending,
+    ninjaMoveCard,
   } = state;
 
-  const isMoveValid = getMoves(src, card, grid, turn, windMovePending);
+  const isMoveValid = getMoves(
+    src,
+    card,
+    grid,
+    turn,
+    windMovePending,
+    ninjaMovePending,
+    ninjaMoveCard,
+  );
 
   return (
     <>
@@ -103,6 +113,8 @@ function RemoteGame({ isAi }) {
         lastMove={lastMove}
         connectionStatus={connection}
         windMovePending={windMovePending}
+        ninjaMovePending={ninjaMovePending}
+        ninjaMoveCard={ninjaMoveCard}
       />
     </>
   );
