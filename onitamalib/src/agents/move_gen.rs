@@ -96,6 +96,11 @@ pub fn legal_moves(&self) -> Vec<Move> {
                     let dst = src + offset;
 
                     if dst.in_bounds() && (!pieces.contains(&Some(dst)) || is_wind_spirit) {
+                        
+                        if is_wind_spirit && kings.contains(&dst) {
+                            continue;
+                        }
+
                         // Prevent pieces from moving onto Wind Spirit
                         if let Some(wind_spirit_pos) = wind_spirit_pos {
                             if dst == wind_spirit_pos {
