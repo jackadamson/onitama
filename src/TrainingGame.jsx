@@ -29,12 +29,31 @@ function TrainingGame() {
         reveal_ninja: revealNinja,
         type: 'Move',
       };
+
+      const { grid } = state; // Destructure `grid` from `state`
+      const previousTile = grid[src.y]?.[src.x]; // Tile being moved from
+      const destinationTile = grid[y]?.[x]; // Tile being moved to
+
+      const isHiddenNinja = (tile) =>
+        tile &&
+        typeof tile === 'object' &&
+        Object.keys(tile)[0].includes('Ninja') &&
+        !tile[Object.keys(tile)[0]].revealed;
+
       const error = playMove(action);
       if (error) {
         enqueueSnackbar(error, { variant: 'error' });
       } else {
         setCard(null);
         setSrc(null);
+      }
+
+      // Check if a hidden Ninja was captured (and exclude interactions between hidden Ninjas)
+      if (
+        isHiddenNinja(destinationTile) && // The tile being moved to contains a hidden Ninja
+        !isHiddenNinja(previousTile) // The piece being moved is not also a hidden Ninja
+      ) {
+        enqueueSnackbar('You captured their hidden Ninja!', { variant: 'success' });
       }
     },
     [playMove, src, card, enqueueSnackbar],
