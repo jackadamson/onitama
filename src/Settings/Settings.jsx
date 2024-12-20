@@ -141,6 +141,7 @@ function Settings() {
   const otherEnabledCardSets = cardSets.filter(
     ({ id }) => !localDisabledCardSets.includes(id) && id !== 'WayOfTheWind',
   );
+
   const totalEnabledCardCount = enabledCardSetIds.reduce((accumulator, id) => {
     const cardSet = cardSets.find((setItem) => setItem.id === id);
     return accumulator + (cardSet ? cardSet.cards.length : 0);
@@ -217,7 +218,7 @@ function Settings() {
                           localDisabledCardSets.includes(id) ? 'Enable set' : 'Disable set'
                         }
                         onClick={() => toggleCardSet(id)}
-                        disabled={localNumberOfWindCards === 5}
+                        disabled={localNumberOfWindCards === 5 && wayOfTheWindEnabled}
                       >
                         {localDisabledCardSets.includes(id) ? <DisabledIcon /> : <EnabledIcon />}
                       </IconButton>
