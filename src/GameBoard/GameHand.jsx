@@ -14,6 +14,10 @@ function GameHand({
   spare,
   isPlayerTurn,
   inverted,
+  windMovePending,
+  ninjaMovePending,
+  windMoveCard,
+  ninjaMoveCard,
 }) {
   const theme = useTheme();
   const showSpare = useMediaQuery(theme.breakpoints.down('sm')) && !isPlayerTurn;
@@ -35,6 +39,10 @@ function GameHand({
           discard={discard}
           spare
           inverted={!inverted}
+          windMovePending={windMovePending}
+          ninjaMovePending={ninjaMovePending}
+          windMoveCard={windMoveCard}
+          ninjaMoveCard={ninjaMoveCard}
         />
       )}
       {cards.map((card) => {
@@ -47,7 +55,11 @@ function GameHand({
             setCard={setCard}
             name={name}
             direction={direction}
-            selected={selectedCard?.card === name}
+            selected={
+              (ninjaMovePending && ninjaMoveCard?.card === name) ||
+              (windMovePending && windMoveCard?.card === name) ||
+              selectedCard?.card === name
+            }
             moves={moves}
             kingMoves={KING_MOVE_CARDS.includes(name) ? kingMoves || [] : []}
             windMoves={cardSet === 'WayOfTheWind' ? windMoves || [] : []}
@@ -56,6 +68,10 @@ function GameHand({
             canMove={canMove}
             discard={discard}
             inverted={inverted}
+            windMovePending={windMovePending}
+            ninjaMovePending={ninjaMovePending}
+            windMoveCard={windMoveCard}
+            ninjaMoveCard={ninjaMoveCard}
           />
         );
       })}
@@ -90,6 +106,8 @@ const CardPropType = PropTypes.shape({
 GameHand.defaultProps = {
   selectedCard: null,
   inverted: false,
+  windMoveCard: null,
+  ninjaMoveCard: null,
 };
 
 GameHand.propTypes = {
@@ -104,6 +122,10 @@ GameHand.propTypes = {
   enabled: PropTypes.bool.isRequired,
   isPlayerTurn: PropTypes.bool.isRequired,
   inverted: PropTypes.bool,
+  windMovePending: PropTypes.bool.isRequired,
+  ninjaMovePending: PropTypes.bool.isRequired,
+  windMoveCard: CardPropType,
+  ninjaMoveCard: CardPropType,
 };
 
 export default GameHand;

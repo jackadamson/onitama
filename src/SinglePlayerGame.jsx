@@ -73,6 +73,7 @@ function SinglePlayerGame() {
     player,
     lastMove,
     windMovePending,
+    windMoveCard,
     ninjaMovePending,
     ninjaMoveCard,
   } = state;
@@ -107,6 +108,7 @@ function SinglePlayerGame() {
       player={player}
       lastMove={lastMove}
       windMovePending={windMovePending}
+      windMoveCard={windMoveCard}
       ninjaMovePending={ninjaMovePending}
       ninjaMoveCard={ninjaMoveCard}
     />

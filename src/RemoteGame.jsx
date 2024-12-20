@@ -76,6 +76,7 @@ function RemoteGame({ isAi }) {
     lastMove,
     connection,
     windMovePending,
+    windMoveCard,
     ninjaMovePending,
     ninjaMoveCard,
   } = state;
@@ -113,6 +114,7 @@ function RemoteGame({ isAi }) {
         lastMove={lastMove}
         connectionStatus={connection}
         windMovePending={windMovePending}
+        windMoveCard={windMoveCard}
         ninjaMovePending={ninjaMovePending}
         ninjaMoveCard={ninjaMoveCard}
       />

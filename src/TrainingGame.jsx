@@ -74,6 +74,7 @@ function TrainingGame() {
     lastMove,
     canUndo,
     windMovePending,
+    windMoveCard,
     ninjaMovePending,
     ninjaMoveCard,
   } = state;
@@ -130,6 +131,7 @@ function TrainingGame() {
       score={normalized}
       stale={stale}
       windMovePending={windMovePending}
+      windMoveCard={windMoveCard}
       ninjaMovePending={ninjaMovePending}
       ninjaMoveCard={ninjaMoveCard}
     />

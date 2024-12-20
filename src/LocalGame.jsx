@@ -69,6 +69,7 @@ function LocalGame() {
     canMove,
     winner,
     windMovePending,
+    windMoveCard,
     ninjaMovePending,
     ninjaMoveCard,
   } = state;
@@ -101,6 +102,7 @@ function LocalGame() {
       move={move}
       discard={discard}
       windMovePending={windMovePending}
+      windMoveCard={windMoveCard}
       ninjaMovePending={ninjaMovePending}
       ninjaMoveCard={ninjaMoveCard}
     />

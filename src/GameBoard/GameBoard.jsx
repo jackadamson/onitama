@@ -37,6 +37,7 @@ function GameBoard({
   score,
   stale,
   windMovePending,
+  windMoveCard,
   ninjaMovePending,
   ninjaMoveCard,
 }) {
@@ -145,6 +146,10 @@ function GameBoard({
               enabled={turn === 'Blue' && playerTurn}
               isPlayerTurn={turn === 'Blue'}
               inverted={redOriented}
+              windMovePending={windMovePending}
+              ninjaMovePending={ninjaMovePending}
+              windMoveCard={windMoveCard}
+              ninjaMoveCard={ninjaMoveCard}
             />
             <GameGrid
               isMoveValid={isMoveValid}
@@ -169,6 +174,10 @@ function GameBoard({
               enabled={turn === 'Red' && playerTurn}
               isPlayerTurn={turn === 'Red'}
               inverted={!redOriented}
+              windMovePending={windMovePending}
+              ninjaMovePending={ninjaMovePending}
+              windMoveCard={windMoveCard}
+              ninjaMoveCard={ninjaMoveCard}
             />
           </Box>
           <GameScore score={score} stale={stale} playerIsRed={player === 'Red'} />
@@ -241,6 +250,7 @@ GameBoard.defaultProps = {
   score: null,
   stale: true,
   ninjaMoveCard: null,
+  windMoveCard: null,
 };
 
 GameBoard.propTypes = {
@@ -273,6 +283,7 @@ GameBoard.propTypes = {
   score: PropTypes.number,
   stale: PropTypes.bool,
   windMovePending: PropTypes.bool.isRequired,
+  windMoveCard: CardPropType,
   ninjaMovePending: PropTypes.bool.isRequired,
   ninjaMoveCard: CardPropType,
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles, Paper, Typography } from '@material-ui/core';
 import clsx from 'clsx';
+import { CardPropType } from './props';
 import GameMoves from './GameMoves';
 
 const useStyles = makeStyles((theme) => ({
@@ -71,6 +72,10 @@ function GameCard({
   discard,
   inverted,
   showPlayed,
+  windMovePending,
+  ninjaMovePending,
+  windMoveCard,
+  ninjaMoveCard,
 }) {
   const classes = useStyles({ enabled, spare, inverted });
   const isKingMoveCard = kingMoves && kingMoves.length > 0;
@@ -80,7 +85,13 @@ function GameCard({
     if (enabled && !canMove) {
       discard(name);
     } else if (enabled) {
-      setCard({ card: name, moves, direction, kingMoves, windMoves, cardSet });
+      if (ninjaMovePending) {
+        setCard(ninjaMoveCard); // Force select ninjaMoveCard
+      } else if (windMovePending) {
+        setCard(windMoveCard); // Force select windMoveCard
+      } else {
+        setCard({ card: name, moves, direction, kingMoves, windMoves, cardSet });
+      }
     }
   };
 
@@ -176,6 +187,8 @@ GameCard.defaultProps = {
   showPlayed: false,
   kingMoves: [],
   windMoves: [],
+  windMoveCard: null,
+  ninjaMoveCard: null,
 };
 
 GameCard.propTypes = {
@@ -208,6 +221,10 @@ GameCard.propTypes = {
   discard: PropTypes.func,
   inverted: PropTypes.bool,
   showPlayed: PropTypes.bool,
+  windMovePending: PropTypes.bool.isRequired,
+  ninjaMovePending: PropTypes.bool.isRequired,
+  windMoveCard: CardPropType,
+  ninjaMoveCard: CardPropType,
 };
 
 export default GameCard;
