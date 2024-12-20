@@ -189,6 +189,8 @@ GameCard.defaultProps = {
   windMoves: [],
   windMoveCard: null,
   ninjaMoveCard: null,
+  ninjaMovePending: false,
+  windMovePending: false,
 };
 
 GameCard.propTypes = {
@@ -221,8 +223,8 @@ GameCard.propTypes = {
   discard: PropTypes.func,
   inverted: PropTypes.bool,
   showPlayed: PropTypes.bool,
-  windMovePending: PropTypes.bool.isRequired,
-  ninjaMovePending: PropTypes.bool.isRequired,
+  windMovePending: PropTypes.bool,
+  ninjaMovePending: PropTypes.bool,
   windMoveCard: CardPropType,
   ninjaMoveCard: CardPropType,
 };

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -68,6 +68,14 @@ function Settings() {
   const [marqueeStates, setMarqueeStates] = useState(
     cardSets.reduce((acc, { id }) => ({ ...acc, [id]: false }), {}),
   );
+
+  // Effect to handle when Way of the Wind cards are set to 5
+  useEffect(() => {
+    if (localNumberOfWindCards === 5) {
+      setLocalDisabledCardSets(validSetIds.filter((id) => id !== 'WayOfTheWind'));
+      setLocalForceWindSpiritInclusion(true);
+    }
+  }, [localNumberOfWindCards, validSetIds]);
 
   // Check if current settings match defaults
   const settingsAreDefault = useMemo(
@@ -184,111 +192,181 @@ function Settings() {
           <Box my={2} />
           <Typography variant="h5">Card Sets</Typography>
           <Typography variant="body1">
-            Turn sets of cards on or off (currently only works for Single Player and Local
-            Multiplayer)
+            Turn sets of cards on or off (Single Player and Local Multiplayer)
           </Typography>
           {errorMessage}
-          {cardSets.map(({ id, name, cards }) => (
-            <Box my={1} key={id}>
-              <Card variant="outlined" className={styles.card}>
-                <CardHeader
-                  title={
-                    <Box onClick={() => toggleMarquee(id)} style={{ cursor: 'pointer' }}>
-                      {name}
-                      {!marqueeStates[id] && (
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Click to see cards.
-                        </Typography>
-                      )}
-                      {wayOfTheWindEnabled && id === 'WayOfTheWind' && (
-                        <Typography variant="subtitle2" color="textSecondary">
-                          {localForceWindSpiritInclusion
-                            ? 'The Wind Spirit will appear in all games!'
-                            : 'The Wind Spirit will appear in 25% of games.'}
-                        </Typography>
-                      )}
-                    </Box>
-                  }
-                  action={
-                    <IconButton
-                      aria-label={localDisabledCardSets.includes(id) ? 'Enable set' : 'Disable set'}
-                      onClick={() => toggleCardSet(id)}
-                    >
-                      {localDisabledCardSets.includes(id) ? <DisabledIcon /> : <EnabledIcon />}
-                    </IconButton>
-                  }
-                />
-                {marqueeStates[id] && (
-                  <CardContent className={styles.marqueeContainer}>
-                    <Box style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
-                      <Marquee speed={25} play={cards.length > 4 || !largeScreen} pauseOnClick>
-                        {cards.map((card) => (
+          {cardSets
+            .filter(({ id }) => id !== 'WayOfTheWind')
+            .map(({ id, name, cards }) => (
+              <Box my={1} key={id}>
+                <Card variant="outlined" className={styles.card}>
+                  <CardHeader
+                    title={
+                      <Box onClick={() => toggleMarquee(id)} style={{ cursor: 'pointer' }}>
+                        {name}
+                        {!marqueeStates[id] && (
+                          <Typography variant="subtitle2" color="textSecondary">
+                            Click to see cards.
+                          </Typography>
+                        )}
+                      </Box>
+                    }
+                    action={
+                      <IconButton
+                        aria-label={
+                          localDisabledCardSets.includes(id) ? 'Enable set' : 'Disable set'
+                        }
+                        onClick={() => toggleCardSet(id)}
+                        disabled={localNumberOfWindCards === 5}
+                      >
+                        {localDisabledCardSets.includes(id) ? <DisabledIcon /> : <EnabledIcon />}
+                      </IconButton>
+                    }
+                  />
+                  {marqueeStates[id] && (
+                    <CardContent className={styles.marqueeContainer}>
+                      <Box style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
+                        <Marquee speed={25} play={cards.length > 4 || !largeScreen} pauseOnClick>
+                          {cards.map((card) => (
+                            <Box mx={1} key={card.card}>
+                              <GameCard
+                                moves={card.moves}
+                                kingMoves={
+                                  KING_MOVE_CARDS.includes(card.card) ? card.king_moves || [] : []
+                                }
+                                windMoves={[]}
+                                name={card.card}
+                                setCard={() => {}}
+                                direction={card.direction}
+                                enabled
+                                spare
+                                cardSet=""
+                                isKingMoves={KING_MOVE_CARDS.includes(card.card)}
+                                isWindMoves={false}
+                              />
+                            </Box>
+                          ))}
+                        </Marquee>
+                      </Box>
+                    </CardContent>
+                  )}
+                </Card>
+              </Box>
+            ))}
+
+          <Typography variant="h5">Expansions</Typography>
+          <Typography variant="body1">
+            Turn expansions on or off (Single Player and Local Multiplayer)
+          </Typography>
+
+          {/* Way of the Wind settings */}
+          <Box my={2}>
+            <Card variant="outlined" className={styles.card}>
+              <CardHeader
+                title={
+                  <Box onClick={() => toggleMarquee('WayOfTheWind')} style={{ cursor: 'pointer' }}>
+                    Way of the Wind
+                    {!marqueeStates.WayOfTheWind && (
+                      <Typography variant="subtitle2" color="textSecondary">
+                        Click to see cards.
+                      </Typography>
+                    )}
+                  </Box>
+                }
+                action={
+                  <IconButton
+                    aria-label={
+                      localDisabledCardSets.includes('WayOfTheWind') ? 'Enable set' : 'Disable set'
+                    }
+                    onClick={() => toggleCardSet('WayOfTheWind')}
+                  >
+                    {localDisabledCardSets.includes('WayOfTheWind') ? (
+                      <DisabledIcon />
+                    ) : (
+                      <EnabledIcon />
+                    )}
+                  </IconButton>
+                }
+              />
+              {marqueeStates.WayOfTheWind && (
+                <CardContent className={styles.marqueeContainer}>
+                  <Box style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
+                    <Marquee speed={25} play pauseOnClick>
+                      {cardSets
+                        .find((set) => set.id === 'WayOfTheWind')
+                        .cards.map((card) => (
                           <Box mx={1} key={card.card}>
                             <GameCard
                               moves={card.moves}
                               kingMoves={
                                 KING_MOVE_CARDS.includes(card.card) ? card.king_moves || [] : []
                               }
-                              windMoves={id === 'WayOfTheWind' ? card.wind_moves || [] : []}
+                              windMoves={card.wind_moves || []}
                               name={card.card}
                               setCard={() => {}}
                               direction={card.direction}
                               enabled
                               spare
-                              cardSet={id === 'WayOfTheWind' ? 'WayOfTheWind' : ''}
+                              cardSet="WayOfTheWind"
                               isKingMoves={KING_MOVE_CARDS.includes(card.card)}
-                              isWindMoves={!!(id === 'WayOfTheWind' && card.wind_moves?.length > 0)}
+                              isWindMoves={!!card.wind_moves?.length}
                             />
                           </Box>
                         ))}
-                      </Marquee>
-                    </Box>
-                  </CardContent>
-                )}
-              </Card>
-            </Box>
-          ))}
-          {/* Way of the Wind settings */}
-          {wayOfTheWindEnabled && (
-            <Box my={2}>
-              <FormControl variant="outlined" fullWidth>
-                <InputLabel id="number-of-wow-cards-label">
-                  Number of Way of the Wind Cards
-                </InputLabel>
-                <Select
-                  labelId="number-of-wow-cards-label"
-                  value={localNumberOfWindCards === null ? 'Random' : localNumberOfWindCards}
-                  onChange={(event) =>
-                    setLocalNumberOfWindCards(
-                      event.target.value === 'Random' ? null : event.target.value,
-                    )
-                  }
-                  label="Number of Way of the Wind Cards"
-                >
-                  <MenuItem value="Random">Random</MenuItem>
-                  {[0, 1, 2, 3, 4, 5].map((num) => (
-                    <MenuItem key={num} value={num}>
-                      {num}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <Box mt={2}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={localForceWindSpiritInclusion}
-                      onChange={() =>
-                        setLocalForceWindSpiritInclusion(!localForceWindSpiritInclusion)
+                    </Marquee>
+                  </Box>
+                </CardContent>
+              )}
+              {wayOfTheWindEnabled && (
+                <CardContent>
+                  <FormControl variant="outlined" fullWidth>
+                    <InputLabel id="number-of-wow-cards-label">
+                      Number of Way of the Wind Cards
+                    </InputLabel>
+                    <Select
+                      labelId="number-of-wow-cards-label"
+                      value={localNumberOfWindCards === null ? 'Random' : localNumberOfWindCards}
+                      onChange={(event) =>
+                        setLocalNumberOfWindCards(
+                          event.target.value === 'Random' ? null : event.target.value,
+                        )
                       }
-                      color="primary"
-                    />
-                  }
-                  label="Force Wind Spirit Inclusion"
-                />
-              </Box>
-            </Box>
-          )}
+                      label="Number of Way of the Wind Cards"
+                    >
+                      <MenuItem value="Random">Random</MenuItem>
+                      {[0, 1, 2, 3, 4, 5].map((num) => (
+                        <MenuItem key={num} value={num}>
+                          {num}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Typography variant="subtitle2" color="textSecondary" className={styles.subtitle}>
+                    {localNumberOfWindCards === 5 || localForceWindSpiritInclusion
+                      ? 'The Wind Spirit will appear in all games!'
+                      : 'The Wind Spirit will appear in 25% of games.'}
+                  </Typography>
+                  {localNumberOfWindCards !== 5 && (
+                    <Box mt={2}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={localForceWindSpiritInclusion}
+                            onChange={() =>
+                              setLocalForceWindSpiritInclusion(!localForceWindSpiritInclusion)
+                            }
+                            color="primary"
+                          />
+                        }
+                        label="Force Wind Spirit Inclusion"
+                      />
+                    </Box>
+                  )}
+                </CardContent>
+              )}
+            </Card>
+          </Box>
+
           {/* Light and Shadow settings */}
           <Box my={2}>
             <Card variant="outlined" className={styles.card}>
@@ -313,7 +391,9 @@ function Settings() {
               />
               {localEnableLightAndShadow && (
                 <CardContent>
-                  <Typography variant="body1">{getLightAndShadowText()}</Typography>
+                  <Typography variant="subtitle2" color="textSecondary" className={styles.subtitle}>
+                    {getLightAndShadowText()}
+                  </Typography>
                   <Box mt={2}>
                     <FormControlLabel
                       control={
@@ -353,6 +433,8 @@ function Settings() {
               )}
             </Card>
           </Box>
+
+          {/* Save and Reset Buttons */}
           <Box mt={3} display="flex" justifyContent="space-between">
             <Button
               variant="contained"
