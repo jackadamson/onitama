@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Box, Button, useMediaQuery, useTheme } from '@material-ui/core';
+import { Box, Button, Typography, useMediaQuery, useTheme } from '@material-ui/core';
 import UndoIcon from '@material-ui/icons/Undo';
 import GameOver from './GameOver';
 import GameCard from './GameCard';
@@ -10,6 +10,7 @@ import GameHand from './GameHand';
 import GameTurn from './GameTurn';
 import { CardPropType, PointPropType } from './props';
 import GameScore from './GameScore';
+import KING_MOVE_CARDS from '../constants/SpecialCards';
 
 function GameBoard({
   src,
@@ -35,24 +36,66 @@ function GameBoard({
   undo,
   score,
   stale,
+  windMovePending,
+  windMoveCard,
+  ninjaMovePending,
+  ninjaMoveCard,
 }) {
   const theme = useTheme();
   const [minimizedGameOver, setMinimizedGameOver] = useState(false);
+
   useEffect(() => {
     if (!winner) {
       setMinimizedGameOver(false);
     }
-  }, [winner, setMinimizedGameOver]);
+  }, [winner]);
+
   const hideSideSpare = useMediaQuery(theme.breakpoints.down('sm'));
+
   // Whether it's the player's turn, always true if local multiplayer
   const playerTurn = player ? player === turn : true;
+
   // Whether perspective should have red at bottom of screen
   const redOriented = player !== 'Blue';
+
   return (
     <Box height="100vh" display="flex" flexDirection="column">
       <Box display="flex" justifyContent="center">
         <GameTurn player={player} turn={turn} />
       </Box>
+      {windMovePending && !ninjaMovePending && (
+        <Box textAlign="center" mt={0.5}>
+          <span>Move the Wind Spirit before continuing!</span>
+        </Box>
+      )}
+      {ninjaMovePending && (
+        <Box textAlign="center" mt={0.5}>
+          <Typography
+            component="span"
+            variant="body2"
+            style={{ verticalAlign: 'middle', fontSize: '0.875rem' }}
+          >
+            You can move your Ninja or{' '}
+          </Typography>
+          <Button
+            variant="text"
+            color="primary"
+            size="small"
+            style={{
+              padding: 0,
+              minWidth: 'auto',
+              fontSize: '0.875rem',
+              textTransform: 'none',
+              verticalAlign: 'baseline',
+            }}
+            onClick={() => {
+              discard(ninjaMoveCard.card);
+            }}
+          >
+            PASS
+          </Button>
+        </Box>
+      )}
       <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'}>
         <Box position="absolute" top="0" left="0">
           <Button component={Link} to="/">
@@ -79,6 +122,9 @@ function GameBoard({
               spare
               inverted={redOriented}
               moves={spare.moves}
+              kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
+              windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
+              cardSet={spare.cardSet}
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -89,6 +135,7 @@ function GameBoard({
         </Box>
         <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1}>
           <Box display="flex" flexDirection={redOriented ? 'column' : 'column-reverse'}>
+            {/* Passing Blue Cards to GameHand */}
             <GameHand
               setCard={setCard}
               selectedCard={card}
@@ -99,6 +146,10 @@ function GameBoard({
               enabled={turn === 'Blue' && playerTurn}
               isPlayerTurn={turn === 'Blue'}
               inverted={redOriented}
+              windMovePending={windMovePending}
+              ninjaMovePending={ninjaMovePending}
+              windMoveCard={windMoveCard}
+              ninjaMoveCard={ninjaMoveCard}
             />
             <GameGrid
               isMoveValid={isMoveValid}
@@ -107,10 +158,12 @@ function GameBoard({
               setSrc={setSrc}
               grid={grid}
               turn={turn}
-              lastMove={lastMove}
+              lastMove={lastMove || { src: null, dst: null }}
               dstMoveRankings={dstMoveRankings || {}}
               redOriented={redOriented}
+              player={player}
             />
+            {/* Passing Red Cards to GameHand */}
             <GameHand
               setCard={setCard}
               selectedCard={card}
@@ -121,6 +174,10 @@ function GameBoard({
               enabled={turn === 'Red' && playerTurn}
               isPlayerTurn={turn === 'Red'}
               inverted={!redOriented}
+              windMovePending={windMovePending}
+              ninjaMovePending={ninjaMovePending}
+              windMoveCard={windMoveCard}
+              ninjaMoveCard={ninjaMoveCard}
             />
           </Box>
           <GameScore score={score} stale={stale} playerIsRed={player === 'Red'} />
@@ -137,6 +194,9 @@ function GameBoard({
               spare
               inverted={!redOriented}
               moves={spare.moves}
+              kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
+              windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
+              cardSet={spare.cardSet}
               enabled={false}
               setCard={setCard}
               name={spare.card}
@@ -174,8 +234,9 @@ function GameBoard({
     </Box>
   );
 }
+
+// Re-adding defaultProps for non-required props
 GameBoard.defaultProps = {
-  card: null,
   src: null,
   winner: null,
   reset: null,
@@ -183,15 +244,21 @@ GameBoard.defaultProps = {
   lastMove: null,
   dstMoveRankings: null,
   connectionStatus: null,
+  card: null,
   canUndo: null,
   undo: null,
   score: null,
   stale: true,
+  ninjaMoveCard: null,
+  windMoveCard: null,
 };
+
 GameBoard.propTypes = {
   src: PointPropType,
   setSrc: PropTypes.func.isRequired,
-  grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
+  grid: PropTypes.arrayOf(
+    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
+  ).isRequired,
   winner: PropTypes.oneOf(['Red', 'Blue', null]),
   reset: PropTypes.func,
   turn: PropTypes.oneOf(['Red', 'Blue']).isRequired,
@@ -215,6 +282,10 @@ GameBoard.propTypes = {
   undo: PropTypes.func,
   score: PropTypes.number,
   stale: PropTypes.bool,
+  windMovePending: PropTypes.bool.isRequired,
+  windMoveCard: CardPropType,
+  ninjaMovePending: PropTypes.bool.isRequired,
+  ninjaMoveCard: CardPropType,
 };
 
 export default GameBoard;

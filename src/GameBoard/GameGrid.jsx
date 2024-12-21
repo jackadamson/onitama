@@ -16,6 +16,7 @@ function GameGrid({
   lastMove,
   redOriented,
   dstMoveRankings,
+  player,
 }) {
   return (
     <Paper
@@ -24,37 +25,58 @@ function GameGrid({
       flexDirection={redOriented ? 'column' : 'column-reverse'}
       my={2}
     >
-      <LastMove lastMove={lastMove} redOriented={redOriented} />
+      <LastMove
+        lastMove={lastMove || { src: null, dst: null }}
+        redOriented={redOriented}
+        grid={grid}
+        player={turn}
+      />
       {grid.map((row, y) => (
         <Box display="flex" flexDirection={redOriented ? 'row' : 'row-reverse'} key={y}>
-          {row.map((tile, x) => (
-            <GameSquare
-              tile={tile}
-              x={x}
-              y={y}
-              src={src}
-              setSrc={setSrc}
-              turn={turn}
-              move={move}
-              isValid={isMoveValid(x, y)}
-              key={`${x}-${y}`}
-              lastMove={lastMove}
-              ranking={(dstMoveRankings[`${x},${y}`] || 0) * (redOriented ? 1 : -1)}
-            />
-          ))}
+          {row.map((tile, x) => {
+            const isValid = isMoveValid(x, y);
+
+            // Extract type and revealed for Ninja tiles
+            const tileType =
+              typeof tile === 'object' && tile !== null ? Object.keys(tile)[0] : tile;
+            const revealed =
+              typeof tile === 'object' && tile !== null ? (tile[tileType]?.revealed ?? true) : true;
+
+            return (
+              <GameSquare
+                tile={tileType}
+                revealed={revealed}
+                x={x}
+                y={y}
+                src={src}
+                setSrc={setSrc}
+                turn={turn}
+                move={move}
+                isValid={isValid}
+                key={`${x}-${y}`}
+                lastMove={lastMove}
+                ranking={(dstMoveRankings[`${x},${y}`] || 0) * (redOriented ? 1 : -1)}
+                player={player}
+              />
+            );
+          })}
         </Box>
       ))}
     </Paper>
   );
 }
+
 GameGrid.defaultProps = {
   src: null,
   turn: null,
   lastMove: null,
 };
+
 GameGrid.propTypes = {
   redOriented: PropTypes.bool.isRequired,
-  grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string).isRequired).isRequired,
+  grid: PropTypes.arrayOf(
+    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
+  ).isRequired,
   isMoveValid: PropTypes.func.isRequired,
   src: PropTypes.shape({
     x: PropTypes.number.isRequired,
@@ -69,6 +91,7 @@ GameGrid.propTypes = {
     src: PointPropType.isRequired,
   }),
   dstMoveRankings: PropTypes.objectOf(PropTypes.number).isRequired,
+  player: PropTypes.oneOf(['Red', 'Blue', null]).isRequired,
 };
 
 export default GameGrid;

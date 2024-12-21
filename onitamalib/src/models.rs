@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 use std::ops::{Add, Neg, Sub};
 
 use crate::AiAgent;
@@ -121,7 +122,16 @@ pub enum Card {
     Tanuki,
     Iguana,
     Sable,
-    Otter,
+    Otter,    
+    // Way of the Wind
+    Bat,
+    Eagle,
+    Hawk,
+    Lion,
+    Octopus,
+    Rhinoceros,
+    Scorpion,
+    Spider,
     // Promotional Cards
     Goat,
     Sheep,
@@ -134,6 +144,10 @@ pub enum Card {
     Nessie,
     Butterfly,
     Moth,
+    Okija,
+    Mejika,
+    Kumo,
+    Sasori,
 }
 
 impl fmt::Display for Card {
@@ -143,10 +157,12 @@ impl fmt::Display for Card {
 }
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash, IntoEnumIterator, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub enum CardSet {
     Base,
     SenseiPath,
     PromotionalPack,
+    WayOfTheWind,
 }
 
 impl ToString for CardSet {
@@ -154,7 +170,8 @@ impl ToString for CardSet {
         match &self {
             CardSet::Base => "Base Game".to_string(),
             CardSet::SenseiPath => "Sensei's Path".to_string(),
-            CardSet::PromotionalPack => "Promotional Cards".to_string(),
+            CardSet::PromotionalPack => "Promotional".to_string(),
+            CardSet::WayOfTheWind => "Way of the Wind".to_string(),
         }
     }
 }
@@ -183,20 +200,28 @@ impl From<CardSet> for CardSetDescription {
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Board {
-    pub blue_king: Point,
+    pub wind_spirit: Option<Point>,
+    pub blue_king: Option<Point>,
     pub blue_pawns: [Option<Point>; 4],
+    pub blue_ninjas: [Option<(Point, bool)>; 2],
     pub blue_hand: [Card; 2],
-    pub red_king: Point,
+    pub red_king: Option<Point>,
     pub red_pawns: [Option<Point>; 4],
+    pub red_ninjas: [Option<(Point, bool)>; 2],
     pub red_hand: [Card; 2],
     pub spare_card: Card,
+    pub wind_move_pending: bool,
+    pub wind_move_card: Option<Card>,
+    pub shadow_mode: bool,
+    pub ninja_move_pending: bool,
+    pub ninja_move_card: Option<Card>,
     pub turn: Player,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 #[serde(tag = "type")]
 pub enum Move {
-    Move { card: Card, src: Point, dst: Point },
+    Move { card: Card, src: Point, dst: Point, reveal_ninja: bool },
     Discard { card: Card },
 }
 
@@ -209,10 +234,13 @@ pub enum GameState {
 
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum GameSquare {
+    WindSpirit,
     RedKing,
     RedPawn,
+    RedNinja { revealed: bool },
     BlueKing,
     BluePawn,
+    BlueNinja { revealed: bool },
     Empty,
 }
 
@@ -229,6 +257,14 @@ pub enum GameView {
         turn: Player,
         #[serde(rename = "canMove")]
         can_move: bool,
+        #[serde(rename = "windMovePending")]
+        wind_move_pending: bool,
+        #[serde(rename = "windMoveCard")]
+        wind_move_card: Option<CardDescription>,
+        #[serde(rename = "ninjaMovePending")]
+        ninja_move_pending: bool,
+        #[serde(rename = "ninjaMoveCard")]
+        ninja_move_card: Option<CardDescription>,
     },
     Finished {
         winner: Player,
@@ -241,24 +277,42 @@ pub enum GameView {
         turn: Player,
         #[serde(rename = "canMove")]
         can_move: bool,
+        #[serde(rename = "windMovePending")]
+        wind_move_pending: bool,
+        #[serde(rename = "windMoveCard")]
+        wind_move_card: Option<CardDescription>,
+        #[serde(rename = "ninjaMovePending")]
+        ninja_move_pending: bool,
+        #[serde(rename = "ninjaMoveCard")]
+        ninja_move_card: Option<CardDescription>,
     },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct CardDescription {
     pub card: Card,
     pub moves: Vec<Point>,
+    pub king_moves: Vec<Point>, 
+    pub wind_moves: Vec<Point>,
     pub direction: CardDirection,
+    pub card_set: CardSet,
 }
 
 impl From<Card> for CardDescription {
     fn from(card: Card) -> Self {
-        let moves = card.moves();
+        let moves = card.moves(false, false);
+        let king_moves = card.moves(true, false);
+        let wind_moves = card.moves(false, true); 
         let direction = card.direction();
+        let card_set = card.find_card_set().expect("All cards must belong to a card set");
         CardDescription {
             card,
             moves,
+            king_moves,
+            wind_moves, 
             direction,
+            card_set,
         }
     }
 }
@@ -280,6 +334,10 @@ impl From<&GameState> for GameView {
                 spare: to_card(&board.spare_card),
                 turn: board.turn,
                 can_move: board.can_move(),
+                wind_move_pending: board.wind_move_pending,
+                wind_move_card: board.wind_move_card.map(|card| CardDescription::from(card)),
+                ninja_move_pending: board.ninja_move_pending,
+                ninja_move_card: board.ninja_move_card.map(|card| CardDescription::from(card)),
             },
             GameState::Finished { winner, board } => Self::Finished {
                 winner: *winner,
@@ -289,6 +347,10 @@ impl From<&GameState> for GameView {
                 spare: to_card(&board.spare_card),
                 turn: board.turn,
                 can_move: true,
+                wind_move_pending: board.wind_move_pending,
+                wind_move_card: board.wind_move_card.map(|card| CardDescription::from(card)),
+                ninja_move_pending: board.ninja_move_pending,
+                ninja_move_card: board.ninja_move_card.map(|card| CardDescription::from(card)),
             },
         }
     }
@@ -336,4 +398,57 @@ pub enum GameEvent {
 pub struct MoveRequest {
     pub state: GameState,
     pub agent: AiAgent,
+}
+
+// Implementing Card to determine the associated CardSet
+impl Card {
+    pub fn find_card_set(&self) -> Option<CardSet> {
+        // Iterate over all CardSets and check if they contain this card
+        for card_set in CardSet::into_enum_iter() {
+            if card_set.cards().contains(self) {
+                return Some(card_set);
+            }
+        }
+
+        // If no matching card set is found, return None
+        None
+    }
+}
+
+impl FromStr for CardSet {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<CardSet, Self::Err> {
+        match input {
+            "Base" | "Base Game" => Ok(CardSet::Base),
+            "SenseiPath" | "Sensei's Path" => Ok(CardSet::SenseiPath),
+            "PromotionalPack" | "Promotional" => Ok(CardSet::PromotionalPack),
+            "WayOfTheWind" | "Way of the Wind" => Ok(CardSet::WayOfTheWind),
+            _ => Err(()),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct GameSettings {
+    pub disabled_card_sets: Vec<String>,  // List of disabled card sets by name
+    pub number_of_wind_cards: Option<usize>,  // Number of Way Of The Wind cards to include in the game
+    pub force_wind_spirit_inclusion: bool,  // Force the inclusion of the Wind Spirit piece
+    pub enable_light_and_shadow: bool, // Enable Light and Shadow Expansion
+    pub force_light_and_shadow: bool, // Force Light and Shadow expansion use
+    pub light_and_shadow_mode: Option<String>, // Force specific Light and Shadow mode, or None for randomized
+}
+
+impl GameSettings {
+    pub fn default() -> Self {
+        GameSettings {
+            disabled_card_sets: vec![], // Default to all card sets
+            number_of_wind_cards: None,  // Default to randomized number of Way Of The Wind cards
+            force_wind_spirit_inclusion: false,  // Default to not force Wind Spirit piece inclusion
+            enable_light_and_shadow: true, // Default to enabling Light and Shadow expansion
+            force_light_and_shadow: false, // Default to 5% of games being Light or Shadow
+            light_and_shadow_mode: None, // Default to randomizing Light or Shadow as the mode
+        }
+    }
 }

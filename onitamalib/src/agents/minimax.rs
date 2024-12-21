@@ -1,6 +1,7 @@
 use instant::{Duration, Instant};
 
-use crate::models::{GameState, Move, Player};
+use crate::models::{GameState, Move, Player, Point};
+use crate::agents::ninja_logic;
 
 const MAX_DEPTH: u16 = 50;
 pub fn iterative_deepening(state: &GameState, duration: Duration) -> Option<(Move, i64)> {
@@ -106,6 +107,23 @@ pub fn minimax(state: &GameState, depth: u16) -> i64 {
             return state.basic_value();
         }
     };
+
+    // Randomize hidden Ninja positions before evaluating moves
+    let mut randomized_state = ninja_logic::randomize_hidden_ninjas(state.clone());
+
+    // Generate possible hidden Ninja positions for the opponent
+    let opponent_hidden_ninjas: Vec<Point> = board
+        .opponent_ninjas()
+        .iter()
+        .filter_map(|ninja| ninja.as_ref().filter(|(_, revealed)| !*revealed).map(|(pos, _)| *pos))
+        .collect();
+
+    let potential_positions = ninja_logic::possible_ninja_positions(&board, opponent_hidden_ninjas);
+
+    // Replace Ninja positions in the randomized state
+    ninja_logic::randomize_ninjas_with_positions(&mut randomized_state, &potential_positions);
+
+
     let expected_scores = board.legal_moves().into_iter().map(|game_move| {
         let state = board.try_move(game_move).expect("illegal move generated");
         minimax(&state, depth - 1)

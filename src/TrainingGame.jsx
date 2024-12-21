@@ -4,19 +4,7 @@ import { useParams } from 'react-router';
 import useSingleplayer from './hooks/useSingleplayer';
 import Loading from './Loading';
 import GameBoard from './GameBoard';
-
-const getMoves = (src, card, turn) => {
-  if (!src || !card) {
-    return () => false;
-  }
-  const { moves } = card;
-  const strMoves =
-    turn === 'Red'
-      ? moves.map(({ x, y }) => `${src.x + x},${src.y + y}`)
-      : moves.map(({ x, y }) => `${src.x - x},${src.y - y}`);
-  const dstSet = new Set(strMoves);
-  return (x, y) => dstSet.has(`${x},${y}`);
-};
+import getMoves from './utils/moveUtils';
 
 function TrainingGame() {
   const { enqueueSnackbar } = useSnackbar();
@@ -24,8 +12,9 @@ function TrainingGame() {
   const { state, playMove, reset, undo, moveRankings } = useSingleplayer(difficulty, true);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
+
   const move = useCallback(
-    (dst) => {
+    ({ x, y, revealNinja }) => {
       if (!card || !src) {
         return;
       }
@@ -33,7 +22,24 @@ function TrainingGame() {
         enqueueSnackbar('Game loading, try again', { variant: 'warning' });
         return;
       }
-      const action = { card: card.card, src, dst, type: 'Move' };
+      const action = {
+        card: card.card,
+        src,
+        dst: { x, y },
+        reveal_ninja: revealNinja,
+        type: 'Move',
+      };
+
+      const { grid } = state; // Destructure `grid` from `state`
+      const previousTile = grid[src.y]?.[src.x]; // Tile being moved from
+      const destinationTile = grid[y]?.[x]; // Tile being moved to
+
+      const isHiddenNinja = (tile) =>
+        tile &&
+        typeof tile === 'object' &&
+        Object.keys(tile)[0].includes('Ninja') &&
+        !tile[Object.keys(tile)[0]].revealed;
+
       const error = playMove(action);
       if (error) {
         enqueueSnackbar(error, { variant: 'error' });
@@ -41,9 +47,18 @@ function TrainingGame() {
         setCard(null);
         setSrc(null);
       }
+
+      // Check if a hidden Ninja was captured (and exclude interactions between hidden Ninjas)
+      if (
+        isHiddenNinja(destinationTile) && // The tile being moved to contains a hidden Ninja
+        !isHiddenNinja(previousTile) // The piece being moved is not also a hidden Ninja
+      ) {
+        enqueueSnackbar('You captured their hidden Ninja!', { variant: 'success' });
+      }
     },
     [playMove, src, card, enqueueSnackbar],
   );
+
   const discard = useCallback(
     (discardCard) => {
       if (!playMove) {
@@ -61,26 +76,55 @@ function TrainingGame() {
     },
     [playMove, enqueueSnackbar],
   );
+
   if (!state) {
     return <Loading />;
   }
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, canUndo } =
-    state;
-  const isMoveValid = getMoves(src, card, turn);
+
+  const {
+    blueCards,
+    redCards,
+    spare,
+    turn,
+    grid,
+    canMove,
+    winner,
+    player,
+    lastMove,
+    canUndo,
+    windMovePending,
+    windMoveCard,
+    ninjaMovePending,
+    ninjaMoveCard,
+  } = state;
+
+  const isMoveValid = getMoves(
+    src,
+    card,
+    grid,
+    turn,
+    windMovePending,
+    ninjaMovePending,
+    ninjaMoveCard,
+  );
+
   const { max, min, ranksByCardSrc, stale } = moveRankings;
   const dstMoveRankings =
     state && player === turn && ranksByCardSrc && card && src
       ? ranksByCardSrc[`${card.card},${src.x},${src.y}`]
       : null;
   const unweightedScore = player === 'Red' ? max : -min;
-  // This formula was not chosen carefully, it just seems maybe good enough 🤷
+
+  // This formula was not chosen carefully; it just seems maybe good enough 🤷
   const weightedScore =
     Math.abs(unweightedScore) < 1
       ? 0
       : Math.sign(unweightedScore) * Math.min(50, 6 * Math.log(Math.abs(unweightedScore)));
   const normalized = 50 + weightedScore;
+
   // eslint-disable-next-line no-console
   console.log({ unweightedScore, normalized, ranksByCardSrc });
+
   return (
     <GameBoard
       src={src}
@@ -105,6 +149,10 @@ function TrainingGame() {
       canUndo={canUndo}
       score={normalized}
       stale={stale}
+      windMovePending={windMovePending}
+      windMoveCard={windMoveCard}
+      ninjaMovePending={ninjaMovePending}
+      ninjaMoveCard={ninjaMoveCard}
     />
   );
 }

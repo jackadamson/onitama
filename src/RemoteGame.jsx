@@ -6,19 +6,7 @@ import Loading from './Loading';
 import GameBoard from './GameBoard';
 import useMultiplayer from './hooks/useMultiplayer';
 import WaitingOverlay from './WaitingOverlay';
-
-const getMoves = (src, card, turn) => {
-  if (!src || !card) {
-    return () => false;
-  }
-  const { moves } = card;
-  const strMoves =
-    turn === 'Red'
-      ? moves.map(({ x, y }) => `${src.x + x},${src.y + y}`)
-      : moves.map(({ x, y }) => `${src.x - x},${src.y - y}`);
-  const dstSet = new Set(strMoves);
-  return (x, y) => dstSet.has(`${x},${y}`);
-};
+import getMoves from './utils/moveUtils';
 
 function RemoteGame({ isAi }) {
   const { roomId = null } = useParams();
@@ -26,8 +14,9 @@ function RemoteGame({ isAi }) {
   const { playMove, state, reset, reconnect } = useMultiplayer(roomId, isAi);
   const [card, setCard] = useState(null);
   const [src, setSrc] = useState(null);
+
   const move = useCallback(
-    (dst) => {
+    ({ x, y, revealNinja }) => {
       if (!card || !src) {
         return;
       }
@@ -35,7 +24,24 @@ function RemoteGame({ isAi }) {
         enqueueSnackbar('Game loading, try again', { variant: 'warning' });
         return;
       }
-      const action = { card: card.card, src, dst, type: 'Move' };
+      const action = {
+        card: card.card,
+        src,
+        dst: { x, y },
+        reveal_ninja: revealNinja,
+        type: 'Move',
+      };
+
+      const { grid } = state; // Destructure `grid` from `state`
+      const previousTile = grid[src.y]?.[src.x]; // Tile being moved from
+      const destinationTile = grid[y]?.[x]; // Tile being moved to
+
+      const isHiddenNinja = (tile) =>
+        tile &&
+        typeof tile === 'object' &&
+        Object.keys(tile)[0].includes('Ninja') &&
+        !tile[Object.keys(tile)[0]].revealed;
+
       const error = playMove(action);
       if (error) {
         enqueueSnackbar(error, { variant: 'error' });
@@ -43,9 +49,18 @@ function RemoteGame({ isAi }) {
         setCard(null);
         setSrc(null);
       }
+
+      // Check if a hidden Ninja was captured (and exclude interactions between hidden Ninjas)
+      if (
+        isHiddenNinja(destinationTile) && // The tile being moved to contains a hidden Ninja
+        !isHiddenNinja(previousTile) // The piece being moved is not also a hidden Ninja
+      ) {
+        enqueueSnackbar('You captured their hidden Ninja!', { variant: 'success' });
+      }
     },
     [playMove, src, card, enqueueSnackbar],
   );
+
   const discard = useCallback(
     (discardCard) => {
       if (!playMove) {
@@ -63,13 +78,38 @@ function RemoteGame({ isAi }) {
     },
     [playMove, enqueueSnackbar],
   );
+
   if (!state) {
     return <Loading />;
   }
-  // Host always creates game
-  const { blueCards, redCards, spare, turn, grid, canMove, winner, player, lastMove, connection } =
-    state;
-  const isMoveValid = getMoves(src, card, turn);
+
+  const {
+    blueCards,
+    redCards,
+    spare,
+    turn,
+    grid,
+    canMove,
+    winner,
+    player,
+    lastMove,
+    connection,
+    windMovePending,
+    windMoveCard,
+    ninjaMovePending,
+    ninjaMoveCard,
+  } = state;
+
+  const isMoveValid = getMoves(
+    src,
+    card,
+    grid,
+    turn,
+    windMovePending,
+    ninjaMovePending,
+    ninjaMoveCard,
+  );
+
   return (
     <>
       <WaitingOverlay state={state} reconnect={reconnect} />
@@ -92,14 +132,21 @@ function RemoteGame({ isAi }) {
         discard={discard}
         lastMove={lastMove}
         connectionStatus={connection}
+        windMovePending={windMovePending}
+        windMoveCard={windMoveCard}
+        ninjaMovePending={ninjaMovePending}
+        ninjaMoveCard={ninjaMoveCard}
       />
     </>
   );
 }
+
 RemoteGame.defaultProps = {
   isAi: false,
 };
+
 RemoteGame.propTypes = {
   isAi: PropTypes.bool,
 };
+
 export default RemoteGame;

@@ -2,8 +2,8 @@ use serde_cbor::ser;
 use wasm_bindgen::prelude::*;
 
 use crate::gamemodes::base::Game;
-use crate::models::Move;
-use crate::{CardSet, GameEvent, GameMeta, GameView};
+use crate::models::{Move, GameSettings, GameMeta};
+use crate::{GameEvent, GameView};
 
 #[wasm_bindgen]
 pub struct LocalGame {
@@ -19,25 +19,32 @@ impl LocalGame {
     #[wasm_bindgen(constructor)]
     pub fn new(
         meta: JsValue,
-        disabled_card_sets: JsValue,
+        game_settings: JsValue, // Changed to accept GameSettings instead of just disabled_card_sets
         on_send_view: js_sys::Function,
         on_send_error: js_sys::Function,
         on_send_event: js_sys::Function,
     ) -> LocalGame {
-        let game = match serde_wasm_bindgen::from_value::<Vec<CardSet>>(disabled_card_sets) {
-            Ok(disabled_card_sets) => {
-                log::info!("Playing with card sets disabled: {:?}", &disabled_card_sets);
-                Game::new_with_disabled_card_sets(disabled_card_sets)
+        // Deserialize GameSettings from JsValue
+        let settings = match serde_wasm_bindgen::from_value::<GameSettings>(game_settings) {
+            Ok(settings) => {
+                settings
             }
             Err(e) => {
-                log::error!("Failed to deserialize Card Sets: {:?}", e);
-                Game::new()
+                log::error!("Failed to deserialize Game Settings: {:?}", e);
+                GameSettings::default() // Fallback to default settings if deserialization fails
             }
         };
+
+        // Use the settings to initialize the game
+        let game = Game::new_with_settings(settings);
+
+        // Deserialize metadata
         let meta = match serde_wasm_bindgen::from_value::<GameMeta>(meta) {
             Ok(meta) => meta,
             Err(_) => GameMeta::blank(),
         };
+
+        // Construct the LocalGame
         let game = LocalGame {
             game,
             meta,
@@ -45,12 +52,15 @@ impl LocalGame {
             on_send_error,
             on_send_event,
         };
+
+        // Send the start event and initial game view
         game.send_event(GameEvent::Start {
             training: false,
             against: "local".to_string(),
             meta: game.meta.clone(),
         });
         game.send_current_view();
+
         return game;
     }
 }
@@ -73,10 +83,12 @@ impl LocalGame {
         };
         Ok(())
     }
+
     fn send_current_view(&self) {
         let view = GameView::from(&self.game.get_state());
         self.send_view(view);
     }
+
     fn send_view(&self, view: GameView) {
         let view = JsValue::from_serde(&view).unwrap();
         let this = JsValue::null();
@@ -87,6 +99,7 @@ impl LocalGame {
             }
         };
     }
+
     fn send_error(&self, error: String) {
         let error = JsValue::from(error);
         let this = JsValue::null();
@@ -97,6 +110,7 @@ impl LocalGame {
             }
         };
     }
+
     fn send_event(&self, event: GameEvent) {
         let msg = ser::to_vec(&event).unwrap();
         let msg = serde_bytes::ByteBuf::from(msg);
@@ -129,6 +143,7 @@ impl LocalGame {
             }
         };
     }
+
     pub fn reset(&mut self) {
         self.send_event(GameEvent::Start {
             training: false,

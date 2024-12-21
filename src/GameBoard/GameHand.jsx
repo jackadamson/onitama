@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, useMediaQuery, useTheme } from '@material-ui/core';
 import GameCard from './GameCard';
+import KING_MOVE_CARDS from '../constants/SpecialCards';
 
 function GameHand({
   cards,
@@ -13,9 +14,14 @@ function GameHand({
   spare,
   isPlayerTurn,
   inverted,
+  windMovePending,
+  ninjaMovePending,
+  windMoveCard,
+  ninjaMoveCard,
 }) {
   const theme = useTheme();
   const showSpare = useMediaQuery(theme.breakpoints.down('sm')) && !isPlayerTurn;
+
   return (
     <Box display="flex" flexDirection={inverted ? 'row-reverse' : 'row'} style={{ gap: '8px' }}>
       {showSpare && (
@@ -25,30 +31,54 @@ function GameHand({
           direction={spare.direction}
           selected={false}
           moves={spare.moves}
+          kingMoves={KING_MOVE_CARDS.includes(spare.card) ? spare.kingMoves || [] : []}
+          windMoves={spare.cardSet === 'WayOfTheWind' ? spare.windMoves || [] : []}
+          cardSet={spare.cardSet || 'DefaultSet'}
           enabled={enabled}
           canMove={canMove}
           discard={discard}
-          showPlayed
+          spare
           inverted={!inverted}
+          windMovePending={windMovePending}
+          ninjaMovePending={ninjaMovePending}
+          windMoveCard={windMoveCard}
+          ninjaMoveCard={ninjaMoveCard}
         />
       )}
-      {cards.map(({ card: name, moves, direction }) => (
-        <GameCard
-          setCard={setCard}
-          name={name}
-          direction={direction}
-          selected={selectedCard?.card === name}
-          key={name}
-          moves={moves}
-          enabled={enabled}
-          canMove={canMove}
-          discard={discard}
-          inverted={inverted}
-        />
-      ))}
+      {cards.map((card) => {
+        // Keep the entire card object intact
+        const { card: name, moves, direction, kingMoves, windMoves, cardSet } = card;
+
+        return (
+          <GameCard
+            key={name}
+            setCard={setCard}
+            name={name}
+            direction={direction}
+            selected={
+              (ninjaMovePending && ninjaMoveCard?.card === name) ||
+              (windMovePending && windMoveCard?.card === name) ||
+              selectedCard?.card === name
+            }
+            moves={moves}
+            kingMoves={KING_MOVE_CARDS.includes(name) ? kingMoves || [] : []}
+            windMoves={cardSet === 'WayOfTheWind' ? windMoves || [] : []}
+            cardSet={cardSet}
+            enabled={enabled}
+            canMove={canMove}
+            discard={discard}
+            inverted={inverted}
+            windMovePending={windMovePending}
+            ninjaMovePending={ninjaMovePending}
+            windMoveCard={windMoveCard}
+            ninjaMoveCard={ninjaMoveCard}
+          />
+        );
+      })}
     </Box>
   );
 }
+
 const CardPropType = PropTypes.shape({
   card: PropTypes.string.isRequired,
   moves: PropTypes.arrayOf(
@@ -58,11 +88,28 @@ const CardPropType = PropTypes.shape({
     }),
   ).isRequired,
   direction: PropTypes.string.isRequired,
+  kingMoves: PropTypes.arrayOf(
+    PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    }),
+  ),
+  windMoves: PropTypes.arrayOf(
+    PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    }),
+  ),
+  cardSet: PropTypes.string,
 });
+
 GameHand.defaultProps = {
   selectedCard: null,
   inverted: false,
+  windMoveCard: null,
+  ninjaMoveCard: null,
 };
+
 GameHand.propTypes = {
   setCard: PropTypes.func.isRequired,
   selectedCard: PropTypes.shape({
@@ -75,6 +122,10 @@ GameHand.propTypes = {
   enabled: PropTypes.bool.isRequired,
   isPlayerTurn: PropTypes.bool.isRequired,
   inverted: PropTypes.bool,
+  windMovePending: PropTypes.bool.isRequired,
+  ninjaMovePending: PropTypes.bool.isRequired,
+  windMoveCard: CardPropType,
+  ninjaMoveCard: CardPropType,
 };
 
 export default GameHand;

@@ -33,7 +33,7 @@ root.render(
                 <LocalGame />
               </Suspense>
             </Route>
-            <Route path="/help" exact>
+            <Route path="/rules/:page" exact>
               <Suspense fallback={<Loading />}>
                 <Rules />
               </Suspense>
