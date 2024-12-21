@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -68,14 +68,6 @@ function Settings() {
   const [marqueeStates, setMarqueeStates] = useState(
     cardSets.reduce((acc, { id }) => ({ ...acc, [id]: false }), {}),
   );
-
-  // Effect to handle when Way of the Wind cards are set to 5
-  useEffect(() => {
-    if (localNumberOfWindCards === 5) {
-      setLocalDisabledCardSets(validSetIds.filter((id) => id !== 'WayOfTheWind'));
-      setLocalForceWindSpiritInclusion(true);
-    }
-  }, [localNumberOfWindCards, validSetIds]);
 
   // Check if current settings match defaults
   const settingsAreDefault = useMemo(
