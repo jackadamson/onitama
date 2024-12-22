@@ -390,8 +390,8 @@ impl Board {
         let mut rng = thread_rng();
         
         // Determine if the Light and Shadow expansion should be used
-        let include_light_and_shadow = settings.force_light_and_shadow
-            || (settings.enable_light_and_shadow && rng.gen_bool(0.05));
+        let include_light_and_shadow = settings.enable_light_and_shadow && 
+            (settings.force_light_and_shadow || rng.gen_bool(0.05));
 
         let selected_mode = if include_light_and_shadow {
             settings.light_and_shadow_mode.clone().unwrap_or_else(|| {
